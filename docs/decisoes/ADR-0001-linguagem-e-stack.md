@@ -1,6 +1,6 @@
 # ADR-0001 — Linguagem e stack da plataforma
 
-- **Status:** Proposto
+- **Status:** Aceito (05/11/2026)
 - **Data:** 05/11/2026
 - **Decisores:** fundador do PUKAS
 

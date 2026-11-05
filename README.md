@@ -14,12 +14,12 @@
 
 ## Status
 
-🟡 **Fase 0 — Fundação.** A spec está em revisão. Ainda não existe código de produto.
+🟡 **Fase 0 — Fundação.** A spec foi aprovada e o plano de implementação está em preparação. Ainda não existe código de produto.
 
 | Subprojeto | Status |
 |---|---|
-| 0 · Fundação | 🟡 Spec em revisão |
-| 1 · Publicação (newsletter *Manifesto de Trincheira*) | 🟡 Spec em revisão |
+| 0 · Fundação | 🟡 Plano em preparação |
+| 1 · Publicação (newsletter *Manifesto de Trincheira*) | 🟡 Plano em preparação |
 | 2 · Dossiê | ⚪ |
 | 3 · Módulos interativos | ⚪ |
 | 4 · Produção para redes | ⚪ |
@@ -76,7 +76,12 @@ pukas/
 └─ CONTRIBUTING.md   fluxo de trabalho e convenções
 ```
 
-O código (`src/`) entra quando a spec da Fundação for aprovada.
+O código (`src/`) entra com o plano de implementação da Fundação.
+
+## Licença
+
+- **Código:** [AGPL-3.0](LICENSE).
+- **Textos e conteúdo editorial:** [CC BY-SA 4.0](LICENSE-CONTEUDO.md).
 
 ## Como trabalhamos
 

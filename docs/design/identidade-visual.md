@@ -44,9 +44,13 @@ Paleta anterior (v1.0, descontinuada): `#D9381E` / `#F4F1EA` / `#121212`.
 - Cor sempre **chapada**, com grain por cima. Sem gradiente, sem transparência suave.
 - Pau-Brasil marca conflito, ruptura ou convocação — nunca é decoração.
 
-### ⚠️ Em aberto
+### Cor funcional de leitura (decidido em 05.11.26)
 
-- **Superfície de leitura longa** (newsletter, ensaio do dossiê): texto Ipê sobre Verde-Mata por muitos parágrafos cansa. Decidir se entra um neutro funcional só para leitura longa (ex.: Cal `#F1EDE4` com texto Verde-Mata), fora da identidade.
+| Nome | HEX | Uso |
+|---|---|---|
+| **Cal** | `#F1EDE4` | **Só** texto corrido (newsletter, ensaios) sobre Verde-Mata. Contraste ~8,6:1. Não é cor de identidade e não conta no limite de 3 cores. |
+
+Ipê e Pau-Brasil seguem nos títulos, carimbos e faixas da página de leitura.
 
 ---
 

@@ -1,6 +1,6 @@
 # Spec — Fundação + Publicação (subprojetos 0 e 1)
 
-- **Status:** Rascunho, aguardando revisão do fundador
+- **Status:** Aprovada em 05/11/2026
 - **Data:** 05/11/2026
 - **Depende de:** [ADR-0001](../decisoes/ADR-0001-linguagem-e-stack.md)
 
@@ -72,7 +72,7 @@ Se o frontmatter estiver incompleto, o esquema Zod quebra o build e o texto não
 
 ## 5. Identidade aplicada
 
-- **Paleta:** Pau-Brasil `#9E2A1E`, Ipê `#E0A526` e Verde-Mata `#1A452C`, com as regras de contraste de [paleta.md](../design/paleta.md).
+- **Paleta:** Pau-Brasil `#9E2A1E`, Ipê `#E0A526` e Verde-Mata `#1A452C`, com as regras de contraste de [paleta.md](../design/paleta.md). Texto corrido em Cal `#F1EDE4` sobre Verde-Mata (§7).
 - **Fontes:** Anton (display), Space Mono (metadados) e Space Grotesk (corpo), servidas localmente em `public/fonts/`. Não dependemos do Google em tempo de execução.
 - **Grão:** uma camada SVG `feTurbulence` fixa sobre a página, com `pointer-events: none`. Pesa zero em imagem.
 - **Movimento:** transições secas e sem easing orgânico. `prefers-reduced-motion` é respeitado.
@@ -83,10 +83,10 @@ Se o frontmatter estiver incompleto, o esquema Zod quebra o build e o texto não
 - **Vitest** só para lógica pura, como ordenação de edições ou formatação de data e número de arquivo.
 - **Acessibilidade:** contraste de acordo com a tabela da paleta, HTML semântico (`<article>`, `<time>`, `<nav>`) e `lang="pt-BR"`.
 
-## 7. Questões em aberto (decidir antes do plano)
+## 7. Decisões (05/11/2026)
 
-1. **Superfície de leitura longa.** Texto Ipê sobre Verde-Mata por muitos parágrafos cansa. Proposta: o corpo de texto da newsletter usa um neutro funcional, Cal `#F1EDE4` com texto Verde-Mata, e a identidade fica nas bordas (cabeçalho, carimbos e faixas).
-2. **Envio por e-mail (Fase 1.2).** Proposta: usar o Resend, com formulário de inscrição e envio da edição. O RSS cobre a Fase 1.
-3. **Domínio.** Qual domínio? Exemplos: `pukas.org`, `pukas.lat`.
-4. **Licença do conteúdo e do código.** Uma sugestão é CC BY-SA para os textos e AGPL para o código, coerente com "propriedade popular". A decisão é do fundador.
-5. **Visibilidade do repositório.** O repositório é privado por enquanto. Tornar público quando lançar?
+1. **Superfície de leitura longa:** fundo **Verde-Mata** `#1A452C` com texto em **Cal** `#F1EDE4` (contraste de ~8,6:1). O Cal entra como cor funcional, só para o texto corrido. Ipê e Pau-Brasil ficam para títulos, carimbos e faixas.
+2. **Envio por e-mail:** pelo **Resend**, na Fase 1.2. Na Fase 1, o RSS cobre o acompanhamento.
+3. **Domínio:** ainda não há. A Fase 1 publica no subdomínio `*.vercel.app`. Quando o domínio for definido, entram a URL canônica e o feed com o endereço final.
+4. **Licença:** **AGPL-3.0** para o código (`LICENSE`) e **CC BY-SA 4.0** para os textos e o conteúdo editorial (`LICENSE-CONTEUDO.md`).
+5. **Visibilidade do repositório:** continua privado. A decisão fica para o lançamento.

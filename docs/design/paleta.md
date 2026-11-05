@@ -10,8 +10,15 @@ Opção E do canvas https://claude.ai/artifact/TwricwX9r2pFMqUzyRnZkL
 
 Substitui `#D9381E` / `#F4F1EA` / `#121212` dos documentos do Drive.
 
+### Cor funcional de leitura
+
+| Nome | HEX | Uso |
+|---|---|---|
+| Cal | `#F1EDE4` | **Só** texto corrido (newsletter, ensaios) sobre Verde-Mata. Não é cor de identidade. |
+
 ## Regras de contraste
-- Texto pequeno (<24px): só Ipê sobre Verde-Mata (~4,6:1).
+- Texto corrido: Cal sobre Verde-Mata (~8,6:1).
+- Texto pequeno (<24px) de identidade: Ipê sobre Verde-Mata (~4,6:1).
 - Ipê sobre Pau-Brasil: só texto grande (≥24px, ~4:1).
 - Pau-Brasil sobre Verde-Mata: não usar para texto (contraste baixo); só blocos.
 
