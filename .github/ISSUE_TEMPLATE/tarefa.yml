@@ -1,0 +1,25 @@
+name: Tarefa
+description: Uma unidade de trabalho de um plano de implementação
+title: "[Tarefa] "
+labels: []
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: O que precisa existir quando esta tarefa terminar?
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+  - type: input
+    id: spec
+    attributes:
+      label: Spec ou plano de origem
+      placeholder: docs/specs/...

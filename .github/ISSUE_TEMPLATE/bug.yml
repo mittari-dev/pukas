@@ -1,0 +1,28 @@
+name: Bug
+description: Algo não funciona como deveria
+title: "[Bug] "
+labels: ["tipo: bug"]
+body:
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que aconteceu
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Abrir ...
+        2. ...
+  - type: input
+    id: onde
+    attributes:
+      label: Página / navegador / aparelho
