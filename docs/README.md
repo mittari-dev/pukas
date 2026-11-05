@@ -6,6 +6,7 @@
 | [`design/`](design/) | Paleta oficial e canvas de exploração das paletas |
 | [`decisoes/`](decisoes/) | ADRs: decisões de arquitetura, com contexto e alternativas |
 | [`specs/`](specs/) | Especificações de cada subprojeto, antes do plano e do código |
+| [`planos/`](planos/) | Planos de implementação: tarefas, interfaces e testes, derivados de cada spec |
 | [`roadmap.md`](roadmap.md) | Ordem dos subprojetos e status |
 
 ## Convenções
