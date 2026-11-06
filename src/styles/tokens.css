@@ -1,0 +1,41 @@
+/* Fonte única da identidade v2.0 — docs/design/identidade-visual.md.
+   Nenhum outro arquivo declara cor em hex. */
+
+:root {
+  /* Cor */
+  --pau-brasil: #9E2A1E; /* marca, ruptura */
+  --tinta: #1C1A17;      /* texto, retícula (funcional) */
+  --cal: #F1EDE4;        /* papel, leitura (funcional) */
+  --ipe: #E0A526;        /* destaque, dado */
+  --verde-mata: #1A452C; /* módulo técnico */
+
+  /* Tipografia */
+  --fonte-manchete: 'Archivo Variable', 'Archivo', sans-serif;
+  --fonte-corpo: 'Archivo Variable', 'Archivo', sans-serif;
+  --fonte-maquina: 'Space Mono', monospace;
+  --fonte-carimbo: 'Anton', sans-serif;
+  --largura-manchete: 62%;
+
+  /* Espaço: múltiplos de 4px */
+  --esp-1: 4px;
+  --esp-2: 8px;
+  --esp-3: 12px;
+  --esp-4: 16px;
+  --esp-5: 24px;
+  --esp-6: 32px;
+  --esp-7: 48px;
+  --esp-8: 64px;
+}
+
+/* Receitas: uma por página, nunca misturadas. */
+.receita-leitura {
+  --fundo: var(--cal);
+  --texto: var(--tinta);
+  --acento: var(--pau-brasil);
+}
+
+.receita-agitacao {
+  --fundo: var(--pau-brasil);
+  --texto: var(--cal);
+  --acento: var(--tinta);
+}
