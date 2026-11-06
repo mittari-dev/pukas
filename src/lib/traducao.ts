@@ -31,6 +31,32 @@ export function validarNumerosTraducao(original: string, traducao: string): stri
   return [...(restantes.length ? [`faltam: ${restantes.join(', ')}`] : []), ...(sobram.length ? [`sobram: ${sobram.join(', ')}`] : [])];
 }
 
+interface ComTexto {
+  id: string;
+  body?: string;
+  data: { titulo: string };
+}
+
+// Junta original e tradução pelo id. Trava se algum número da manchete ou do corpo divergir.
+export function aplicarTraducoes<O extends ComTexto, R>(
+  originais: O[],
+  traducoes: { id: string; body?: string; data: Traducao }[],
+  mesclar: (original: O, traducao: Traducao) => R,
+): R[] {
+  const porId = new Map(traducoes.map((t) => [t.id, t]));
+  const erros: string[] = [];
+  const resultado: R[] = [];
+  for (const o of originais) {
+    const t = porId.get(o.id);
+    if (!t) continue;
+    const problemas = validarNumerosTraducao(`${o.data.titulo}\n${o.body ?? ''}`, `${t.data.titulo}\n${t.body ?? ''}`);
+    if (problemas.length) erros.push(`${o.id}: ${problemas.join('; ')}`);
+    else resultado.push(mesclar(o, t.data));
+  }
+  if (erros.length) throw new Error(`Tradução com números diferentes do original:\n${erros.join('\n')}`);
+  return resultado;
+}
+
 function marca(trad: Traducao) {
   return { revisado: trad.revisado, modelo: trad.modelo };
 }

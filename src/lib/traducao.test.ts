@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mesclarEdicao, mesclarObra, numerosDoTexto, validarNumerosTraducao } from './traducao';
+import { aplicarTraducoes, mesclarEdicao, mesclarObra, numerosDoTexto, validarNumerosTraducao } from './traducao';
 import type { Edicao } from './edicoes';
 import type { Obra } from './cultura';
 
@@ -56,6 +56,27 @@ describe('mesclarEdicao', () => {
     expect(m.data.fontes).toBe(original.data.fontes);
     expect(m.data.checagem).toBe(original.data.checagem);
     expect(m.traducao).toEqual({ revisado: false, modelo: 'claude-opus-5-5' });
+  });
+});
+
+describe('aplicarTraducoes', () => {
+  const orig = (id: string, titulo: string, body: string) => ({ id, body, data: { numero: 1, titulo } });
+  const tr = (id: string, titulo: string, body: string) => ({ id, body, data: { titulo, resumo: 'r', revisado: false } });
+  const mesclar = (o: ReturnType<typeof orig>, t: { titulo: string }) => ({ ...o, data: { ...o.data, titulo: t.titulo } });
+
+  it('devolve só os originais que têm tradução, já mesclados', () => {
+    const r = aplicarTraducoes([orig('a', 'A', 'Em 1925.'), orig('b', 'B', 'x')], [tr('a', 'A-es', 'En 1925.')], mesclar);
+    expect(r.map((x) => [x.id, x.data.titulo])).toEqual([['a', 'A-es']]);
+  });
+
+  it('trava o build quando um número muda na tradução', () => {
+    expect(() => aplicarTraducoes([orig('a', 'Lei de 1925', 'Em 1925, 15 dias.')], [tr('a', 'Ley de 1925', 'En 1926, 15 días.')], mesclar)).toThrow(
+      /a: faltam: 1925; sobram: 1926/,
+    );
+  });
+
+  it('ignora tradução sem original publicado', () => {
+    expect(aplicarTraducoes([], [tr('x', 'X', '')], mesclar)).toEqual([]);
   });
 });
 
