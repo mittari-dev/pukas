@@ -3,10 +3,11 @@
 interface Props {
   variante?: 'cor' | 'tinta' | 'cal';
   tamanho?: 'p' | 'g';
+  rotulo?: string;
 }
-const { variante = 'cor', tamanho = 'p' } = Astro.props;
+const { variante = 'cor', tamanho = 'p', rotulo = 'PUKAS' } = Astro.props;
 ---
-<span class:list={['tarja', `tarja--${variante}`, `tarja--${tamanho}`]} role="img" aria-label="PUKAS, início">
+<span class:list={['tarja', `tarja--${variante}`, `tarja--${tamanho}`]} role="img" aria-label={rotulo}>
   <span aria-hidden="true">PUKAS</span>
 </span>
 

@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import ListaEdicoes from '../components/ListaEdicoes.astro';
+import { carregarEdicoes } from '../lib/carregar';
+import { t, type Idioma } from '../lib/idioma';
+import { textoManchete } from '../lib/manchete';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const edicoes = await carregarEdicoes(idioma);
+---
+<Base titulo={textoManchete(t(idioma, 'serie.titulo'))} descricao={t(idioma, 'serie.sub')} receita="leitura" selo={t(idioma, 'selo.memoria')} idioma={idioma}>
+  <div class="leitura">
+    <div class="titulo"><Manchete titulo={t(idioma, 'serie.titulo')} tamanho="m" /></div>
+    <p class="sub">{t(idioma, 'serie.sub')}</p>
+    <ListaEdicoes edicoes={edicoes} />
+  </div>
+</Base>
+
+<style>
+  .titulo {
+    margin-top: var(--esp-5);
+  }
+  .sub {
+    margin: var(--esp-4) 0 var(--esp-6);
+  }
+</style>

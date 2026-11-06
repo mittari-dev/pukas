@@ -2,20 +2,22 @@
 import type { Edicao } from '../lib/edicoes';
 import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { textoManchete } from '../lib/manchete';
+import { semPrefixo, t } from '../lib/idioma';
 
 interface Props {
   edicoes: Edicao[];
 }
 const { edicoes } = Astro.props;
+const { idioma } = semPrefixo(Astro.url.pathname);
 ---
 {edicoes.length === 0 ? (
-  <p class="vazio">A primeira edição sai numa segunda-feira. Volte logo.</p>
+  <p class="vazio">{t(idioma, 'serie.vazio')}</p>
 ) : (
   <ol class="lista" reversed>
     {edicoes.map((e) => (
       <li>
-        <a href={caminhoEdicao(e.data.serie, e.data.numero)}>
-          <span class="maquina lista__meta">{formatarNumero(e.data.numero)} · {formatarData(e.data.publicadaEm)}</span>
+        <a href={caminhoEdicao(e.data.serie, e.data.numero, idioma)}>
+          <span class="maquina lista__meta">{formatarNumero(e.data.numero)} · {formatarData(e.data.publicadaEm, idioma)}</span>
           <span class="lista__titulo">{textoManchete(e.data.titulo)}</span>
         </a>
       </li>

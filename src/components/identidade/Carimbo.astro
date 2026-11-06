@@ -1,17 +1,19 @@
 ---
 // Marca secundária: carimbo de borracha com número de arquivo. Anton só aqui.
 import { formatarData, formatarNumero } from '../../lib/formato';
+import { semPrefixo, t } from '../../lib/idioma';
 
 interface Props {
   numero: number;
   data?: Date;
 }
 const { numero, data } = Astro.props;
+const { idioma } = semPrefixo(Astro.url.pathname);
 ---
 <div class="carimbo">
-  <span class="carimbo__topo">ARQUIVO POPULAR</span>
+  <span class="carimbo__topo">{t(idioma, 'carimbo.topo')}</span>
   <span class="carimbo__marca">PUKAS</span>
-  <span class="carimbo__numero">{formatarNumero(numero)}{data && ` · ${formatarData(data)}`}</span>
+  <span class="carimbo__numero">{formatarNumero(numero)}{data && ` · ${formatarData(data, idioma)}`}</span>
 </div>
 
 <style>

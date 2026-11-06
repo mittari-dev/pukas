@@ -1,0 +1,20 @@
+---
+import Obra from '../../../views/Obra.astro';
+import { carregarObras } from '../../../lib/carregar';
+import { prefixar } from '../../../lib/idioma';
+
+export async function getStaticPaths() {
+  const obras = await carregarObras('es');
+  const noOutro = new Set((await carregarObras('pt')).map((o) => o.id));
+  return obras.map((obra) => ({
+    params: { obra: obra.id },
+    props: {
+      obra,
+      alternativa: noOutro.has(obra.id)
+        ? { href: prefixar(`/cultura/${obra.id}`, 'pt'), equivalente: true }
+        : { href: prefixar('/cultura', 'pt'), equivalente: false },
+    },
+  }));
+}
+---
+<Obra idioma="es" {...Astro.props} />

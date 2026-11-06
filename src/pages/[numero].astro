@@ -4,10 +4,10 @@ import { carregarEdicoes } from '../lib/carregar';
 import { caminhoEdicao } from '../lib/formato';
 
 export async function getStaticPaths() {
-  const edicoes = await carregarEdicoes();
+  const edicoes = await carregarEdicoes('pt');
   return edicoes.map((e) => ({
     params: { numero: String(e.data.numero).padStart(3, '0') },
-    props: { destino: caminhoEdicao(e.data.serie, e.data.numero) },
+    props: { destino: caminhoEdicao(e.data.serie, e.data.numero, 'pt') },
   }));
 }
 

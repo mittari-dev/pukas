@@ -1,0 +1,82 @@
+---
+import Base from '../layouts/Base.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import { carregarObras } from '../lib/carregar';
+import { formatarData, formatarNumero } from '../lib/formato';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import { textoManchete } from '../lib/manchete';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const obras = await carregarObras(idioma);
+---
+<Base titulo={t(idioma, 'cultura.titulo')} descricao={t(idioma, 'cultura.descricao')} receita="leitura" selo={t(idioma, 'selo.cultura')} idioma={idioma}>
+  <div class="leitura">
+    <div class="titulo"><Manchete titulo={t(idioma, 'cultura.titulo')} tamanho="m" /></div>
+    <p class="sub">{t(idioma, 'cultura.sub')}</p>
+
+    {obras.length === 0 ? (
+      <p class="vazio">{t(idioma, 'cultura.vazio')}</p>
+    ) : (
+      <ol class="lista" reversed>
+        {obras.map((o) => (
+          <li>
+            <a href={prefixar(`/cultura/${o.id}`, idioma)}>
+              <span class="maquina lista__meta">{t(idioma, `tipo.${o.data.tipo}`)} · {formatarNumero(o.data.numero)} · {formatarData(o.data.publicadaEm, idioma)}</span>
+              <span class="lista__titulo">{textoManchete(o.data.titulo)}</span>
+              <span class="lista__resumo">{o.data.resumo}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    )}
+  </div>
+</Base>
+
+<style>
+  .titulo {
+    margin-top: var(--esp-5);
+  }
+  .sub {
+    margin: var(--esp-4) 0 var(--esp-6);
+  }
+  .lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 3px solid currentColor;
+  }
+  .lista a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-1);
+    padding: var(--esp-4) 0;
+    border-bottom: 1px solid currentColor;
+    text-decoration: none;
+  }
+  .lista a:hover .lista__titulo,
+  .lista a:focus-visible .lista__titulo {
+    color: var(--acento);
+  }
+  .lista__meta {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .lista__titulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 30px;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .lista__resumo {
+    font-size: 16px;
+  }
+  .vazio {
+    font-weight: 700;
+  }
+</style>

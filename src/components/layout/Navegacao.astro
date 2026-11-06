@@ -4,18 +4,26 @@
 import Tarja from '../identidade/Tarja.astro';
 import { navegacao } from '../../data/navegacao';
 import { secaoAtiva } from '../../lib/navegacao';
+import { prefixar, semPrefixo, t, type Idioma } from '../../lib/idioma';
 
 interface Props {
   // Sobre fundo Pau-Brasil (Agitação) a Tarja vermelha sumiria: usa a versão em Tinta.
   tarja?: 'cor' | 'tinta';
+  idioma: Idioma;
+  // Mesma página no outro idioma (ou o índice da seção, se não houver tradução).
+  alternativa: string;
 }
-const { tarja = 'cor' } = Astro.props;
-const ativa = secaoAtiva(Astro.url.pathname, navegacao);
+const { tarja = 'cor', idioma, alternativa } = Astro.props;
+const itens = navegacao.map((i) => ({ rotulo: t(idioma, i.chave), href: i.href }));
+const ativa = secaoAtiva(semPrefixo(Astro.url.pathname).caminho, itens);
+const outro: Idioma = idioma === 'pt' ? 'es' : 'pt';
+// ?idioma= faz o middleware lembrar a escolha (cookie) antes de abrir a página.
+const seletor = { pt: idioma === 'pt' ? undefined : `${alternativa}?idioma=pt`, es: idioma === 'es' ? undefined : `${alternativa}?idioma=es` };
 ---
 <header class="barra">
   <details class="menu">
     <summary class="menu__botao">
-      <span class="sr-only">Menu</span>
+      <span class="sr-only">{t(idioma, 'nav.menu')}</span>
       <svg class="icone icone--abrir" width="28" height="22" viewBox="0 0 28 22" aria-hidden="true" focusable="false">
         <rect y="0" width="28" height="4" fill="currentColor"></rect>
         <rect y="9" width="28" height="4" fill="currentColor"></rect>
@@ -25,15 +33,20 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
         <path d="M3 3 L21 21 M21 3 L3 21" stroke="currentColor" stroke-width="4"></path>
       </svg>
     </summary>
-    <nav class="gaveta" aria-label="Seções">
+    <nav class="gaveta" aria-label={t(idioma, 'nav.secoes')}>
       <ul class="itens">
-        {navegacao.map((i) => (
-          <li><a href={i.href} aria-current={i.href === ativa ? 'page' : undefined}>{i.rotulo}</a></li>
+        {itens.map((i) => (
+          <li><a href={prefixar(i.href, idioma)} aria-current={i.href === ativa ? 'page' : undefined}>{i.rotulo}</a></li>
         ))}
       </ul>
     </nav>
   </details>
-  <a href="/" class="marca"><Tarja variante={tarja} /></a>
+  <a href={prefixar('/', idioma)} class="marca"><Tarja variante={tarja} rotulo={t(idioma, 'nav.marca')} /></a>
+  <nav class="idiomas maquina" aria-label={t(idioma, 'nav.idioma')}>
+    {seletor.pt ? <a href={seletor.pt} hreflang="pt-BR" lang="pt-BR">PT</a> : <span aria-current="true">PT</span>}
+    <span aria-hidden="true">|</span>
+    {seletor.es ? <a href={seletor.es} hreflang="es-419" lang="es-419">ES</a> : <span aria-current="true">ES</span>}
+  </nav>
 </header>
 
 <style>
@@ -53,6 +66,35 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
     font-size: clamp(44px, 9vw, 64px);
   }
 
+  .idiomas {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--esp-2);
+    font-size: 15px;
+    letter-spacing: 0.08em;
+  }
+  .idiomas a,
+  .idiomas [aria-current] {
+    display: inline-grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .idiomas a {
+    text-decoration: none;
+    opacity: 0.75;
+  }
+  .idiomas a:hover,
+  .idiomas a:focus-visible {
+    opacity: 1;
+    text-decoration: underline;
+  }
+  .idiomas [aria-current] {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 4px;
+  }
   .menu__botao {
     list-style: none;
     display: grid;
