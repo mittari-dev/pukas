@@ -1,0 +1,44 @@
+---
+// Manchete da identidade: cada | do autor vira uma linha; *trecho* sai em destaque.
+// Sem marcação, o navegador equilibra as linhas (text-wrap: balance) para não sobrar palavra órfã.
+import { linhasManchete } from '../../lib/manchete';
+
+interface Props {
+  titulo: string;
+  tamanho?: 'g' | 'm';
+  nivel?: 1 | 2;
+  id?: string;
+}
+const { titulo, tamanho = 'g', nivel = 1, id } = Astro.props;
+const linhas = linhasManchete(titulo);
+const Tag = nivel === 1 ? 'h1' : 'h2';
+---
+<Tag id={id} class:list={['manchete', `manchete--${tamanho}`]}>
+  {linhas.map((linha) => (
+    <span class="manchete__linha">
+      {linha.map((t) => (t.destaque ? <span class="manchete__destaque">{t.texto}</span> : t.texto))}
+    </span>
+  ))}
+</Tag>
+
+<style>
+  .manchete__linha {
+    display: block;
+    text-wrap: balance;
+  }
+  /* g: ~11 caracteres por linha num celular de 360px; m: títulos de seção e de edição. */
+  .manchete--g {
+    font-size: clamp(56px, 16vw, 136px);
+  }
+  .manchete--m {
+    font-size: clamp(52px, 14vw, 104px);
+  }
+  .manchete__destaque {
+    color: var(--destaque-texto);
+    background: var(--destaque-fundo);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 0 var(--destaque-recuo);
+    margin-left: calc(-1 * var(--destaque-recuo));
+  }
+</style>

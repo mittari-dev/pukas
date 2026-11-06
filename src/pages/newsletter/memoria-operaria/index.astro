@@ -1,5 +1,6 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import Manchete from '../../../components/identidade/Manchete.astro';
 import ListaEdicoes from '../../../components/ListaEdicoes.astro';
 import { carregarEdicoes } from '../../../lib/carregar';
 import '../../../styles/leitura.css';
@@ -13,7 +14,7 @@ const edicoes = await carregarEdicoes();
   selo="MEMÓRIA OPERÁRIA*"
 >
   <div class="leitura">
-    <h1 class="manchete titulo">Memória Operária</h1>
+    <div class="titulo"><Manchete titulo="Memória | Operária" tamanho="m" /></div>
     <p class="sub">Direitos que existem porque alguém lutou. Uma edição toda segunda, sempre com as fontes.</p>
     <ListaEdicoes edicoes={edicoes} />
   </div>
@@ -21,7 +22,6 @@ const edicoes = await carregarEdicoes();
 
 <style>
   .titulo {
-    font-size: clamp(48px, 12vw, 96px);
     margin-top: var(--esp-5);
   }
   .sub {

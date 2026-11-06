@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
+import Manchete from '../components/identidade/Manchete.astro';
 import ListaEdicoes from '../components/ListaEdicoes.astro';
 import { carregarEdicoes } from '../lib/carregar';
 import { caminhoEdicao } from '../lib/formato';
@@ -15,20 +16,21 @@ const ultima = edicoes[0];
   receita="leitura"
   selo="MEMÓRIA OPERÁRIA*"
 >
-  <div class="leitura">
+  <div class="capa">
     {ultima ? (
       <section class="destaque" aria-labelledby="ultima">
         <Carimbo numero={ultima.data.numero} data={ultima.data.publicadaEm} />
-        <h1 id="ultima" class="manchete destaque__manchete">{ultima.data.titulo}</h1>
+        <div class="destaque__manchete"><Manchete id="ultima" titulo={ultima.data.titulo} /></div>
         <p class="destaque__resumo">{ultima.data.resumo}</p>
         <a class="maquina destaque__ler" href={caminhoEdicao(ultima.data.serie, ultima.data.numero)}>LER A EDIÇÃO COM AS FONTES ›››</a>
       </section>
     ) : (
       <section class="destaque">
-        <h1 class="manchete destaque__manchete">Direito nenhum caiu do céu.</h1>
+        <div class="destaque__manchete"><Manchete titulo="Direito | nenhum caiu | do céu. | *Foi luta.*" /></div>
       </section>
     )}
 
+    <div class="capa__resto">
     <h2 class="secao-titulo maquina">MEMÓRIA OPERÁRIA · TODAS AS EDIÇÕES</h2>
     <ListaEdicoes edicoes={edicoes} />
 
@@ -36,16 +38,25 @@ const ultima = edicoes[0];
       O PUKAS é um órgão de mídia & inteligência latino-americana. Toda informação aqui tem fonte.{' '}
       <a href="/manifesto">Leia o manifesto</a>.
     </p>
+    </div>
   </div>
 </Base>
 
 <style>
+  /* Capa mais larga que a leitura: a manchete precisa de espaço; o resto segue a medida de 68ch. */
+  .capa {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 var(--esp-4);
+  }
+  .capa__resto {
+    max-width: 68ch;
+  }
   .destaque {
     padding: var(--esp-5) 0 var(--esp-7);
   }
   .destaque__manchete {
     margin-top: var(--esp-6);
-    font-size: clamp(48px, 12vw, 104px);
   }
   .destaque__resumo {
     margin: var(--esp-5) 0;

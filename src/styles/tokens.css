@@ -34,6 +34,9 @@
   --acento: var(--pau-brasil);
   --ativo: var(--pau-brasil); /* item de menu ativo / hover: 6,41:1 sobre Cal */
   --foco: var(--tinta);
+  --destaque-texto: var(--pau-brasil); /* *trecho* da manchete */
+  --destaque-fundo: transparent;
+  --destaque-recuo: 0em;
 }
 
 .receita-agitacao {
@@ -43,4 +46,8 @@
   /* Tinta sobre Pau-Brasil dá 2,32:1: reprovado para texto e foco. Aqui o destaque é Cal. */
   --ativo: var(--cal);
   --foco: var(--cal);
+  /* Destaque vira marca-texto: Cal sobre bloco Tinta (14,86:1). */
+  --destaque-texto: var(--cal);
+  --destaque-fundo: var(--tinta);
+  --destaque-recuo: 0.08em; /* o bloco sangra para a esquerda e o texto fica alinhado */
 }

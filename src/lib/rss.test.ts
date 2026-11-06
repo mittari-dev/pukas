@@ -18,6 +18,11 @@ const edicao = {
 } satisfies Edicao;
 
 describe('itensRss', () => {
+  it('tira as marcações de quebra e destaque do título', () => {
+    const marcada = { ...edicao, data: { ...edicao.data, titulo: 'Férias | não caíram *do céu*' } };
+    expect(itensRss([marcada])[0].title).toBe('Nº 001 — Férias não caíram do céu');
+  });
+
   it('devolve lista vazia sem edições', () => {
     expect(itensRss([])).toEqual([]);
   });

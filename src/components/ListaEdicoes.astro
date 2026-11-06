@@ -1,6 +1,7 @@
 ---
 import type { Edicao } from '../lib/edicoes';
 import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
+import { textoManchete } from '../lib/manchete';
 
 interface Props {
   edicoes: Edicao[];
@@ -15,7 +16,7 @@ const { edicoes } = Astro.props;
       <li>
         <a href={caminhoEdicao(e.data.serie, e.data.numero)}>
           <span class="maquina lista__meta">{formatarNumero(e.data.numero)} · {formatarData(e.data.publicadaEm)}</span>
-          <span class="lista__titulo">{e.data.titulo}</span>
+          <span class="lista__titulo">{textoManchete(e.data.titulo)}</span>
         </a>
       </li>
     ))}
