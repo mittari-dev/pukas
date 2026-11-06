@@ -4,12 +4,14 @@ import { t, type Idioma } from '../lib/idioma';
 
 interface Props {
   idioma: Idioma;
-  traducao?: { revisado: boolean };
+  traducao?: { revisado: boolean; pendente?: boolean };
   original: string;
 }
 const { idioma, traducao, original } = Astro.props;
 ---
-{traducao && !traducao.revisado && (
+{traducao?.pendente ? (
+  <p class="aviso-traducao maquina" role="note">{t(idioma, 'traducao.emCaminho')}</p>
+) : traducao && !traducao.revisado && (
   <p class="aviso-traducao maquina" role="note">
     {t(idioma, 'traducao.automatica')} · {t(idioma, 'traducao.original')} · <a href={original} hreflang="pt-BR" lang="pt-BR">{t(idioma, 'traducao.verOriginal')}</a>
   </p>

@@ -1,4 +1,4 @@
-// Copia o conteúdo de src/content/** para o Supabase (spec painel §6). Roda uma vez, com a chave mestra.
+// Copia o conteúdo de scripts/conteudo-inicial/** (o antigo src/content) para o Supabase (spec painel §6). Roda uma vez, com a chave mestra.
 // Uso: SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/migrar-para-banco.ts
 // Idempotente: rodar de novo atualiza as mesmas peças, não duplica.
 import { createClient } from '@supabase/supabase-js';
@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, extname, join, relative } from 'node:path';
 import { parse as lerYaml } from 'yaml';
 
-const RAIZ = join(import.meta.dirname, '..', 'src', 'content');
+const RAIZ = join(import.meta.dirname, 'conteudo-inicial');
 const url = process.env.SUPABASE_URL;
 const chave = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !chave) throw new Error('Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.');

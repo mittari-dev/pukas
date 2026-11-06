@@ -1,0 +1,135 @@
+---
+import Base from '../layouts/Base.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import AvisoTraducao from '../components/AvisoTraducao.astro';
+import type { EdicaoIdioma } from '../lib/carregar';
+import { ordenarFontes } from '../lib/edicoes';
+import { formatarData } from '../lib/formato';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import { textoManchete } from '../lib/manchete';
+import { renderizarMarkdown } from '../lib/markdown';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+  noticia: EdicaoIdioma;
+  alternativa: { href: string; equivalente: boolean };
+}
+const { idioma, noticia, alternativa } = Astro.props;
+const d = noticia.data;
+const corpo = await renderizarMarkdown(noticia.body ?? '');
+const foto = d.foto.arquivo as string;
+---
+<Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" imagem={foto || undefined} idioma={idioma} alternativa={alternativa}>
+  <article class="leitura">
+    <p class="maquina edicao__carimbo"><time datetime={d.publicadaEm.toISOString().slice(0, 10)}>{formatarData(d.publicadaEm, idioma)}</time></p>
+
+    <AvisoTraducao idioma={idioma} traducao={noticia.traducao} original={`/noticias/${noticia.id}`} />
+
+    {foto && (
+    <figure class="edicao__foto">
+      <img src={foto} alt={d.foto.descricao} width="680" loading="eager" decoding="async" />
+      <figcaption class="maquina">
+        {t(idioma, 'edicao.foto')}: {d.foto.origem ? <a href={d.foto.origem}>{d.foto.credito}</a> : d.foto.credito} · {d.foto.licenca}
+      </figcaption>
+    </figure>
+    )}
+
+    <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
+
+    <div class="corpo" set:html={corpo} />
+
+    <section aria-labelledby="fontes">
+      <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>
+      <ol class="fontes">
+        {ordenarFontes(d.fontes).map((f) => (
+          <li>
+            <a href={f.url}>{f.titulo}</a> · {f.instituicao}
+            <span class="maquina fontes__meta">
+              {f.tipo === 'primaria' ? t(idioma, 'edicao.primaria') : t(idioma, 'edicao.secundaria')} · {t(idioma, 'edicao.acessadaEm')} {formatarData(f.acessadaEm, idioma)}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    {d.checagem && (
+      <p class="maquina edicao__checagem">
+        {t(idioma, 'edicao.checadoPor')} {d.checagem.por.toUpperCase()} {t(idioma, 'edicao.em')} {formatarData(d.checagem.em, idioma)}
+      </p>
+    )}
+
+    {d.correcoes.length > 0 && (
+      <section aria-labelledby="correcoes">
+        <h2 id="correcoes" class="secao-titulo maquina">{t(idioma, 'edicao.correcoes')}</h2>
+        <ul class="correcoes">
+          {d.correcoes.map((c) => (
+            <li><time class="maquina" datetime={c.em.toISOString().slice(0, 10)}>{formatarData(c.em, idioma)}</time> {c.texto}</li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <p class="edicao__chamada manchete">{t(idioma, 'edicao.chamada')}</p>
+
+    <nav class="edicao__nav maquina" aria-label={t(idioma, 'noticias.titulo')}>
+      <a href={prefixar('/noticias', idioma)}>{t(idioma, 'noticias.titulo')}</a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .edicao__carimbo {
+    margin: var(--esp-4) 0 var(--esp-6);
+  }
+  .edicao__foto {
+    margin: 0 0 var(--esp-5);
+  }
+  .edicao__foto :global(img) {
+    width: 100%;
+    filter: grayscale(1);
+  }
+  figcaption {
+    margin-top: var(--esp-2);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+  .edicao__manchete {
+    margin-bottom: var(--esp-6);
+  }
+  .fontes {
+    padding-left: var(--esp-5);
+  }
+  .fontes li {
+    margin-bottom: var(--esp-3);
+    overflow-wrap: anywhere;
+  }
+  .fontes__meta {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .edicao__checagem {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .correcoes {
+    padding-left: var(--esp-4);
+  }
+  .edicao__chamada {
+    margin: var(--esp-8) 0 var(--esp-5);
+    font-size: clamp(32px, 8vw, 56px);
+    color: var(--acento);
+  }
+  .edicao__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--esp-4);
+    font-size: 13px;
+  }
+  .edicao__nav a {
+    display: inline-block;
+    padding: var(--esp-3) 0;
+  }
+</style>

@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+Astro.response.status = 404;
+---
+<Base titulo={t(idioma, 'naoEncontrado.titulo')} descricao={t(idioma, 'naoEncontrado.texto')} receita="leitura" idioma={idioma}>
+  <div class="leitura">
+    <div class="titulo"><Manchete titulo={t(idioma, 'naoEncontrado.titulo')} tamanho="m" /></div>
+    <p>{t(idioma, 'naoEncontrado.texto')}</p>
+    <p><a class="maquina" href={prefixar('/', idioma)}>{t(idioma, 'naoEncontrado.voltar')}</a></p>
+  </div>
+</Base>
+
+<style>
+  .titulo {
+    margin: var(--esp-5) 0 var(--esp-5);
+  }
+</style>

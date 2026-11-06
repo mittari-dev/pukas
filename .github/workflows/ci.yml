@@ -31,3 +31,11 @@ jobs:
       - run: npm ci
       - run: npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,realtime,mailpit,postgres-meta
       - run: npm run test:banco
+      # O site novo, lido do banco local já migrado, tem que ser igual ao retrato do site antigo.
+      - name: Retrato do site
+        run: |
+          eval "$(npx supabase status -o env | sed 's/^/export /')"
+          export SUPABASE_URL="$API_URL" SUPABASE_ANON_KEY="$ANON_KEY" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          npx astro dev --port 4321 > astro-dev.log 2>&1 &
+          for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:4321/ && break; sleep 1; done
+          RETRATO_URL=http://localhost:4321 npx vitest run --config vitest.banco.config.ts tests/retrato || { tail -50 astro-dev.log; exit 1; }

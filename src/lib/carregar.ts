@@ -1,39 +1,68 @@
-// Única porta de entrada das páginas e do RSS para edições e obras: aplica as regras antes de publicar.
-// Em espanhol, devolve só o que tem tradução, já mesclado, e trava se a tradução mudar algum número.
-import { getCollection } from 'astro:content';
-import { formatarNumero } from './formato';
-import { edicoesPublicadas, validarNumerosUnicos, validarPublicavel, type Edicao } from './edicoes';
-import { obrasPublicadas, validarNumerosObras, validarObra, type Obra } from './cultura';
-import { aplicarTraducoes, mesclarEdicao, mesclarObra, type MarcaTraducao } from './traducao';
+// Única porta de entrada das páginas e do RSS para o conteúdo, agora lido do Supabase.
+// O banco já recusa peça fora das regras (gatilho pecas_travas) e só mostra o publicado (RLS).
+// Em espanhol, devolve só o que tem tradução pronta, já mesclado.
+import type { Edicao } from './edicoes';
+import type { Obra } from './cultura';
+import type { MarcaTraducao } from './traducao';
 import type { Idioma } from './idioma';
+import { clientePublico, urlBanco } from './banco/cliente';
+import { emEspanhol, paraEdicao, paraObra, type ComCorpo, type LinhaPeca } from './banco/pecas';
+import type { TipoPeca } from './painel/travas';
 
 export type EdicaoIdioma = Edicao & MarcaTraducao & { body?: string };
 export type ObraIdioma = Obra & MarcaTraducao & { body?: string };
+export interface Pagina {
+  id: string;
+  titulo: string;
+  resumo: string;
+  body: string;
+}
 
-export async function carregarObras(idioma: Idioma = 'pt'): Promise<ObraIdioma[]> {
-  const todas = (await getCollection('cultura')) as ObraIdioma[];
-  validarNumerosObras(todas);
-  const erros = todas
-    .filter((o) => !o.data.rascunho)
-    .map((o) => [o, validarObra(o)] as const)
-    .filter(([, problemas]) => problemas.length > 0)
-    .map(([o, problemas]) => `Obra ${formatarNumero(o.data.numero)} (${o.id}): ${problemas.join('; ')}`);
-  if (erros.length) throw new Error(`Publicação bloqueada na Cultura:\n${erros.join('\n')}`);
-  const publicadas = obrasPublicadas(todas) as ObraIdioma[];
-  if (idioma === 'pt') return publicadas;
-  return aplicarTraducoes(publicadas, await getCollection('culturaEs'), mesclarObra);
+async function publicadas(tipo: TipoPeca): Promise<LinhaPeca[]> {
+  const { data, error } = await clientePublico()
+    .from('pecas')
+    .select('*, correcoes(data, texto), traducoes(*)')
+    .eq('tipo', tipo)
+    .eq('estado', 'publicada')
+    .order('numero', { ascending: false, nullsFirst: false })
+    .order('publicada_em', { ascending: false });
+  if (error) throw new Error(`banco: ${error.message}`);
+  return data as LinhaPeca[];
+}
+
+function noIdioma<T extends { data: { titulo: string; resumo: string } }>(linhas: LinhaPeca[], idioma: Idioma, mapear: (l: LinhaPeca) => ComCorpo<T>): ComCorpo<T>[] {
+  const pecas = linhas.map((l) => [l, mapear(l)] as const);
+  if (idioma === 'pt') return pecas.map(([, p]) => p);
+  return pecas.map(([l, p]) => emEspanhol(p, l)).filter((p): p is ComCorpo<T> => p !== null);
 }
 
 export async function carregarEdicoes(idioma: Idioma = 'pt'): Promise<EdicaoIdioma[]> {
-  const todas = (await getCollection('newsletter')) as EdicaoIdioma[];
-  validarNumerosUnicos(todas);
-  const erros = todas
-    .filter((e) => !e.data.rascunho)
-    .map((e) => [e, validarPublicavel(e)] as const)
-    .filter(([, problemas]) => problemas.length > 0)
-    .map(([e, problemas]) => `Edição ${formatarNumero(e.data.numero)} (${e.id}): ${problemas.join('; ')}`);
-  if (erros.length) throw new Error(`Publicação bloqueada pela checagem:\n${erros.join('\n')}`);
-  const publicadas = edicoesPublicadas(todas) as EdicaoIdioma[];
-  if (idioma === 'pt') return publicadas;
-  return aplicarTraducoes(publicadas, await getCollection('newsletterEs'), mesclarEdicao);
+  const base = urlBanco();
+  return noIdioma(await publicadas('newsletter'), idioma, (l) => paraEdicao(l, base));
+}
+
+export async function carregarObras(idioma: Idioma = 'pt'): Promise<ObraIdioma[]> {
+  const base = urlBanco();
+  return noIdioma(await publicadas('cultura'), idioma, (l) => paraObra(l, base));
+}
+
+// Notícia usa a forma da edição (fontes, checagem, foto, correções); o id é o slug do endereço.
+export async function carregarNoticias(idioma: Idioma = 'pt'): Promise<EdicaoIdioma[]> {
+  const base = urlBanco();
+  return noIdioma(await publicadas('noticia'), idioma, (l) => ({ ...paraEdicao(l, base), id: l.slug ?? l.id }));
+}
+
+export async function carregarPagina(slug: string, idioma: Idioma = 'pt'): Promise<Pagina | null> {
+  const { data, error } = await clientePublico().from('pecas').select('*, traducoes(*)').eq('tipo', 'pagina').eq('slug', slug).eq('estado', 'publicada').maybeSingle();
+  if (error) throw new Error(`banco: ${error.message}`);
+  if (!data) return null;
+  const l = data as LinhaPeca;
+  if (idioma === 'pt') return { id: l.id, titulo: l.titulo, resumo: l.resumo, body: l.corpo };
+  const t = l.traducoes?.find((x) => x.estado === 'pronta');
+  return t ? { id: l.id, titulo: t.titulo ?? l.titulo, resumo: t.resumo ?? l.resumo, body: t.corpo ?? '' } : null;
+}
+
+// /es/<peça sem tradução>: mostra o original com o aviso "Traducción en camino" (ruling 6 do plano).
+export function pendente<T extends MarcaTraducao>(peca: T): T {
+  return { ...peca, traducao: { revisado: false, pendente: true } };
 }
