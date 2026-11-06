@@ -3,6 +3,8 @@ import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import { render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import Manchete from '../../components/identidade/Manchete.astro';
+import { textoManchete } from '../../lib/manchete';
 import Carimbo from '../../components/identidade/Carimbo.astro';
 import { carregarObras } from '../../lib/carregar';
 import { rotuloTipo, type Obra } from '../../lib/cultura';
@@ -20,11 +22,11 @@ const d = obra.data;
 const { Content } = await render(obra as unknown as CollectionEntry<'cultura'>);
 const capa = d.capa?.arquivo as ImageMetadata | undefined;
 ---
-<Base titulo={d.titulo} descricao={d.resumo} receita="leitura" selo="FRONTEIRA*" imagem={capa?.src}>
+<Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" selo="FRONTEIRA*" imagem={capa?.src}>
   <article class="leitura">
     <div class="obra__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
     <p class="maquina obra__tipo">{rotuloTipo(d.tipo)} · {d.autoria.toUpperCase()}</p>
-    <h1 class="manchete obra__titulo">{d.titulo}</h1>
+    <div class="obra__titulo"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     {d.aviso && (
       <p class="obra__aviso" role="note"><span class="maquina">AVISO:</span> {d.aviso}</p>
@@ -68,7 +70,6 @@ const capa = d.capa?.arquivo as ImageMetadata | undefined;
     letter-spacing: 0.12em;
   }
   .obra__titulo {
-    font-size: clamp(44px, 11vw, 88px);
     margin: var(--esp-3) 0 var(--esp-6);
   }
   .obra__aviso {

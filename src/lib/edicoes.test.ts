@@ -38,6 +38,10 @@ describe('contarPalavras', () => {
     expect(contarPalavras('  Foi   luta. ')).toBe(2);
   });
 
+  it('ignora as marcações de quebra e destaque da manchete', () => {
+    expect(contarPalavras('Direito | nenhum *caiu* do céu')).toBe(5);
+  });
+
   it('conta palavra com hífen como uma', () => {
     expect(contarPalavras('Hora-extra paga')).toBe(2);
   });

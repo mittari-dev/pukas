@@ -37,27 +37,11 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
   <body class={`receita-${receita}`}>
     <a class="pular" href="#conteudo">Pular para o conteúdo</a>
     <Grao />
-    <div class="pagina">
-      <Navegacao tarja={receita === 'agitacao' ? 'tinta' : 'cor'} />
-      <div class="pagina__conteudo">
-        <Cabecalho selo={selo} />
-        <main id="conteudo" tabindex="-1">
-          <slot />
-        </main>
-        <Rodape />
-      </div>
-    </div>
+    <Navegacao tarja={receita === 'agitacao' ? 'tinta' : 'cor'} />
+    <Cabecalho selo={selo} />
+    <main id="conteudo" tabindex="-1">
+      <slot />
+    </main>
+    <Rodape />
   </body>
 </html>
-
-<style>
-  .pagina__conteudo {
-    min-width: 0;
-  }
-  @media (min-width: 1024px) {
-    .pagina {
-      display: grid;
-      grid-template-columns: 320px minmax(0, 1fr);
-    }
-  }
-</style>

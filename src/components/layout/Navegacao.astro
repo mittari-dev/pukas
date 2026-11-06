@@ -1,5 +1,6 @@
 ---
-// Menu da plataforma. Computador: barra lateral fixa. Celular: barra no topo com MENU (<details>, sem JS).
+// Barra do topo (Tarja no canto superior esquerdo) + menu-gaveta que abre e fecha em qualquer tela.
+// <details>/<summary>: abre e fecha sem JavaScript, e o leitor de tela anuncia aberto/fechado.
 import Tarja from '../identidade/Tarja.astro';
 import { navegacao } from '../../data/navegacao';
 import { secaoAtiva } from '../../lib/navegacao';
@@ -11,22 +12,20 @@ interface Props {
 const { tarja = 'cor' } = Astro.props;
 const ativa = secaoAtiva(Astro.url.pathname, navegacao);
 ---
-<aside class="lateral">
-  <a href="/" class="marca"><Tarja variante={tarja} tamanho="g" /></a>
-  <nav aria-label="Seções">
-    <ul class="itens">
-      {navegacao.map((i) => (
-        <li><a href={i.href} aria-current={i.href === ativa ? 'page' : undefined}>{i.rotulo}</a></li>
-      ))}
-    </ul>
-  </nav>
-</aside>
-
-<div class="topo">
-  <a href="/" class="marca"><Tarja variante={tarja} /></a>
+<header class="barra">
   <details class="menu">
-    <summary class="maquina">MENU</summary>
-    <nav aria-label="Seções (celular)">
+    <summary class="menu__botao">
+      <span class="sr-only">Menu</span>
+      <svg class="icone icone--abrir" width="28" height="22" viewBox="0 0 28 22" aria-hidden="true" focusable="false">
+        <rect y="0" width="28" height="4" fill="currentColor"></rect>
+        <rect y="9" width="28" height="4" fill="currentColor"></rect>
+        <rect y="18" width="28" height="4" fill="currentColor"></rect>
+      </svg>
+      <svg class="icone icone--fechar" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M3 3 L21 21 M21 3 L3 21" stroke="currentColor" stroke-width="4"></path>
+      </svg>
+    </summary>
+    <nav class="gaveta" aria-label="Seções">
       <ul class="itens">
         {navegacao.map((i) => (
           <li><a href={i.href} aria-current={i.href === ativa ? 'page' : undefined}>{i.rotulo}</a></li>
@@ -34,14 +33,64 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
       </ul>
     </nav>
   </details>
-</div>
+  <a href="/" class="marca"><Tarja variante={tarja} /></a>
+</header>
 
 <style>
+  .barra {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--esp-4);
+    padding: var(--esp-3) var(--esp-4);
+    border-bottom: 3px solid currentColor;
+  }
   .marca {
     text-decoration: none;
     line-height: 0;
-    display: inline-block;
   }
+  .marca :global(.tarja) {
+    font-size: clamp(44px, 9vw, 64px);
+  }
+
+  .menu__botao {
+    list-style: none;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+  }
+  .menu__botao::-webkit-details-marker {
+    display: none;
+  }
+  .icone--fechar,
+  .menu[open] .icone--abrir {
+    display: none;
+  }
+  .menu[open] .icone--fechar {
+    display: block;
+  }
+
+  /* Gaveta: entra pela esquerda, embaixo da barra. Celular: tela cheia. Computador: 360px. */
+  .gaveta {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    min-height: 100vh;
+    padding: var(--esp-6) var(--esp-4);
+    background: var(--fundo);
+    border-right: 3px solid currentColor;
+  }
+  @media (min-width: 768px) {
+    .gaveta {
+      width: 360px;
+      padding: var(--esp-6);
+    }
+  }
+
   .itens {
     list-style: none;
     margin: 0;
@@ -49,11 +98,11 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
   }
   .itens a {
     display: block;
-    padding: var(--esp-2) 0;
+    padding: var(--esp-3) 0;
     font-family: var(--fonte-manchete);
     font-weight: 900;
     font-stretch: var(--largura-manchete);
-    font-size: 28px;
+    font-size: 40px;
     line-height: 0.95;
     text-transform: uppercase;
     text-decoration: none;
@@ -71,72 +120,5 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
   /* "/ ''" esconde o marcador do leitor de tela; aria-current já anuncia a página. */
   .itens a[aria-current='page']::before {
     content: '› ' / '';
-  }
-
-  /* Celular: barra no topo */
-  .lateral {
-    display: none;
-  }
-  .topo {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--esp-4);
-    border-bottom: 3px solid currentColor;
-  }
-  .topo :global(.tarja) {
-    font-size: 48px;
-  }
-  .menu summary {
-    list-style: none;
-    cursor: pointer;
-    padding: var(--esp-3) var(--esp-4);
-    min-height: 44px;
-    border: 3px solid currentColor;
-    font-size: 14px;
-    letter-spacing: 0.12em;
-  }
-  .menu summary::-webkit-details-marker {
-    display: none;
-  }
-  .menu[open] summary {
-    background: var(--texto);
-    color: var(--fundo);
-  }
-  .menu nav {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    min-height: 100vh;
-    z-index: 10;
-    padding: var(--esp-5) var(--esp-4) var(--esp-7);
-    background: var(--fundo);
-    border-bottom: 3px solid currentColor;
-  }
-  .menu .itens a {
-    font-size: 40px;
-    padding: var(--esp-3) 0;
-  }
-
-  /* Computador: barra lateral fixa */
-  @media (min-width: 1024px) {
-    .topo {
-      display: none;
-    }
-    .lateral {
-      display: flex;
-      flex-direction: column;
-      gap: var(--esp-6);
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      padding: var(--esp-6) var(--esp-5);
-      border-right: 3px solid currentColor;
-    }
-    .lateral :global(.tarja--g) {
-      font-size: 92px;
-    }
   }
 </style>

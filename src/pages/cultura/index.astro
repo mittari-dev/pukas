@@ -1,5 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Manchete from '../../components/identidade/Manchete.astro';
+import { textoManchete } from '../../lib/manchete';
 import { carregarObras } from '../../lib/carregar';
 import { rotuloTipo } from '../../lib/cultura';
 import { formatarData, formatarNumero } from '../../lib/formato';
@@ -14,7 +16,7 @@ const obras = await carregarObras();
   selo="FRONTEIRA*"
 >
   <div class="leitura">
-    <h1 class="manchete titulo">Cultura</h1>
+    <div class="titulo"><Manchete titulo="Cultura" tamanho="m" /></div>
     <p class="sub">Contos, cenas, poemas e ensaios. Saem quando ficam prontos.</p>
 
     {obras.length === 0 ? (
@@ -25,7 +27,7 @@ const obras = await carregarObras();
           <li>
             <a href={`/cultura/${o.id}`}>
               <span class="maquina lista__meta">{rotuloTipo(o.data.tipo)} · {formatarNumero(o.data.numero)} · {formatarData(o.data.publicadaEm)}</span>
-              <span class="lista__titulo">{o.data.titulo}</span>
+              <span class="lista__titulo">{textoManchete(o.data.titulo)}</span>
               <span class="lista__resumo">{o.data.resumo}</span>
             </a>
           </li>
@@ -37,7 +39,6 @@ const obras = await carregarObras();
 
 <style>
   .titulo {
-    font-size: clamp(56px, 14vw, 112px);
     margin-top: var(--esp-5);
   }
   .sub {

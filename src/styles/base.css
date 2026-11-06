@@ -40,6 +40,16 @@ a {
   outline-offset: 2px;
 }
 
+/* Texto só para leitor de tela. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Pular o menu (WCAG 2.4.1): aparece só no foco do teclado. */
 .pular {
   position: absolute;

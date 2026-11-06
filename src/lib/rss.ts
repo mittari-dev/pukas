@@ -1,5 +1,6 @@
 import type { Edicao } from './edicoes';
 import { caminhoEdicao, formatarNumero } from './formato';
+import { textoManchete } from './manchete';
 
 export interface ItemRss {
   title: string;
@@ -10,7 +11,7 @@ export interface ItemRss {
 
 export function itensRss(edicoes: Edicao[]): ItemRss[] {
   return edicoes.map(({ data: d }) => ({
-    title: `${formatarNumero(d.numero)} — ${d.titulo}`,
+    title: `${formatarNumero(d.numero)} — ${textoManchete(d.titulo)}`,
     link: `${caminhoEdicao(d.serie, d.numero)}/`,
     pubDate: d.publicadaEm,
     description: d.resumo,

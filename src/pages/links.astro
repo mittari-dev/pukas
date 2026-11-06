@@ -4,20 +4,22 @@ import Base from '../layouts/Base.astro';
 import { carregarEdicoes, carregarObras } from '../lib/carregar';
 import { caminhoEdicao, formatarNumero } from '../lib/formato';
 import { links } from '../data/links';
+import Manchete from '../components/identidade/Manchete.astro';
+import { textoManchete } from '../lib/manchete';
 
 const [ultima] = await carregarEdicoes();
 const [obra] = await carregarObras();
 const botoes: { rotulo: string; href: string; frase?: string }[] = [
   ...(ultima
-    ? [{ rotulo: `Última Memória Operária, ${formatarNumero(ultima.data.numero)}`, href: caminhoEdicao(ultima.data.serie, ultima.data.numero), frase: ultima.data.titulo }]
+    ? [{ rotulo: `Última Memória Operária, ${formatarNumero(ultima.data.numero)}`, href: caminhoEdicao(ultima.data.serie, ultima.data.numero), frase: textoManchete(ultima.data.titulo) }]
     : []),
-  ...(obra ? [{ rotulo: 'Novo na Cultura', href: `/cultura/${obra.id}`, frase: obra.data.titulo }] : []),
+  ...(obra ? [{ rotulo: 'Novo na Cultura', href: `/cultura/${obra.id}`, frase: textoManchete(obra.data.titulo) }] : []),
   ...links,
 ];
 ---
 <Base titulo="Links" descricao="Tudo do PUKAS num lugar só: a última edição, o manifesto e o arquivo." receita="agitacao">
   <div class="links">
-    <h1 class="manchete links__manchete">Direito nenhum caiu do céu.</h1>
+    <div class="links__manchete"><Manchete titulo="Direito | nenhum caiu | do céu. | *Foi luta.*" /></div>
     <ul class="links__lista">
       {botoes.map((b, i) => (
         <li>
@@ -43,7 +45,6 @@ const botoes: { rotulo: string; href: string; frase?: string }[] = [
     padding: 0 var(--esp-4);
   }
   .links__manchete {
-    font-size: clamp(56px, 16vw, 112px);
     margin: var(--esp-5) 0 var(--esp-6);
   }
   .links__lista {

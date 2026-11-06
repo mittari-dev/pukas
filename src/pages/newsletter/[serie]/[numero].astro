@@ -3,6 +3,8 @@ import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import { render, type CollectionEntry } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
+import Manchete from '../../../components/identidade/Manchete.astro';
+import { textoManchete } from '../../../lib/manchete';
 import Carimbo from '../../../components/identidade/Carimbo.astro';
 import { carregarEdicoes } from '../../../lib/carregar';
 import { ordenarFontes, type Edicao } from '../../../lib/edicoes';
@@ -28,7 +30,7 @@ const d = edicao.data;
 const { Content } = await render(edicao as unknown as CollectionEntry<'newsletter'>);
 const foto = d.foto.arquivo as ImageMetadata;
 ---
-<Base titulo={d.titulo} descricao={d.resumo} receita="leitura" selo="MEMÓRIA OPERÁRIA*" imagem={foto.src}>
+<Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" selo="MEMÓRIA OPERÁRIA*" imagem={foto.src}>
   <article class="leitura">
     <div class="edicao__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
 
@@ -39,7 +41,7 @@ const foto = d.foto.arquivo as ImageMetadata;
       </figcaption>
     </figure>
 
-    <h1 class="manchete edicao__manchete">{d.titulo}</h1>
+    <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     <div class="corpo"><Content /></div>
 
@@ -101,7 +103,6 @@ const foto = d.foto.arquivo as ImageMetadata;
     letter-spacing: 0.06em;
   }
   .edicao__manchete {
-    font-size: clamp(44px, 11vw, 88px);
     margin-bottom: var(--esp-6);
   }
   .fontes {

@@ -1,6 +1,7 @@
 // Regras editoriais puras: verdade (fonte, foto, checagem) e linguagem (manchete curta).
 // A leitura da coleção fica em carregar.ts, para estas funções serem testáveis sem o Astro.
 import { formatarNumero, type Serie } from './formato';
+import { textoManchete } from './manchete';
 
 export const MAX_PALAVRAS_MANCHETE = 8;
 
@@ -30,7 +31,7 @@ export interface Edicao {
 }
 
 export function contarPalavras(frase: string): number {
-  return frase.trim().split(/\s+/).filter(Boolean).length;
+  return textoManchete(frase).split(/\s+/).filter(Boolean).length;
 }
 
 export function validarPublicavel(e: Edicao): string[] {
