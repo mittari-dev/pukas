@@ -1,0 +1,76 @@
+---
+// Revisar a tradução em espanhol: editar, marcar como revisada (o selo some) ou pedir de novo.
+import Painel from '../../../../layouts/Painel.astro';
+import { buscarPeca, renovarPaginas } from '../../../../lib/banco/painel';
+import { problemasDaTraducao } from '../../../../lib/traducao';
+import { enviarTraducao } from '../../../../lib/traducao/lote';
+
+const { cliente, usuario } = Astro.locals.painel!;
+const id = Astro.params.id!;
+let peca = await buscarPeca(cliente, id);
+if (!peca) return Astro.rewrite('/404');
+const editor = usuario!.papel === 'editor';
+let erro = '';
+const aviso = Astro.url.searchParams.get('ok') ? 'Salvo.' : '';
+
+if (Astro.request.method === 'POST' && editor) {
+  const form = await Astro.request.formData();
+  const campo = (n: string) => String(form.get(n) ?? '').trim();
+  if (form.get('acao') === 'reenviar') {
+    await enviarTraducao(cliente, id);
+    return Astro.redirect(`/admin/peca/${id}/espanhol?ok=1`, 303);
+  }
+  const traducao = { titulo: campo('titulo'), resumo: campo('resumo'), legenda: campo('legenda') || null, aviso: campo('aviso') || null, corpo: campo('corpo') };
+  const problemas = problemasDaTraducao({ titulo: peca.titulo, corpo: peca.corpo }, traducao);
+  if (problemas.length) erro = `A tradução não bate com o original: ${problemas.join('; ')}`;
+  else {
+    const { error } = await cliente.from('traducoes').upsert({ peca_id: id, idioma: 'es', ...traducao, revisado: form.get('revisado') === 'on', estado: 'pronta', erro: null });
+    if (error) erro = 'Não deu para salvar. Tente de novo.';
+    else {
+      await renovarPaginas(id);
+      return Astro.redirect(`/admin/peca/${id}/espanhol?ok=1`, 303);
+    }
+  }
+  peca = await buscarPeca(cliente, id);
+}
+const t = peca!.traducoes?.[0];
+---
+<Painel titulo="Espanhol">
+  <p class="maquina"><a href={`/admin/peca/${id}`}>‹ Peça</a></p>
+  <h1>Espanhol</h1>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+  {aviso && !erro && <p class="mensagem" role="status">{aviso}</p>}
+  {!t && <p>Ainda não há tradução.</p>}
+  {t?.estado === 'pendente' && <p>Tradução em andamento ({t.modelo}). Volte em alguns minutos.</p>}
+  {t?.estado === 'erro' && <p class="mensagem">A última tentativa falhou: {t.erro}</p>}
+
+  {editor && (
+    <form method="post">
+      <div class="campo"><label for="titulo">Manchete</label><input id="titulo" name="titulo" value={t?.titulo ?? ''} required /><p class="ajuda">Original: {peca!.titulo}</p></div>
+      <div class="campo"><label for="resumo">Resumo</label><textarea id="resumo" name="resumo" rows="3">{t?.resumo ?? ''}</textarea></div>
+      {peca!.legenda && <div class="campo"><label for="legenda">Legenda</label><textarea id="legenda" name="legenda" rows="4">{t?.legenda ?? ''}</textarea></div>}
+      {peca!.aviso && <div class="campo"><label for="aviso">Aviso</label><input id="aviso" name="aviso" value={t?.aviso ?? ''} /></div>}
+      <div class="campo"><label for="corpo">Texto</label><textarea id="corpo" name="corpo" rows="16">{t?.corpo ?? ''}</textarea></div>
+      <label class="marcar"><input type="checkbox" name="revisado" checked={t?.revisado} /> Revisada por uma pessoa (tira o selo TRADUCCIÓN AUTOMÁTICA)</label>
+      <div class="acoes">
+        <button class="botao botao--marca" name="acao" value="salvar">Salvar tradução</button>
+        <button class="botao botao--linha" name="acao" value="reenviar">Pedir tradução de novo</button>
+      </div>
+    </form>
+  )}
+</Painel>
+
+<style>
+  .marcar {
+    display: flex;
+    gap: var(--esp-2);
+    align-items: center;
+    min-height: 44px;
+  }
+  .acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-3);
+    margin-top: var(--esp-4);
+  }
+</style>

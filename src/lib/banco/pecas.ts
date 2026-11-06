@@ -14,6 +14,7 @@ export interface LinhaTraducao {
   revisado: boolean;
   modelo: string | null;
   estado: 'pendente' | 'pronta' | 'erro';
+  erro?: string | null;
 }
 
 export interface LinhaPeca {
