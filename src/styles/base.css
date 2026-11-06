@@ -1,0 +1,60 @@
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource/space-mono/700.css';
+@import '@fontsource/anton/400.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-radius: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-corpo);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.manchete {
+  font-family: var(--fonte-manchete);
+  font-weight: 900;
+  font-stretch: var(--largura-manchete);
+  text-transform: uppercase;
+  line-height: 0.86;
+  margin: 0;
+}
+
+.maquina {
+  font-family: var(--fonte-maquina);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

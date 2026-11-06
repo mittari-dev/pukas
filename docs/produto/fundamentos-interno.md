@@ -1,4 +1,6 @@
-# PUKAS — Os Vermelhos
+# PUKAS — Fundamentos (documento interno, não publicar)
+
+> Texto de origem do projeto, em linguagem teórica. O manifesto público, em linguagem de bar, fica em `src/content/paginas/manifesto.mdx`.
 
 **Órgão de Mídia & Inteligência Latino-Americana**
 Identidade visual: [Identidade Visual](../design/identidade-visual.md)

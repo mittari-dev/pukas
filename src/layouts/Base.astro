@@ -1,0 +1,44 @@
+---
+import '../styles/base.css';
+import Grao from '../components/identidade/Grao.astro';
+import Cabecalho from '../components/layout/Cabecalho.astro';
+import Rodape from '../components/layout/Rodape.astro';
+
+interface Props {
+  titulo: string;
+  descricao: string;
+  receita: 'leitura' | 'agitacao';
+  imagem?: string;
+  selo?: string;
+}
+const { titulo, descricao, receita, imagem, selo } = Astro.props;
+const tituloCompleto = titulo === 'PUKAS' ? titulo : `${titulo} · PUKAS`;
+const canonica = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descricao} />
+    <link rel="canonical" href={canonica} />
+    <link rel="alternate" type="application/rss+xml" title="PUKAS — Memória Operária" href="/rss.xml" />
+    <meta property="og:type" content="article" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="PUKAS" />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descricao} />
+    <meta property="og:url" content={canonica} />
+    {imagem && <meta property="og:image" content={new URL(imagem, Astro.site)} />}
+    <meta name="twitter:card" content={imagem ? 'summary_large_image' : 'summary'} />
+  </head>
+  <body class={`receita-${receita}`}>
+    <Grao />
+    <Cabecalho selo={selo} tarja={receita === 'agitacao' ? 'tinta' : 'cor'} />
+    <main>
+      <slot />
+    </main>
+    <Rodape />
+  </body>
+</html>

@@ -10,6 +10,22 @@
 
 **Spec:** [`docs/specs/2026-11-06-site-memoria-operaria-design.md`](../specs/2026-11-06-site-memoria-operaria-design.md)
 
+## Emenda (06/11/2026, depois da Tarefa 2)
+
+O fundador definiu que o site é uma **plataforma** e que a **newsletter é a fonte editorial**. Valem estas trocas em todas as tarefas abaixo:
+
+| Onde o plano diz | Passa a ser |
+|---|---|
+| coleção `pecas`, `src/content/pecas/NNN-slug.mdx` | coleção `newsletter`, `src/content/newsletter/memoria-operaria/NNN-slug.mdx`, com campo `serie: z.enum(['memoria-operaria'])` |
+| tipo `Peca`, `carregarPecas`, `pecasPublicadas` | `Edicao`, `carregarEdicoes`, `edicoesPublicadas`. Os números são únicos **por série** |
+| `caminhoPeca(n) → "/001"` | `caminhoEdicao(serie, n) → "/newsletter/memoria-operaria/001"` e `caminhoCurto(n) → "/001"` |
+| `src/pages/[numero].astro` (página de fontes) | `src/pages/newsletter/[serie]/[numero].astro` (edição). `src/pages/[numero].astro` vira o redirecionamento curto, com `<meta http-equiv="refresh">` e `<link rel="canonical">` |
+| capa lista as peças | capa mostra a última edição. A lista completa fica em `src/pages/newsletter/memoria-operaria/index.astro` |
+| `/links`: "Última Memória Operária" | o mesmo botão, apontando para `caminhoEdicao` |
+| RSS "PUKAS — Memória Operária" | o mesmo título. `link` usa `caminhoEdicao` |
+
+O painel `/admin` fica fora deste plano (ADR-0002 pendente).
+
 ## Restrições globais
 
 - Tokens: `--pau-brasil:#9E2A1E` `--tinta:#1C1A17` `--cal:#F1EDE4` `--ipe:#E0A526` `--verde-mata:#1A452C`. Nenhum hex fora de `tokens.css`.

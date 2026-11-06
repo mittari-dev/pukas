@@ -1,0 +1,28 @@
+---
+// Endereço curto impresso no carrossel (pukas.lat/001): redireciona para a edição completa.
+import { carregarEdicoes } from '../lib/carregar';
+import { caminhoEdicao } from '../lib/formato';
+
+export async function getStaticPaths() {
+  const edicoes = await carregarEdicoes();
+  return edicoes.map((e) => ({
+    params: { numero: String(e.data.numero).padStart(3, '0') },
+    props: { destino: caminhoEdicao(e.data.serie, e.data.numero) },
+  }));
+}
+
+const { destino } = Astro.props as { destino: string };
+---
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${destino}`} />
+    <link rel="canonical" href={new URL(destino, Astro.site)} />
+    <meta name="robots" content="noindex" />
+    <title>PUKAS</title>
+  </head>
+  <body>
+    <a href={destino}>Ler a edição</a>
+  </body>
+</html>

@@ -1,0 +1,142 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import Carimbo from '../../../components/identidade/Carimbo.astro';
+import { carregarEdicoes } from '../../../lib/carregar';
+import { ordenarFontes, type Edicao } from '../../../lib/edicoes';
+import { caminhoEdicao, formatarData, formatarNumero } from '../../../lib/formato';
+import '../../../styles/leitura.css';
+
+export async function getStaticPaths() {
+  const edicoes = await carregarEdicoes();
+  // A lista vem do número maior para o menor: a seguinte é a de índice menor.
+  return edicoes.map((edicao, i) => ({
+    params: { serie: edicao.data.serie, numero: String(edicao.data.numero).padStart(3, '0') },
+    props: { edicao, seguinte: edicoes[i - 1], anterior: edicoes[i + 1] },
+  }));
+}
+
+interface Props {
+  edicao: Edicao;
+  seguinte?: Edicao;
+  anterior?: Edicao;
+}
+const { edicao, seguinte, anterior } = Astro.props;
+const d = edicao.data;
+const { Content } = await render(edicao as unknown as CollectionEntry<'newsletter'>);
+const foto = d.foto.arquivo as ImageMetadata;
+---
+<Base titulo={d.titulo} descricao={d.resumo} receita="leitura" selo="MEMÓRIA OPERÁRIA*" imagem={foto.src}>
+  <article class="leitura">
+    <div class="edicao__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
+
+    <figure class="edicao__foto">
+      <Image src={foto} alt={d.foto.descricao} widths={[480, 960]} sizes="(max-width: 700px) 100vw, 680px" />
+      <figcaption class="maquina">
+        FOTO: {d.foto.origem ? <a href={d.foto.origem}>{d.foto.credito}</a> : d.foto.credito} · {d.foto.licenca}
+      </figcaption>
+    </figure>
+
+    <h1 class="manchete edicao__manchete">{d.titulo}</h1>
+
+    <div class="corpo"><Content /></div>
+
+    <section aria-labelledby="fontes">
+      <h2 id="fontes" class="secao-titulo maquina">FONTES</h2>
+      <ol class="fontes">
+        {ordenarFontes(d.fontes).map((f) => (
+          <li>
+            <a href={f.url}>{f.titulo}</a> · {f.instituicao}
+            <span class="maquina fontes__meta">
+              {f.tipo === 'primaria' ? 'PRIMÁRIA' : 'SECUNDÁRIA'} · ACESSADA EM {formatarData(f.acessadaEm)}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    {d.checagem && (
+      <p class="maquina edicao__checagem">
+        CHECADO POR {d.checagem.por.toUpperCase()} EM {formatarData(d.checagem.em)}
+      </p>
+    )}
+
+    {d.correcoes.length > 0 && (
+      <section aria-labelledby="correcoes">
+        <h2 id="correcoes" class="secao-titulo maquina">CORREÇÕES</h2>
+        <ul class="correcoes">
+          {d.correcoes.map((c) => (
+            <li><time class="maquina" datetime={c.em.toISOString().slice(0, 10)}>{formatarData(c.em)}</time> {c.texto}</li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <p class="edicao__chamada manchete">Mande pra quem trabalha com você ›››</p>
+
+    <nav class="edicao__nav maquina" aria-label="Outras edições">
+      {anterior && <a href={caminhoEdicao(anterior.data.serie, anterior.data.numero)}>‹ {formatarNumero(anterior.data.numero)}</a>}
+      <a href="/newsletter/memoria-operaria">TODAS AS EDIÇÕES</a>
+      {seguinte && <a href={caminhoEdicao(seguinte.data.serie, seguinte.data.numero)}>{formatarNumero(seguinte.data.numero)} ›</a>}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .edicao__carimbo {
+    margin: var(--esp-4) 0 var(--esp-6);
+  }
+  .edicao__foto {
+    margin: 0 0 var(--esp-5);
+  }
+  .edicao__foto :global(img) {
+    width: 100%;
+    filter: grayscale(1);
+  }
+  figcaption {
+    margin-top: var(--esp-2);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+  .edicao__manchete {
+    font-size: clamp(44px, 11vw, 88px);
+    margin-bottom: var(--esp-6);
+  }
+  .fontes {
+    padding-left: var(--esp-5);
+  }
+  .fontes li {
+    margin-bottom: var(--esp-3);
+    overflow-wrap: anywhere;
+  }
+  .fontes__meta {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .edicao__checagem {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .correcoes {
+    padding-left: var(--esp-4);
+  }
+  .edicao__chamada {
+    margin: var(--esp-8) 0 var(--esp-5);
+    font-size: clamp(32px, 8vw, 56px);
+    color: var(--acento);
+  }
+  .edicao__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--esp-4);
+    font-size: 13px;
+  }
+  .edicao__nav a {
+    display: inline-block;
+    padding: var(--esp-3) 0;
+  }
+</style>
