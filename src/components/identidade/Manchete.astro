@@ -33,7 +33,9 @@ const Tag = nivel === 1 ? 'h1' : 'h2';
   .manchete--m {
     font-size: clamp(52px, 14vw, 104px);
   }
+  /* inline-block: o fundo fica do tamanho da linha e não cobre a linha de cima. */
   .manchete__destaque {
+    display: inline-block;
     color: var(--destaque-texto);
     background: var(--destaque-fundo);
     box-decoration-break: clone;
