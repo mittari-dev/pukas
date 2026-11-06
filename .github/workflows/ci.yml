@@ -18,3 +18,16 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+
+  banco:
+    # Regras do banco (travas, RLS, histórico) contra um Supabase local no runner.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,realtime,mailpit,postgres-meta
+      - run: npm run test:banco
