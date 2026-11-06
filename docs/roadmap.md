@@ -8,9 +8,9 @@ Cada subprojeto segue o ciclo **spec → plano → implementação**, com milest
 
 | Quando | O que vai ao ar |
 |---|---|
-| **Semanas 1–10** | Série **Memória Operária**: um carrossel no Instagram **toda segunda**, mais a página de fontes de cada peça no site. Só lança com **4 peças prontas** em estoque. |
+| **Semanas 1–10** | Newsletter **Memória Operária** no site, **toda segunda**: a edição completa com as fontes. Dela nasce o carrossel de 4 a 6 imagens no Instagram, que chama para `/links`. Só lança com **4 edições prontas** em estoque. |
 | **~Mês 3** | **Raio-X de Classe**, quando já houver público para compartilhar o card. |
-| **Depois** | Newsletter e dossiê, só quando a série estiver rodando sem esforço. |
+| **Depois** | Painel `/admin`, outras séries, envio por e-mail, dossiês, documentários e loja, só quando a série estiver rodando sem esforço. |
 
 ## Subprojetos
 
@@ -19,8 +19,11 @@ Cada subprojeto segue o ciclo **spec → plano → implementação**, com milest
 | 1 | **Site da série (núcleo)** | Edição da newsletter com fontes, `/links`, manifesto público, capa, RSS | 🟡 Código pronto · falta deploy |
 | 2 | **Gerador do carrossel** | Slides PNG 1080×1350 gerados a partir do mesmo arquivo da peça | ⚪ |
 | 3 | **Raio-X de Classe** | Perfilador socioeconômico com card compartilhável | ⚪ |
-| 4 | **Newsletter** | *Trincheira*, com envio pelo Resend | ⚪ |
-| 5 | **Dossiê** | `/dossie/:id` imersivo | ⚪ |
+| 4 | **Painel `/admin`** | Publicar e editar pelo navegador, com login e senha (ADR-0002 pendente) | ⚪ |
+| 5 | **Newsletter: mais séries e e-mail** | *Trincheira* e outras séries; envio pelo Resend | ⚪ |
+| 6 | **Dossiê** | `/dossies`, página temática imersiva | ⚪ |
+| 7 | **Documentários** | `/documentarios` | ⚪ |
+| 8 | **Loja e impressos** | `/loja` (ver as ideias futuras abaixo) | ⚪ |
 
 ## Ideias futuras (anotadas, sem data)
 
