@@ -86,3 +86,13 @@ a {
     animation: none !important;
   }
 }
+
+/* Texto selecionado no vermelho da marca; sobre o fundo Pau-Brasil (Agitação), em Tinta para não sumir. */
+::selection {
+  background: var(--pau-brasil);
+  color: var(--cal);
+}
+.receita-agitacao ::selection {
+  background: var(--tinta);
+  color: var(--cal);
+}
