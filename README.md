@@ -1,82 +1,75 @@
 <p align="center">
-  <img src=".github/assets/banner.png" alt="PUKAS — Os Vermelhos. Órgão de Mídia &amp; Inteligência Latino-Americana" width="100%">
+  <img src=".github/assets/banner.png" alt="PUKAS. Direito nenhum caiu do céu. Foi luta. Memória Operária." width="100%">
 </p>
 
 # PUKAS — Os Vermelhos
 
-**Órgão de Mídia & Inteligência Latino-Americana.**
+*Puka* é "vermelho" em quéchua. O PUKAS é um órgão de mídia latino-americano que fala como conversa de bar: simples, denso e sempre com a fonte à vista.
 
-*Puka* é "vermelho" em quéchua. O PUKAS faz a ponte entre o rigor metodológico-científico e a agitação de massas: teses inéditas, dossiês de alta densidade, ficção incômoda e ferramentas de dados próprias, sem depender de Big Tech.
-
-> A teoria volta a ser arma.
+> **O fato ganha da tese.** Toda informação tem fonte. Se a gente errar, corrige em público.
 
 ---
 
 ## Status
 
-🟡 **Fase 0 — Fundação.** A spec foi aprovada e o plano de implementação está em preparação. Ainda não existe código de produto.
+🟡 **Núcleo do site pronto na branch `feat/site-memoria-operaria`.** Falta o deploy e a primeira edição real.
 
-| Subprojeto | Status |
+| Seção | Status |
 |---|---|
-| 0 · Fundação | 🟡 Plano em preparação |
-| 1 · Publicação (newsletter *Manifesto de Trincheira*) | 🟡 Plano em preparação |
-| 2 · Dossiê | ⚪ |
-| 3 · Módulos interativos | ⚪ |
-| 4 · Produção para redes | ⚪ |
+| Newsletter **Memória Operária** (`/newsletter/memoria-operaria/001`) + endereço curto `/001` | ✅ código · ⏳ primeira edição |
+| Página da bio (`/links`) | ✅ |
+| Manifesto público (`/manifesto`) | ✅ código · ⏳ texto aguarda aprovação |
+| Capa e RSS | ✅ |
+| Deploy (`pukas.lat`) | ⏳ |
+| Painel `/admin`, gerador do carrossel, Raio-X, dossiês, documentários, loja | ⚪ ver o [roadmap](docs/roadmap.md) |
 
-Detalhes em [`docs/roadmap.md`](docs/roadmap.md).
+## Como uma edição vai ao ar
 
-## O que vai existir
+1. Copie `src/content/newsletter/memoria-operaria/000-exemplo.mdx` para `001-<assunto>.mdx` e preencha: frase, texto, foto (com crédito e licença), fontes e checagem.
+2. Siga o [guia de checagem](docs/editorial/checagem.md).
+3. Abra um PR. **O build recusa** a edição sem fonte primária, sem licença ou crédito da foto, sem checagem ou com manchete de mais de 8 palavras.
+4. Depois do merge, a edição aparece em `/newsletter/memoria-operaria/001`, na capa, em `/links` e no RSS.
 
-**Eixo de Vanguarda**
-- **Dossiê Quinzenal:** peça audiovisual imersiva + ensaio em página temática própria (`/dossie/:id`).
-- **Manifesto de Trincheira:** newsletter de teses autorais (`/newsletter/:id`).
-- **Conto-Fronteira:** ficção mensal.
+## Rodando localmente
 
-**Eixo de Reação**
-- **Carrossel-Manifesto** e **Pílulas de Reação** para as redes.
+Requisito: Node 24.
 
-**Módulos interativos**
-- Raio-X de Classe · Observatório de Contratos e Poder · Simulador Macroeconômico · Dicionário de Trincheira.
+```bash
+npm install
+npm run dev      # http://localhost:4321
+npm test         # regras editoriais, formatação, contraste da paleta
+npm run check    # tipos
+npm run build    # site estático em dist/
+```
 
 ## Stack
 
-| | |
-|---|---|
-| Linguagem | **TypeScript** (`strict`) |
-| Framework | **Astro**: HTML puro por padrão, JavaScript só nas ilhas interativas |
-| Conteúdo | **MDX em Git**, validado por esquemas |
-| Interatividade | React · Three.js · D3, só onde for usado |
-| Estilo | CSS puro com tokens |
-| Hospedagem | Saída estática, no Vercel |
+TypeScript (`strict`) · **Astro**, com saída estática e sem JavaScript no cliente · conteúdo em **MDX no Git**, validado por esquema · CSS com tokens · Vitest · GitHub Actions. O porquê está no [ADR-0001](docs/decisoes/ADR-0001-linguagem-e-stack.md).
 
-O porquê de cada escolha está em [ADR-0001](docs/decisoes/ADR-0001-linguagem-e-stack.md).
+## Identidade (v2.0)
 
-## Identidade
+| Pau-Brasil | Tinta | Cal | Ipê | Verde-Mata |
+|:-:|:-:|:-:|:-:|:-:|
+| `#9E2A1E` | `#1C1A17` | `#F1EDE4` | `#E0A526` | `#1A452C` |
+| marca | texto | papel | destaque | técnico |
 
-| Pau-Brasil | Ipê | Verde-Mata |
-|:-:|:-:|:-:|
-| `#9E2A1E` | `#E0A526` | `#1A452C` |
-| Madeira que deu nome ao país | Ipê-amarelo, chita, festa popular | Mata Atlântica |
+A marca é a **Tarja**. A tipografia usa **Archivo** (manchete comprimida), **Space Mono** e **Anton** (só no carimbo). O manual está em [`docs/design/identidade-visual.md`](docs/design/identidade-visual.md).
 
-Tipografia: **Anton** (display) · **Space Mono** (metadados) · **Space Grotesk** (corpo).
-Manual completo: [`docs/design/identidade-visual.md`](docs/design/identidade-visual.md).
-
-## Estrutura do repositório
+## Estrutura
 
 ```
-pukas/
-├─ docs/
-│  ├─ produto/       manifesto, posicionamento, modelo editorial
-│  ├─ design/        identidade visual, paleta, canvas das paletas
-│  ├─ decisoes/      ADRs
-│  ├─ specs/         especificação de cada subprojeto
-│  └─ roadmap.md
-├─ .github/          templates de issue e PR, imagens
-└─ CONTRIBUTING.md   fluxo de trabalho e convenções
+src/
+├─ content/newsletter/memoria-operaria/   uma edição = um arquivo .mdx
+├─ content/paginas/                        manifesto
+├─ lib/                                    regras puras + testes (edicoes, formato, contraste, rss)
+├─ components/identidade/                  Tarja, Carimbo, Selo, Grão
+├─ layouts/ · pages/ · styles/ · data/links.ts
+docs/
+├─ specs/ · planos/ · decisoes/           spec → plano → código
+├─ design/                                 identidade v2.0 + originais
+├─ editorial/checagem.md                   compromisso com a verdade
+└─ produto/fundamentos-interno.md         texto teórico de origem (não publicar)
 ```
-
-O código (`src/`) entra com o plano de implementação da Fundação.
 
 ## Licença
 
@@ -85,4 +78,4 @@ O código (`src/`) entra com o plano de implementação da Fundação.
 
 ## Como trabalhamos
 
-Spec → plano → implementação, um subprojeto por vez. Cada mudança entra por PR. Veja o [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Spec → plano → implementação, uma seção por vez, e toda mudança entra por PR. Veja o [`CONTRIBUTING.md`](CONTRIBUTING.md).

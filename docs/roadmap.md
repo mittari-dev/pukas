@@ -16,7 +16,7 @@ Cada subprojeto segue o ciclo **spec → plano → implementação**, com milest
 
 | # | Subprojeto | Entrega | Status |
 |---|---|---|---|
-| 1 | **Site da série** | Capa, página de fontes por peça, `/links`, manifesto público, RSS, deploy | 🟡 Spec aprovada · plano em revisão |
+| 1 | **Site da série (núcleo)** | Edição da newsletter com fontes, `/links`, manifesto público, capa, RSS | 🟡 Código pronto · falta deploy |
 | 2 | **Gerador do carrossel** | Slides PNG 1080×1350 gerados a partir do mesmo arquivo da peça | ⚪ |
 | 3 | **Raio-X de Classe** | Perfilador socioeconômico com card compartilhável | ⚪ |
 | 4 | **Newsletter** | *Trincheira*, com envio pelo Resend | ⚪ |
