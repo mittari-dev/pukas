@@ -111,29 +111,29 @@ begin
 
   if new.tipo = 'newsletter' then
     if not exists (select 1 from jsonb_array_elements(new.fontes) f where f->>'tipo' = 'primaria') then
-      problemas := problemas || 'sem fonte primária';
+      problemas := array_append(problemas, 'sem fonte primária');
     end if;
   elsif new.tipo = 'noticia' then
     if jsonb_array_length(new.fontes) = 0 then
-      problemas := problemas || 'sem fonte';
+      problemas := array_append(problemas, 'sem fonte');
     end if;
   end if;
 
   if new.tipo = 'newsletter' or (new.tipo = 'noticia' and new.foto_caminho is not null) then
-    if vazio(new.foto_licenca) then problemas := problemas || 'foto sem licença'; end if;
-    if vazio(new.foto_credito) then problemas := problemas || 'foto sem crédito'; end if;
+    if vazio(new.foto_licenca) then problemas := array_append(problemas, 'foto sem licença'); end if;
+    if vazio(new.foto_credito) then problemas := array_append(problemas, 'foto sem crédito'); end if;
   elsif new.tipo = 'cultura' and new.foto_caminho is not null then
-    if vazio(new.foto_licenca) then problemas := problemas || 'capa sem licença'; end if;
-    if vazio(new.foto_credito) then problemas := problemas || 'capa sem crédito'; end if;
+    if vazio(new.foto_licenca) then problemas := array_append(problemas, 'capa sem licença'); end if;
+    if vazio(new.foto_credito) then problemas := array_append(problemas, 'capa sem crédito'); end if;
   end if;
 
   if new.tipo in ('newsletter', 'noticia') then
     if new.checagem is null or new.checagem = 'null'::jsonb then
-      problemas := problemas || 'sem checagem';
+      problemas := array_append(problemas, 'sem checagem');
     end if;
     n := palavras_manchete(new.titulo);
     if n > 8 then
-      problemas := problemas || format('manchete com %s palavras (máx. 8)', n);
+      problemas := array_append(problemas, format('manchete com %s palavras (máx. 8)', n));
     end if;
   end if;
 
