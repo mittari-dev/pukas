@@ -36,6 +36,10 @@
 
 Copie `src/content/cultura/modelo.mdx` para `<titulo-da-obra>.mdx`, escolha o tipo (`conto`, `cena`, `poema`, `ensaio`) e escreva. Ficção não precisa de fonte. Se tiver imagem de capa, o build exige crédito e licença. No poema, as quebras de linha ficam como você escreveu. A obra aparece em `/cultura/<titulo-da-obra>` e no botão "Novo na Cultura" de `/links`.
 
+## Português e espanhol
+
+O site inteiro existe em `/es/...`, em espanhol neutro latino-americano. O idioma é escolhido no servidor, nesta ordem: a escolha da pessoa no seletor PT | ES, o idioma do aparelho e o país. Cada peça nova ganha a tradução automática no próprio PR (workflow `traduzir.yml`, com o segredo `ANTHROPIC_API_KEY`), com o selo TRADUCCIÓN AUTOMÁTICA até ser revisada. Localmente, rode `npm run traduzir`. O build trava se uma tradução mudar algum número do original.
+
 ## Rodando localmente
 
 Requisito: Node 24.

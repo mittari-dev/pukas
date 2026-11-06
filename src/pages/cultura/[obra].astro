@@ -1,108 +1,20 @@
 ---
-import type { ImageMetadata } from 'astro';
-import { Image } from 'astro:assets';
-import { render, type CollectionEntry } from 'astro:content';
-import Base from '../../layouts/Base.astro';
-import Manchete from '../../components/identidade/Manchete.astro';
-import { textoManchete } from '../../lib/manchete';
-import Carimbo from '../../components/identidade/Carimbo.astro';
+import Obra from '../../views/Obra.astro';
 import { carregarObras } from '../../lib/carregar';
-import { rotuloTipo, type Obra } from '../../lib/cultura';
-import { ordenarFontes } from '../../lib/edicoes';
-import { formatarData } from '../../lib/formato';
-import '../../styles/leitura.css';
+import { prefixar } from '../../lib/idioma';
 
 export async function getStaticPaths() {
-  const obras = await carregarObras();
-  return obras.map((obra) => ({ params: { obra: obra.id }, props: { obra } }));
+  const obras = await carregarObras('pt');
+  const noOutro = new Set((await carregarObras('es')).map((o) => o.id));
+  return obras.map((obra) => ({
+    params: { obra: obra.id },
+    props: {
+      obra,
+      alternativa: noOutro.has(obra.id)
+        ? { href: prefixar(`/cultura/${obra.id}`, 'es'), equivalente: true }
+        : { href: prefixar('/cultura', 'es'), equivalente: false },
+    },
+  }));
 }
-
-const { obra } = Astro.props as { obra: Obra };
-const d = obra.data;
-const { Content } = await render(obra as unknown as CollectionEntry<'cultura'>);
-const capa = d.capa?.arquivo as ImageMetadata | undefined;
 ---
-<Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" selo="FRONTEIRA*" imagem={capa?.src}>
-  <article class="leitura">
-    <div class="obra__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
-    <p class="maquina obra__tipo">{rotuloTipo(d.tipo)} · {d.autoria.toUpperCase()}</p>
-    <div class="obra__titulo"><Manchete titulo={d.titulo} tamanho="m" /></div>
-
-    {d.aviso && (
-      <p class="obra__aviso" role="note"><span class="maquina">AVISO:</span> {d.aviso}</p>
-    )}
-
-    {d.video && (
-      <p class="obra__video"><a class="maquina" href={d.video}>VER O VÍDEO DA LEITURA ›››</a></p>
-    )}
-
-    {capa && d.capa && (
-      <figure class="obra__capa">
-        <Image src={capa} alt={d.capa.descricao} widths={[480, 960]} sizes="(max-width: 700px) 100vw, 680px" />
-        <figcaption class="maquina">IMAGEM: {d.capa.credito} · {d.capa.licenca}</figcaption>
-      </figure>
-    )}
-
-    <div class:list={['corpo', { 'corpo--poema': d.tipo === 'poema' }]}><Content /></div>
-
-    {d.fontes.length > 0 && (
-      <section aria-labelledby="fontes">
-        <h2 id="fontes" class="secao-titulo maquina">FONTES</h2>
-        <ol>
-          {ordenarFontes(d.fontes).map((f) => (
-            <li class="obra__fonte"><a href={f.url}>{f.titulo}</a> · {f.instituicao} <span class="maquina">· ACESSADA EM {formatarData(f.acessadaEm)}</span></li>
-          ))}
-        </ol>
-      </section>
-    )}
-
-    <p class="obra__chamada manchete">Leu? Passe adiante ›››</p>
-    <p class="maquina"><a href="/cultura">TODAS AS OBRAS</a></p>
-  </article>
-</Base>
-
-<style>
-  .obra__carimbo {
-    margin: var(--esp-4) 0 var(--esp-5);
-  }
-  .obra__tipo {
-    font-size: 13px;
-    letter-spacing: 0.12em;
-  }
-  .obra__titulo {
-    margin: var(--esp-3) 0 var(--esp-6);
-  }
-  .obra__aviso {
-    padding: var(--esp-3) var(--esp-4);
-    border: 3px solid currentColor;
-    font-size: 16px;
-  }
-  .obra__video a {
-    display: inline-block;
-    padding: var(--esp-3) var(--esp-4);
-    background: var(--tinta);
-    color: var(--cal);
-    text-decoration: none;
-    letter-spacing: 0.08em;
-  }
-  .obra__capa {
-    margin: var(--esp-5) 0;
-  }
-  .obra__capa figcaption {
-    margin-top: var(--esp-2);
-    font-size: 12px;
-  }
-  /* Poema: respeita as quebras de linha do autor. */
-  .corpo--poema :global(p) {
-    white-space: pre-line;
-  }
-  .obra__fonte {
-    margin-bottom: var(--esp-2);
-    overflow-wrap: anywhere;
-  }
-  .obra__chamada {
-    margin: var(--esp-8) 0 var(--esp-4);
-    font-size: clamp(32px, 8vw, 56px);
-    color: var(--acento);
-  }
-</style>
+<Obra idioma="pt" {...Astro.props} />

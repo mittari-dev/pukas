@@ -23,6 +23,10 @@ describe('itensRss', () => {
     expect(itensRss([marcada])[0].title).toBe('Nº 001 — Férias não caíram do céu');
   });
 
+  it('em espanhol, o link aponta para /es', () => {
+    expect(itensRss([edicao], 'es')[0].link).toBe('/es/newsletter/memoria-operaria/001/');
+  });
+
   it('devolve lista vazia sem edições', () => {
     expect(itensRss([])).toEqual([]);
   });

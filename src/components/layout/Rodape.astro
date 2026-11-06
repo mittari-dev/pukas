@@ -1,10 +1,16 @@
 ---
 // Assinatura fixa do rodapé (manual v2.0 §2).
+import { prefixar, t, type Idioma } from '../../lib/idioma';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
 ---
 <footer class="rodape maquina">
-  <span>PUKAS · A TEORIA VOLTA A SER ARMA*</span>
+  <span>{t(idioma, 'site.assinatura')}</span>
   <nav aria-label="Rodapé">
-    <a href="/rss.xml">RSS</a>
+    <a href={prefixar('/rss.xml', idioma)}>RSS</a>
   </nav>
 </footer>
 

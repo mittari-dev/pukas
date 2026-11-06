@@ -1,0 +1,81 @@
+---
+import Base from '../layouts/Base.astro';
+import Carimbo from '../components/identidade/Carimbo.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import ListaEdicoes from '../components/ListaEdicoes.astro';
+import { carregarEdicoes } from '../lib/carregar';
+import { caminhoEdicao } from '../lib/formato';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const edicoes = await carregarEdicoes(idioma);
+const ultima = edicoes[0];
+---
+<Base titulo="PUKAS" descricao={t(idioma, 'site.descricao')} receita="leitura" selo={t(idioma, 'selo.memoria')} idioma={idioma}>
+  <div class="capa">
+    {ultima ? (
+      <section class="destaque" aria-labelledby="ultima">
+        <Carimbo numero={ultima.data.numero} data={ultima.data.publicadaEm} />
+        <div class="destaque__manchete"><Manchete id="ultima" titulo={ultima.data.titulo} /></div>
+        <p class="destaque__resumo">{ultima.data.resumo}</p>
+        <a class="maquina destaque__ler" href={caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma)}>{t(idioma, 'capa.lerEdicao')}</a>
+      </section>
+    ) : (
+      <section class="destaque">
+        <div class="destaque__manchete"><Manchete titulo={t(idioma, 'capa.manchete')} /></div>
+      </section>
+    )}
+
+    <div class="capa__resto">
+    <h2 class="secao-titulo maquina">{t(idioma, 'capa.todasEdicoes')}</h2>
+    <ListaEdicoes edicoes={edicoes} />
+
+    <p class="institucional">
+      {t(idioma, 'site.institucional')}{' '}
+      <a href={prefixar('/manifesto', idioma)}>{t(idioma, 'site.leiaManifesto')}</a>.
+    </p>
+    </div>
+  </div>
+</Base>
+
+<style>
+  /* Capa mais larga que a leitura: a manchete precisa de espaço; o resto segue a medida de 68ch. */
+  .capa {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 var(--esp-4);
+  }
+  .capa__resto {
+    max-width: 68ch;
+  }
+  .destaque {
+    padding: var(--esp-5) 0 var(--esp-7);
+  }
+  .destaque__manchete {
+    margin-top: var(--esp-6);
+  }
+  .destaque__resumo {
+    margin: var(--esp-5) 0;
+    font-size: 20px;
+  }
+  .destaque__ler {
+    display: inline-block;
+    padding: var(--esp-3) var(--esp-4);
+    background: var(--tinta);
+    color: var(--cal);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+  }
+  .destaque__ler:hover,
+  .destaque__ler:focus-visible {
+    background: var(--pau-brasil);
+  }
+  .institucional {
+    margin-top: var(--esp-7);
+    font-size: 16px;
+  }
+</style>

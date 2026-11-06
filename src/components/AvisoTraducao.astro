@@ -1,0 +1,26 @@
+---
+// Selo da tradução automática: aparece até alguém marcar revisado: true.
+import { t, type Idioma } from '../lib/idioma';
+
+interface Props {
+  idioma: Idioma;
+  traducao?: { revisado: boolean };
+  original: string;
+}
+const { idioma, traducao, original } = Astro.props;
+---
+{traducao && !traducao.revisado && (
+  <p class="aviso-traducao maquina" role="note">
+    {t(idioma, 'traducao.automatica')} · {t(idioma, 'traducao.original')} · <a href={original} hreflang="pt-BR" lang="pt-BR">{t(idioma, 'traducao.verOriginal')}</a>
+  </p>
+)}
+
+<style>
+  .aviso-traducao {
+    margin: 0 0 var(--esp-5);
+    padding: var(--esp-3) var(--esp-4);
+    border: 3px solid currentColor;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+</style>

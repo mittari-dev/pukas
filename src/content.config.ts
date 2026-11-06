@@ -82,7 +82,26 @@ const cultura = defineCollection({
         )
         .default([]),
       rascunho: z.boolean().default(false),
+      // false = esta obra não ganha tradução automática (literatura perde a voz).
+      traduzir: z.boolean().default(true),
     }),
 });
 
-export const collections = { newsletter, paginas, cultura };
+// Traduções para o espanhol: só o texto. O id é o mesmo do original; números, datas e fontes vêm dele.
+const traducao = z.object({
+  titulo: z.string().min(1),
+  resumo: z.string().min(1).max(280),
+  legenda: z.string().max(2200).optional(),
+  aviso: z.string().min(1).optional(),
+  revisado: z.boolean().default(false),
+  modelo: z.string().optional(),
+});
+
+const newsletterEs = defineCollection({ loader: glob({ pattern: '**/*.mdx', base: './src/content/es/newsletter' }), schema: traducao });
+const culturaEs = defineCollection({ loader: glob({ pattern: '*.mdx', base: './src/content/es/cultura' }), schema: traducao });
+const paginasEs = defineCollection({
+  loader: glob({ pattern: '*.mdx', base: './src/content/es/paginas' }),
+  schema: z.object({ titulo: z.string().min(1), resumo: z.string().min(1).max(280), rascunho: z.boolean().default(false) }),
+});
+
+export const collections = { newsletter, paginas, cultura, newsletterEs, culturaEs, paginasEs };

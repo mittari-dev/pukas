@@ -4,6 +4,7 @@ import Grao from '../components/identidade/Grao.astro';
 import Cabecalho from '../components/layout/Cabecalho.astro';
 import Navegacao from '../components/layout/Navegacao.astro';
 import Rodape from '../components/layout/Rodape.astro';
+import { LANG, prefixar, semPrefixo, t, type Idioma } from '../lib/idioma';
 
 interface Props {
   titulo: string;
@@ -11,22 +12,32 @@ interface Props {
   receita: 'leitura' | 'agitacao';
   imagem?: string;
   selo?: string;
+  idioma?: Idioma;
+  // A mesma página no outro idioma. equivalente=false quando não há tradução e o link leva ao índice da seção.
+  alternativa?: { href: string; equivalente: boolean };
 }
-const { titulo, descricao, receita, imagem, selo } = Astro.props;
+const { titulo, descricao, receita, imagem, selo, idioma = 'pt' } = Astro.props;
+const outro: Idioma = idioma === 'pt' ? 'es' : 'pt';
+const alternativa = Astro.props.alternativa ?? { href: prefixar(semPrefixo(Astro.url.pathname).caminho, outro), equivalente: true };
+// Sem barra final (exceto a raiz), para as URLs dos dois idiomas terem o mesmo formato.
+const atual = Astro.url.pathname.replace(/(.)\/$/, '$1');
+const versoes = alternativa.equivalente ? { [idioma]: atual, [outro]: alternativa.href } : { [idioma]: atual };
 const tituloCompleto = titulo === 'PUKAS' ? titulo : `${titulo} · PUKAS`;
 const canonica = new URL(Astro.url.pathname, Astro.site);
 ---
 <!doctype html>
-<html lang="pt-BR">
+<html lang={LANG[idioma]}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{tituloCompleto}</title>
     <meta name="description" content={descricao} />
     <link rel="canonical" href={canonica} />
-    <link rel="alternate" type="application/rss+xml" title="PUKAS — Memória Operária" href="/rss.xml" />
+    {Object.entries(versoes).map(([i, href]) => <link rel="alternate" hreflang={LANG[i as Idioma]} href={new URL(href, Astro.site)} />)}
+    {versoes.pt && <link rel="alternate" hreflang="x-default" href={new URL(versoes.pt, Astro.site)} />}
+    <link rel="alternate" type="application/rss+xml" title={t(idioma, 'rss.titulo')} href={prefixar('/rss.xml', idioma)} />
     <meta property="og:type" content="article" />
-    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale" content={idioma === 'es' ? 'es_419' : 'pt_BR'} />
     <meta property="og:site_name" content="PUKAS" />
     <meta property="og:title" content={titulo} />
     <meta property="og:description" content={descricao} />
@@ -35,13 +46,13 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:card" content={imagem ? 'summary_large_image' : 'summary'} />
   </head>
   <body class={`receita-${receita}`}>
-    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+    <a class="pular" href="#conteudo">{t(idioma, 'nav.pular')}</a>
     <Grao />
-    <Navegacao tarja={receita === 'agitacao' ? 'tinta' : 'cor'} />
+    <Navegacao tarja={receita === 'agitacao' ? 'tinta' : 'cor'} idioma={idioma} alternativa={alternativa.href} />
     <Cabecalho selo={selo} />
     <main id="conteudo" tabindex="-1">
       <slot />
     </main>
-    <Rodape />
+    <Rodape idioma={idioma} />
   </body>
 </html>

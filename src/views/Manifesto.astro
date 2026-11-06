@@ -1,0 +1,28 @@
+---
+import { getEntry, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import { t, type Idioma } from '../lib/idioma';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const pagina = idioma === 'es' ? await getEntry('paginasEs', 'manifesto') : await getEntry('paginas', 'manifesto');
+if (!pagina) throw new Error(`manifesto (${idioma}) não encontrado em src/content`);
+const publicado = !pagina.data.rascunho;
+const { Content } = await render(pagina);
+---
+<Base titulo={pagina.data.titulo} descricao={pagina.data.resumo} receita="leitura" idioma={idioma}>
+  <article class="leitura">
+    <div class="titulo"><Manchete titulo={t(idioma, 'manifesto.titulo')} tamanho="m" /></div>
+    {publicado ? <div class="corpo"><Content /></div> : <p class="maquina">{t(idioma, 'manifesto.emBreve')}</p>}
+  </article>
+</Base>
+
+<style>
+  .titulo {
+    margin: var(--esp-5) 0 var(--esp-6);
+  }
+</style>

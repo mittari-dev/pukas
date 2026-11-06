@@ -1,23 +1,4 @@
 ---
-import { getEntry, render } from 'astro:content';
-import Base from '../layouts/Base.astro';
-import Manchete from '../components/identidade/Manchete.astro';
-import '../styles/leitura.css';
-
-const pagina = await getEntry('paginas', 'manifesto');
-if (!pagina) throw new Error('src/content/paginas/manifesto.mdx não encontrado');
-const publicado = !pagina.data.rascunho;
-const { Content } = await render(pagina);
+import Manifesto from '../views/Manifesto.astro';
 ---
-<Base titulo={pagina.data.titulo} descricao={pagina.data.resumo} receita="leitura">
-  <article class="leitura">
-    <div class="titulo"><Manchete titulo="Manifesto" tamanho="m" /></div>
-    {publicado ? <div class="corpo"><Content /></div> : <p class="maquina">EM BREVE.</p>}
-  </article>
-</Base>
-
-<style>
-  .titulo {
-    margin: var(--esp-5) 0 var(--esp-6);
-  }
-</style>
+<Manifesto idioma="pt" />

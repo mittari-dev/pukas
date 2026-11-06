@@ -19,6 +19,7 @@ export interface Obra {
     capa?: { arquivo: unknown; descricao: string; credito?: string; licenca?: string; origem?: string };
     fontes: Fonte[];
     rascunho: boolean;
+    traduzir?: boolean;
   };
 }
 
