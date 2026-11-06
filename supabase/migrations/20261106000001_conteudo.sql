@@ -42,12 +42,13 @@ create table pecas (
   atualizado_em timestamptz not null default now(),
   check (tipo <> 'newsletter' or (serie is not null and numero is not null)),
   check (tipo <> 'cultura' or (numero is not null and subtipo is not null)),
-  check (tipo not in ('pagina', 'noticia') or slug is not null)
+  -- O slug é o endereço: /cultura/<slug>, /noticias/<slug>, /<slug> (páginas).
+  check (tipo not in ('pagina', 'noticia', 'cultura') or slug is not null)
 );
 
 create unique index pecas_newsletter_numero on pecas (tipo, serie, numero) where tipo = 'newsletter';
 create unique index pecas_cultura_numero on pecas (tipo, numero) where tipo = 'cultura';
-create unique index pecas_slug on pecas (tipo, slug) where tipo in ('pagina', 'noticia');
+create unique index pecas_slug on pecas (tipo, slug) where slug is not null;
 create index pecas_estado on pecas (estado, tipo);
 
 create table traducoes (

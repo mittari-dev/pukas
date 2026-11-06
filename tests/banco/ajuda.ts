@@ -60,7 +60,7 @@ export function pecaValida(tipo: 'newsletter' | 'cultura' | 'noticia' | 'pagina'
     case 'noticia':
       return { ...base, slug: `noticia-${u}`, fontes: [{ ...fontePrimaria, tipo: 'secundaria' }], checagem };
     case 'cultura':
-      return { ...base, subtipo: 'conto', numero: Number(u.slice(-6)), fontes: [] };
+      return { ...base, subtipo: 'conto', numero: Number(u.slice(-6)), slug: `obra-${u}`, fontes: [] };
     case 'pagina':
       return { ...base, slug: `pagina-${u}`, fontes: [] };
   }
