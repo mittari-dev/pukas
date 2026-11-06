@@ -47,3 +47,14 @@ correcoes:
 ```
 
 A página mostra a correção com data. Se o erro estava no carrossel, publique um story ou comentário fixado com a correção e o link da edição.
+
+## 5. Traduções para o espanhol
+
+A tradução também é checada. O script `npm run traduzir` (e o workflow do GitHub) só grava uma tradução quando:
+
+- todos os **números** do original (anos, valores, quantidades) aparecem iguais na tradução;
+- a manchete mantém as mesmas marcações `|` (quebra de linha) e `*` (destaque).
+
+O build confere os números de novo e **trava** se uma tradução editada à mão tiver números diferentes do original.
+
+O espanhol é o **neutro latino-americano**: "ustedes", nunca "vosotros", e sem gíria de um país só. Ao revisar uma tradução automática, corrija o que precisar e troque `revisado: false` para `revisado: true`. Assim o selo "TRADUCCIÓN AUTOMÁTICA" sai da página.
