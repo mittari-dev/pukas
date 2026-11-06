@@ -1,0 +1,64 @@
+---
+// Segundo fator (TOTP): no primeiro acesso cadastra o aplicativo autenticador; depois, só pede o código.
+import Painel from '../../layouts/Painel.astro';
+import { voltaSegura } from '../../lib/painel/acesso';
+
+const cliente = Astro.locals.painel!.cliente;
+const volta = voltaSegura(Astro.url.searchParams.get('volta'));
+let erro = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const { error } = await cliente.auth.mfa.challengeAndVerify({
+    factorId: String(form.get('fator') ?? ''),
+    code: String(form.get('codigo') ?? '').replace(/\s/g, ''),
+  });
+  if (!error) return Astro.redirect(volta, 303);
+  erro = 'E-mail, senha ou código errados.';
+}
+
+const { data: fatores } = await cliente.auth.mfa.listFactors();
+const verificado = fatores?.totp.find((f) => f.status === 'verified');
+let cadastro: { id: string; qr: string; segredo: string } | undefined;
+if (!verificado) {
+  // Cadastro que ficou pela metade não serve: apaga e começa de novo.
+  for (const f of fatores?.all.filter((x) => x.factor_type === 'totp' && x.status !== 'verified') ?? []) await cliente.auth.mfa.unenroll({ factorId: f.id });
+  const { data, error } = await cliente.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Autenticador' });
+  if (error) erro = 'Não deu para começar o cadastro do 2FA. Recarregue a página.';
+  else cadastro = { id: data.id, qr: data.totp.qr_code, segredo: data.totp.secret };
+}
+const fator = verificado?.id ?? cadastro?.id ?? '';
+---
+<Painel titulo="Código de acesso">
+  <h1>Código de acesso</h1>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+  {cadastro && (
+    <section class="cadastro">
+      <p>Primeiro acesso: abra o aplicativo autenticador (Google Authenticator, Authy, 1Password…) e leia este código.</p>
+      <img src={cadastro.qr} alt="QR code para cadastrar o PUKAS no aplicativo autenticador" width="200" height="200" />
+      <p class="ajuda">Sem câmera? Digite esta chave no aplicativo: <code class="maquina">{cadastro.segredo}</code></p>
+    </section>
+  )}
+  <form method="post">
+    <input type="hidden" name="fator" value={fator} />
+    <div class="campo">
+      <label for="codigo">Código de 6 dígitos do aplicativo</label>
+      <input id="codigo" name="codigo" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required />
+    </div>
+    <button class="botao botao--marca" type="submit">Confirmar</button>
+  </form>
+</Painel>
+
+<style>
+  .cadastro {
+    margin-bottom: var(--esp-6);
+  }
+  .cadastro img {
+    background: var(--cal);
+    padding: var(--esp-2);
+    margin: var(--esp-3) 0;
+  }
+  code {
+    overflow-wrap: anywhere;
+  }
+</style>

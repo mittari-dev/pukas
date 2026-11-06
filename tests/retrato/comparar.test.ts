@@ -19,7 +19,7 @@ describe.skipIf(!base)('retrato', () => {
   });
 
   test('/es de peça sem tradução mostra o original com aviso', async () => {
-    const obra = { ...pecaValida('cultura'), titulo: 'Turno da noite', corpo: 'Texto só em português.' } as Record<string, unknown> & { slug: string };
+    const obra = { ...pecaValida('cultura'), titulo: 'Turno da noite', corpo: 'Texto só em português.' } as unknown as Record<string, unknown> & { slug: string };
     const { error } = await clienteServico().from('pecas').insert(obra);
     expect(error).toBeNull();
     const r = await fetch(new URL(`/es/cultura/${obra.slug}`, base));
