@@ -1,0 +1,30 @@
+---
+// Esqueleto fixo: Tarja no canto superior esquerdo, selo de editoria no direito.
+import Tarja from '../identidade/Tarja.astro';
+import Selo from '../identidade/Selo.astro';
+
+interface Props {
+  selo?: string;
+}
+const { selo } = Astro.props;
+---
+<header class="cabecalho">
+  <a href="/" class="cabecalho__marca"><Tarja /></a>
+  {selo && <Selo texto={selo} />}
+</header>
+
+<style>
+  .cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--esp-4);
+    padding: var(--esp-5) var(--esp-4);
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .cabecalho__marca {
+    text-decoration: none;
+    line-height: 0;
+  }
+</style>

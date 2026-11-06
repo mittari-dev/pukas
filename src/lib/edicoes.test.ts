@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   contarPalavras,
   edicoesPublicadas,
+  ordenarFontes,
   validarNumerosUnicos,
   validarPublicavel,
   type Edicao,
@@ -92,6 +93,15 @@ describe('validarNumerosUnicos', () => {
 
   it('aceita números diferentes', () => {
     expect(() => validarNumerosUnicos([edicao('a', { numero: 1 }), edicao('b', { numero: 2 })])).not.toThrow();
+  });
+});
+
+describe('ordenarFontes', () => {
+  it('põe as primárias antes das secundárias, mantendo a ordem dentro de cada grupo', () => {
+    const f = (titulo: string, tipo: 'primaria' | 'secundaria') =>
+      ({ titulo, instituicao: 'X', url: 'https://x.org', tipo, acessadaEm: new Date() }) as const;
+    const ordem = ordenarFontes([f('s1', 'secundaria'), f('p1', 'primaria'), f('s2', 'secundaria'), f('p2', 'primaria')]);
+    expect(ordem.map((x) => x.titulo)).toEqual(['p1', 'p2', 's1', 's2']);
   });
 });
 

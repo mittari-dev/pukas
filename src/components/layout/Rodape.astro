@@ -1,0 +1,36 @@
+---
+// Assinatura fixa do rodapé (manual v2.0 §2).
+---
+<footer class="rodape maquina">
+  <span>PUKAS · A TEORIA VOLTA A SER ARMA*</span>
+  <nav aria-label="Rodapé">
+    <a href="/newsletter/memoria-operaria">Memória Operária</a>
+    <a href="/manifesto">Manifesto</a>
+    <a href="/rss.xml">RSS</a>
+  </nav>
+</footer>
+
+<style>
+  .rodape {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--esp-3);
+    max-width: 960px;
+    margin: var(--esp-8) auto 0;
+    padding: var(--esp-4);
+    border-top: 3px solid currentColor;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .rodape nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-4);
+  }
+  .rodape a {
+    display: inline-block;
+    padding: var(--esp-2) 0;
+    text-transform: uppercase;
+  }
+</style>

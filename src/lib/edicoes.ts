@@ -55,6 +55,10 @@ export function validarNumerosUnicos(edicoes: Edicao[]): void {
   }
 }
 
+export function ordenarFontes(fontes: readonly Fonte[]): Fonte[] {
+  return [...fontes.filter((f) => f.tipo === 'primaria'), ...fontes.filter((f) => f.tipo !== 'primaria')];
+}
+
 export function edicoesPublicadas(edicoes: Edicao[]): Edicao[] {
   return edicoes.filter((e) => !e.data.rascunho).sort((a, b) => b.data.numero - a.data.numero);
 }

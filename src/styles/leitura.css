@@ -1,0 +1,55 @@
+/* Receita Leitura: corpo limpo, sem textura (manual v2.0 §6). */
+
+.leitura {
+  max-width: 68ch;
+  margin: 0 auto;
+  padding: 0 var(--esp-4);
+}
+
+.leitura .corpo p,
+.leitura .corpo li {
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.leitura .corpo h2,
+.leitura .corpo h3 {
+  font-family: var(--fonte-manchete);
+  font-weight: 900;
+  font-stretch: var(--largura-manchete);
+  text-transform: uppercase;
+  line-height: 0.9;
+  margin: var(--esp-7) 0 var(--esp-3);
+}
+
+.leitura .corpo a {
+  color: var(--acento);
+  text-decoration-thickness: 2px;
+}
+
+.leitura .corpo blockquote {
+  margin: var(--esp-5) 0;
+  padding-left: var(--esp-4);
+  border-left: 4px solid var(--acento);
+  font-weight: 700;
+}
+
+.leitura .corpo pre,
+.leitura .corpo table {
+  display: block;
+  overflow-x: auto;
+}
+
+.leitura .corpo img,
+.leitura .corpo video {
+  max-width: 100%;
+  height: auto;
+}
+
+.secao-titulo {
+  margin: var(--esp-7) 0 var(--esp-3);
+  padding-top: var(--esp-3);
+  border-top: 3px solid currentColor;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+}
