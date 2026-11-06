@@ -1,4 +1,4 @@
-import { textos, type Chave } from '../i18n/textos';
+import { textos, type Chave } from '../i18n/textos.js';
 
 export const IDIOMAS = ['pt', 'es'] as const;
 export type Idioma = (typeof IDIOMAS)[number];

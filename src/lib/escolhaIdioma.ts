@@ -1,5 +1,5 @@
 // Escolha do idioma no servidor (spec espanhol §4). Puro: o middleware só lê cabeçalhos e aplica o resultado.
-import { prefixar, semPrefixo, IDIOMAS, type Idioma } from './idioma';
+import { prefixar, semPrefixo, IDIOMAS, type Idioma } from './idioma.js';
 
 // Países hispânicos: sem língua clara no aparelho, vão para o espanhol.
 const PAISES_ES = new Set(['AR', 'BO', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'ES', 'GQ', 'GT', 'HN', 'MX', 'NI', 'PA', 'PE', 'PR', 'PY', 'SV', 'UY', 'VE']);
