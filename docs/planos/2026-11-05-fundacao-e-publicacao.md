@@ -1,6 +1,6 @@
 # Fundação + Publicação — Plano de Implementação
 
-> **Para agentes:** sub-skill obrigatória: superpowers:subagent-driven-development (recomendada) ou superpowers:executing-plans. Os passos usam checkbox (`- [ ]`).
+> **Substituído** em 06/11/2026 por [2026-11-06-site-memoria-operaria.md](2026-11-06-site-memoria-operaria.md).
 
 **Objetivo:** site do PUKAS que publica a newsletter *Manifesto de Trincheira* a partir de MDX no Git, na identidade aprovada, com RSS e deploy automático.
 

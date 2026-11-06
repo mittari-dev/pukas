@@ -1,100 +1,91 @@
-# PUKAS — Manual de Identidade Visual
+# PUKAS — Manual de Identidade Visual · v2.0
 
-**v1.1 — 05.11.26** · Estética: Agitprop Collage Punk / Arquivo Vivo
-Deriva de *Identidade Visual Única* (vault pessoal) (v2.0 — Arquivo Vivo, Família 6: Serigrafia Brasileira Contemporânea).
-Manifesto e posicionamento: [Manifesto](../produto/manifesto.md)
+**Nov 2026.** É a referência de engenharia. Os originais visuais ficam em [`v2/manual-v2.html`](v2/manual-v2.html) (manual) e [`v2/identidade-v2-exploracao.html`](v2/identidade-v2-exploracao.html) (diagnóstico, direções e aplicações). Para ver, abra no navegador.
 
-> Origem: documento "PUKAS — Diretrizes de Identidade Visual" no Google Drive (v1.0). A v1.1 troca a paleta: sai o vermelho industrial genérico, entram cores com raiz brasileira.
+> Propriedade popular. Copie à vontade.
+> **Como falar com a classe inteira sem perder a cara.**
 
----
+## 1. Princípios
 
-## 1. Conceito Central & Filosofia Visual
+1. **A frase vem primeiro.** Toda peça nasce de uma frase que alguém diria no ponto de ônibus. Se precisar de glossário, a peça não está pronta.
+2. **Gente de verdade.** Trabalhadores, objetos e lugares reais. Nunca banco de imagem e nunca político sorrindo.
+3. **Esqueleto fixo, miolo livre.** Logo, selo de editoria, rodapé e margens nunca mudam.
+4. **Sobrevive à xerox.** A tinta preta carrega a mensagem. A cor carrega a marca.
+5. **Reproduzível à mão.** Tudo pode ser feito com carimbo, estêncil ou caneta.
+6. **Vermelho sempre.** O Pau-Brasil está em toda peça. Sem ele, verde e amarelo viram outra bandeira.
 
-A identidade visual do PUKAS (Os Vermelhos) rejeita o design corporativo asséptico, a estética minimalista da esquerda institucional e modelos pré-fabricados. O projeto se apoia na tensão entre agitação política material e recursos computacionais de vanguarda.
+**Quatro testes de toda peça:** **xerox** (continua legível em P&B?) · **5 metros** (a manchete se lê em 3 segundos, com no máximo 8 palavras?) · **fala de bar** (alguém diria essa frase?) · **reprodução** (dá para fazer à mão?).
 
-- **Urgência & Cruidez:** manifesto impresso na clandestinidade, panfleto urgente, dossiê confidencial vazado.
-- **Textura Materialista:** ruído de escaneamento, papel envelhecido, xerox, carimbos burocráticos, halftone.
-- **Vanguarda Tecnológica:** tatilidade analógica + Three.js, WebGL, wireframe, visão computacional.
-- **Raiz Geográfica (v1.1):** as cores vêm da terra, da mata e da madeira que deu nome ao país. Nada de paleta "importada".
+## 2. Marca
 
----
-
-## 2. Paleta de Cores — v1.1
-
-| Nome | HEX | Proporção | Origem | Função |
-|---|---|---|---|---|
-| **Pau-Brasil** | `#9E2A1E` | 30% | Cerne da madeira e corante brasileína — a primeira mercadoria da extração colonial | Ruptura: faixas, blocos de manchete, convocação |
-| **Verde-Mata** | `#1A452C` | 50% | Mata Atlântica, onde o pau-brasil nascia | Fundo base, módulos técnicos e terminais |
-| **Ipê / Ouro** | `#E0A526` | 20% | Ipê-amarelo, chita, festa popular | Tipografia, carimbos, dados em destaque |
-
-Paleta anterior (v1.0, descontinuada): `#D9381E` / `#F4F1EA` / `#121212`.
-
-### Regras de contraste
-
-| Combinação | Contraste aprox. | Uso permitido |
+| Versão | Forma | Uso |
 |---|---|---|
-| Ipê sobre Verde-Mata | ~4,6:1 | Qualquer texto, inclusive pequeno |
-| Ipê sobre Pau-Brasil | ~4:1 | Só texto grande (≥ 24px) |
-| Pau-Brasil sobre Verde-Mata | baixo | **Nunca texto.** Só blocos e formas |
+| **Principal: Tarja** | Bloco Pau-Brasil com "PUKAS" vazado em Cal, em Archivo 900 com largura 62% | Topo de toda peça digital, cabeçalho de panfleto, adesivo. Margem mínima ao redor: a altura do "U" |
+| **Secundária: Carimbo** | Borda dupla Pau-Brasil girada -4°, com "ARQUIVO POPULAR" / **PUKAS** (Anton) / Nº 0000 | Dossiês, documentos, intervenção física. O número é único por peça e é gerado pelo app |
+| **1 cor** | Tarja em Tinta sobre papel, ou em Cal sobre Tinta | É a única versão permitida em P&B |
 
-### Regras de aplicação
+**Selos de editoria:** sempre no canto superior direito e sempre em Space Mono. São eles: `DOSSIÊ Nº__*` · `TRINCHEIRA*` · `CONJUNTURA*` · `FRONTEIRA*` · `DICIONÁRIO*` · `MEMÓRIA OPERÁRIA*` · `PUKAS × PARCEIRO`.
+O asterisco é o fecho da marca: "tem mais pra saber".
 
-- **Máximo 3 cores por peça.** As três são a paleta inteira.
-- **Pau-Brasil sempre presente.** Sem ele, verde + amarelo vira estética verde-amarela — risco político e de leitura. Ele é a assinatura do nome.
-- Cor sempre **chapada**, com grain por cima. Sem gradiente, sem transparência suave.
-- Pau-Brasil marca conflito, ruptura ou convocação — nunca é decoração.
+**Assinatura do rodapé:** `PUKAS · A TEORIA VOLTA A SER ARMA*`. "Órgão de Mídia & Inteligência" aparece só no site institucional.
 
-### Cor funcional de leitura (decidido em 05.11.26)
+## 3. Cor
 
-| Nome | HEX | Uso |
+| Nome | HEX | Papel |
 |---|---|---|
-| **Cal** | `#F1EDE4` | **Só** texto corrido (newsletter, ensaios) sobre Verde-Mata. Contraste ~8,6:1. Não é cor de identidade e não conta no limite de 3 cores. |
+| **Pau-Brasil** | `#9E2A1E` | Ruptura e marca |
+| **Tinta** | `#1C1A17` | Texto e retícula (cor funcional) |
+| **Cal** | `#F1EDE4` | Papel e leitura (cor funcional) |
+| **Ipê** | `#E0A526` | Destaque e dado |
+| **Verde-Mata** | `#1A452C` | Módulo técnico |
 
-Ipê e Pau-Brasil seguem nos títulos, carimbos e faixas da página de leitura.
+### Receitas: cada peça usa uma só, e nunca se misturam
 
----
-
-## 3. Tipografia & Hierarquia de Voz
-
-| Nível / Uso | Família | Características |
+| Receita | Proporção | Peças |
 |---|---|---|
-| **Display / Agitação** | Anton, Bebas Neue, Impact | Caixa alta, condensada, entrelinha compacta, peso pesado |
-| **Subtítulos & Metadados** | Space Mono, Courier Prime, JetBrains Mono | Monoespaçada, relatório datilografado, carimbos, logs, tabelas |
-| **Corpo de Texto** | Space Grotesk, Inter, Roboto | Sans-serif técnica, legível em impresso e digital |
+| **Agitação** | Pau-Brasil 50 · Tinta 30 · Cal 20 | lambe-lambe, carrossel, pílula |
+| **Leitura** | Cal 60 · Tinta 30 · Pau-Brasil 10 | newsletter, ensaio, panfleto, **página de fontes** |
+| **Técnico** | Verde-Mata 50 · Ipê 30 · Pau-Brasil 20 | dicionário, dados, simulador, Raio-X |
 
----
+O máximo é de 3 cores por peça. **Ipê sobre Verde-Mata só no técnico**: no feed, essa dupla lê como bandeira.
 
-## 4. Elementos Gráficos & Tratamento de Imagem
+## 4. Tipografia
 
-### I. Tratamento Fotográfico
+| Nível | Fonte | Regra |
+|---|---|---|
+| Manchete | **Archivo 900**, largura 62% | Caixa alta, entrelinha 0.86 |
+| Corpo | **Archivo 400–700**, largura 100% | 16–18px, entrelinha 1.45 |
+| Máquina | **Space Mono 700** | Selos, dados, fontes, rodapé |
+| Carimbo | **Anton** | Só dentro do carimbo |
 
-- **Halftone & Duotone:** retícula estourada, mapeamento tonal estrito — Pau-Brasil + Verde-Mata ou Verde-Mata + Ipê.
-- **Colagem de Combate:** recortes simulados, papel rasgado, mapas, fragmentos de processos judiciais, fita adesiva opaca.
-- **Proibido suavizar:** sem cantos arredondados padrão, gradientes policromáticos ou sombras gaussianas.
+## 5. Repertório visual
 
-### II. Elementos de Arquivo Vivo
+- **Retícula 1 cor:** foto em retícula Pau-Brasil sobre papel. É o tratamento padrão de capa.
+- **Limiar:** foto em 2 tons, Cal sobre Pau-Brasil, para rosto e protesto.
+- **P&B + uma área:** foto de arquivo em P&B, com uma única pessoa ou objeto em vermelho. **É o padrão da Memória Operária.**
+- **Objeto recortado:** marmita, capacete, catraca ou carteira de trabalho, com sombra chapada.
+- **Elementos:** marca-texto, rasura, tarja, censurada, faixa de chamada `›››`, asterisco.
 
-- **Carimbagem:** bordas duras de 1–2px — DESCLASSIFICADO, DOSSIÊ CONFIDENCIAL, PROPRIEDADE POPULAR, URGENTE. Cor: Ipê.
-- **Rasuras:** barras sólidas em Verde-Mata cobrindo trechos; anotações à mão em Pau-Brasil ou Ipê.
-- **Texturas:** ruído de scanner, poeira de xerox, grão de filme sobre tudo.
+## 6. Faça · Não faça
 
----
+**Faça**
+- Manchete de até 8 palavras, como pergunta ou acusação direta.
+- Uma imagem dominante por peça, ocupando pelo menos 40% da área.
+- Nome, idade, ofício e cidade de quem fala.
+- A fonte do dado em Space Mono, sempre visível.
+- Terminar com uma ação: passe adiante, tire xerox, mande pro grupo.
+- Grão e borda comida no texto grande. O corpo de texto fica sempre limpo.
 
-## 5. Matriz de Aplicação Editorial
+**Não faça**
+- Jargão sem tradução ("hegemonia", "práxis", "conjuntura" só no ensaio, nunca na manchete).
+- Fundo Verde-Mata com texto Ipê no feed.
+- Foice e martelo, estrela ou rosto de líder como atalho visual. Mostre o trabalhador.
+- Mais de 3 cores, gradiente, sombra suave ou canto arredondado.
+- Textura sobre o corpo de texto, ou colagem que esconde a manchete.
+- Esticar, girar ou recolorir a Tarja fora das 3 versões.
 
-### I. Capas do Dossiê Quinzenal
+## 7. Carrossel: esqueleto fixo
 
-- Vertical, panfleto construtivista + elementos 3D em wireframe.
-- Título em largura total, fonte condensada, cruzando recortes em halftone.
-- Referência aprovada: opção E do canvas de paletas (https://claude.ai/artifact/TwricwX9r2pFMqUzyRnZkL).
-
-### II. Carrosséis-Manifesto
-
-- **Slide 1:** imagem central rasgada, carimbo de urgência, manchete em caixa alta.
-- **Slides de conteúdo:** fundo Verde-Mata, texto Ipê alinhado à esquerda, marcadores monoespaçados (`[01]`, `[02]`).
-- **Slide final:** fundo Pau-Brasil pleno, chamada direta (texto Ipê ≥ 24px).
-
-### III. Plataforma Digital Proprietária
-
-- Transições secas, sem animações orgânicas.
-- WebGL / Three.js: projeções cartográficas, matrizes de dados, grafos em nós brutos, renderizações monocromáticas que respondem à rolagem.
+- **Nunca muda:** logo no canto superior esquerdo, contador `01/05`, e no rodapé o fio, a editoria e o endereço, com margem fixa.
+- **Muda:** só o miolo, escolhido entre 4 módulos: capa com foto, texto corrido, citação, chamada final.
+- **No código:** cada módulo é um componente. A editoria define a cor do rodapé.

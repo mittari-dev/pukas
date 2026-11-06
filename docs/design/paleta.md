@@ -1,29 +1,23 @@
-# PUKAS — Paleta oficial (decidida em 05/11/2026)
+# PUKAS — Paleta (v2.0)
 
-Opção E do canvas https://claude.ai/artifact/TwricwX9r2pFMqUzyRnZkL
-
-| Nome | HEX | Origem |
+| Nome | HEX | Papel |
 |---|---|---|
-| Pau-Brasil | `#9E2A1E` | Cerne da madeira e corante brasileína |
-| Ipê / Ouro | `#E0A526` | Ipê-amarelo, chita, festa popular |
-| Verde-Mata | `#1A452C` | Mata atlântica |
+| Pau-Brasil | `#9E2A1E` | Marca, ruptura |
+| Tinta | `#1C1A17` | Texto, retícula (funcional) |
+| Cal | `#F1EDE4` | Papel, leitura (funcional) |
+| Ipê | `#E0A526` | Destaque, dado |
+| Verde-Mata | `#1A452C` | Módulo técnico |
 
-Substitui `#D9381E` / `#F4F1EA` / `#121212` dos documentos do Drive.
+Receitas e regras: [identidade-visual.md §3](identidade-visual.md#3-cor).
 
-### Cor funcional de leitura
+## Contraste (verificado por teste em `src/lib/contraste.test.ts`)
 
-| Nome | HEX | Uso |
+| Texto / fundo | Mínimo exigido | Uso |
 |---|---|---|
-| Cal | `#F1EDE4` | **Só** texto corrido (newsletter, ensaios) sobre Verde-Mata. Não é cor de identidade. |
+| Tinta sobre Cal | 7:1 | Corpo de texto (Leitura) |
+| Cal sobre Pau-Brasil | 4.5:1 | Tarja, chamadas (Agitação) |
+| Ipê sobre Tinta | 4.5:1 | Destaque |
+| Ipê sobre Verde-Mata | 4.5:1 | Só no Técnico |
+| Pau-Brasil sobre Tinta | — | **Nunca texto** (contraste < 3:1) |
 
-## Regras de contraste
-- Texto corrido: Cal sobre Verde-Mata (~8,6:1).
-- Texto pequeno (<24px) de identidade: Ipê sobre Verde-Mata (~4,6:1).
-- Ipê sobre Pau-Brasil: só texto grande (≥24px, ~4:1).
-- Pau-Brasil sobre Verde-Mata: não usar para texto (contraste baixo); só blocos.
-
-## Risco conhecido
-Verde + amarelo encosta na estética verde-amarela. O Pau-Brasil precisa estar sempre presente em toda peça.
-
-Proporção de referência (capa E): Verde-Mata 50% · Pau-Brasil 30% · Ipê 20%.
-Manual completo no vault: `D:\dev\vaults\pessoal\Ideias de Projetos Pessoais\PUKAS\PUKAS - Identidade Visual.md`
+Histórico: v1.1 (Verde-Mata 50% + Ipê 20%, canvas https://claude.ai/artifact/TwricwX9r2pFMqUzyRnZkL) foi substituída pela v2.0 depois do diagnóstico "verde + amarelo = bandeira".

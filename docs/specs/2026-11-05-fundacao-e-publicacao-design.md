@@ -1,6 +1,6 @@
 # Spec — Fundação + Publicação (subprojetos 0 e 1)
 
-- **Status:** Aprovada em 05/11/2026
+- **Status:** ~~Aprovada em 05/11/2026~~ **Substituída** em 06/11/2026 por [2026-11-06-site-memoria-operaria-design.md](2026-11-06-site-memoria-operaria-design.md). O foco mudou da newsletter para a série Memória Operária, e entrou a identidade v2.0.
 - **Data:** 05/11/2026
 - **Depende de:** [ADR-0001](../decisoes/ADR-0001-linguagem-e-stack.md)
 
