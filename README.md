@@ -12,7 +12,7 @@
 
 ## Status
 
-🟡 **Núcleo do site pronto na branch `feat/site-memoria-operaria`.** Falta o deploy e a primeira edição real.
+🟢 **No ar em [pukas.vercel.app](https://pukas.vercel.app).** Falta a primeira edição real e o domínio `pukas.lat`.
 
 | Seção | Status |
 |---|---|
@@ -20,7 +20,7 @@
 | Página da bio (`/links`) | ✅ |
 | Manifesto público (`/manifesto`) | ✅ código · ⏳ texto aguarda aprovação |
 | Capa e RSS | ✅ |
-| Deploy (`pukas.lat`) | ⏳ |
+| Deploy | ✅ `pukas.vercel.app` · ⏳ domínio `pukas.lat` |
 | Painel `/admin`, gerador do carrossel, Raio-X, dossiês, documentários, loja | ⚪ ver o [roadmap](docs/roadmap.md) |
 
 ## Como uma edição vai ao ar
