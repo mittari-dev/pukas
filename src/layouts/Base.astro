@@ -35,7 +35,7 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
   </head>
   <body class={`receita-${receita}`}>
     <Grao />
-    <Cabecalho selo={selo} />
+    <Cabecalho selo={selo} tarja={receita === 'agitacao' ? 'tinta' : 'cor'} />
     <main>
       <slot />
     </main>

@@ -1,0 +1,59 @@
+---
+import type { Edicao } from '../lib/edicoes';
+import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
+
+interface Props {
+  edicoes: Edicao[];
+}
+const { edicoes } = Astro.props;
+---
+{edicoes.length === 0 ? (
+  <p class="vazio">A primeira edição sai numa segunda-feira. Volte logo.</p>
+) : (
+  <ol class="lista" reversed>
+    {edicoes.map((e) => (
+      <li>
+        <a href={caminhoEdicao(e.data.serie, e.data.numero)}>
+          <span class="maquina lista__meta">{formatarNumero(e.data.numero)} · {formatarData(e.data.publicadaEm)}</span>
+          <span class="lista__titulo">{e.data.titulo}</span>
+        </a>
+      </li>
+    ))}
+  </ol>
+)}
+
+<style>
+  .lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 3px solid currentColor;
+  }
+  .lista a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-1);
+    padding: var(--esp-4) 0;
+    border-bottom: 1px solid currentColor;
+    text-decoration: none;
+  }
+  .lista a:hover .lista__titulo,
+  .lista a:focus-visible .lista__titulo {
+    color: var(--acento);
+  }
+  .lista__meta {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .lista__titulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 28px;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .vazio {
+    font-weight: 700;
+  }
+</style>

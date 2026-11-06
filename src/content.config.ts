@@ -38,4 +38,14 @@ const newsletter = defineCollection({
     }),
 });
 
-export const collections = { newsletter };
+// Páginas institucionais (manifesto). Rascunho não é exibido.
+const paginas = defineCollection({
+  loader: glob({ pattern: '*.mdx', base: './src/content/paginas' }),
+  schema: z.object({
+    titulo: z.string().min(1),
+    resumo: z.string().min(1).max(280),
+    rascunho: z.boolean().default(false),
+  }),
+});
+
+export const collections = { newsletter, paginas };

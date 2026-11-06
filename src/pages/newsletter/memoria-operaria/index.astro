@@ -1,0 +1,30 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ListaEdicoes from '../../../components/ListaEdicoes.astro';
+import { carregarEdicoes } from '../../../lib/carregar';
+import '../../../styles/leitura.css';
+
+const edicoes = await carregarEdicoes();
+---
+<Base
+  titulo="Memória Operária"
+  descricao="Direitos que existem porque alguém lutou. Uma edição toda segunda, sempre com as fontes."
+  receita="leitura"
+  selo="MEMÓRIA OPERÁRIA*"
+>
+  <div class="leitura">
+    <h1 class="manchete titulo">Memória Operária</h1>
+    <p class="sub">Direitos que existem porque alguém lutou. Uma edição toda segunda, sempre com as fontes.</p>
+    <ListaEdicoes edicoes={edicoes} />
+  </div>
+</Base>
+
+<style>
+  .titulo {
+    font-size: clamp(48px, 12vw, 96px);
+    margin-top: var(--esp-5);
+  }
+  .sub {
+    margin: var(--esp-4) 0 var(--esp-6);
+  }
+</style>

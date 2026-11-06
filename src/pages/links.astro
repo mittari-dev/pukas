@@ -1,0 +1,110 @@
+---
+// Página da bio do Instagram. Receita Agitação; a última edição entra sozinha no topo.
+import Base from '../layouts/Base.astro';
+import { carregarEdicoes } from '../lib/carregar';
+import { caminhoEdicao, formatarNumero } from '../lib/formato';
+import { links } from '../data/links';
+
+const [ultima] = await carregarEdicoes();
+const botoes = [
+  ...(ultima
+    ? [{ rotulo: `Última Memória Operária, ${formatarNumero(ultima.data.numero)}`, href: caminhoEdicao(ultima.data.serie, ultima.data.numero), frase: ultima.data.titulo }]
+    : []),
+  ...links.map((l) => ({ ...l, frase: undefined })),
+];
+---
+<Base titulo="Links" descricao="Tudo do PUKAS num lugar só: a última edição, o manifesto e o arquivo." receita="agitacao">
+  <div class="links">
+    <h1 class="manchete links__manchete">Direito nenhum caiu do céu.</h1>
+    <ul class="links__lista">
+      {botoes.map((b, i) => (
+        <li>
+          <a class="botao" href={b.href}>
+            <span class="maquina botao__n">{String(i + 1).padStart(2, '0')}</span>
+            <span class="botao__texto">
+              <span class="botao__rotulo">{b.rotulo}</span>
+              {b.frase && <span class="botao__frase">{b.frase}</span>}
+            </span>
+            <span class="maquina botao__seta" aria-hidden="true">›››</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="maquina links__nota">TODA INFORMAÇÃO AQUI TEM FONTE. LEU? PASSE ADIANTE.</p>
+  </div>
+</Base>
+
+<style>
+  .links {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 var(--esp-4);
+  }
+  .links__manchete {
+    font-size: clamp(56px, 16vw, 112px);
+    margin: var(--esp-5) 0 var(--esp-6);
+  }
+  .links__lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-3);
+  }
+  .botao {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-4);
+    min-height: 64px;
+    padding: var(--esp-4);
+    background: var(--tinta);
+    color: var(--cal);
+    text-decoration: none;
+    border: 3px solid var(--tinta);
+  }
+  /* Interação seca, sem easing: inverte a cor e "carimba" o botão. */
+  .botao:hover,
+  .botao:focus-visible {
+    background: var(--cal);
+    color: var(--tinta);
+    transform: translate(-4px, -4px);
+    box-shadow: 4px 4px 0 var(--tinta);
+  }
+  .botao:active {
+    transform: none;
+    box-shadow: none;
+  }
+  .botao:focus-visible {
+    outline: 3px solid var(--cal);
+    outline-offset: 3px;
+  }
+  .botao__n {
+    font-size: 13px;
+  }
+  .botao__texto {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-1);
+  }
+  .botao__rotulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 26px;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .botao__frase {
+    font-size: 16px;
+  }
+  .botao__seta {
+    font-size: 18px;
+  }
+  .links__nota {
+    margin: var(--esp-6) 0 0;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+</style>

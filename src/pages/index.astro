@@ -1,14 +1,70 @@
 ---
-// Provisório: a capa de verdade entra na Tarefa 6.
+import Base from '../layouts/Base.astro';
+import Carimbo from '../components/identidade/Carimbo.astro';
+import ListaEdicoes from '../components/ListaEdicoes.astro';
+import { carregarEdicoes } from '../lib/carregar';
+import { caminhoEdicao } from '../lib/formato';
+import '../styles/leitura.css';
+
+const edicoes = await carregarEdicoes();
+const ultima = edicoes[0];
 ---
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>PUKAS</title>
-  </head>
-  <body>
-    <h1>PUKAS</h1>
-  </body>
-</html>
+<Base
+  titulo="PUKAS"
+  descricao="Órgão de Mídia & Inteligência Latino-Americana. Nada do que você tem caiu do céu: a gente lembra e mostra a prova."
+  receita="leitura"
+  selo="MEMÓRIA OPERÁRIA*"
+>
+  <div class="leitura">
+    {ultima ? (
+      <section class="destaque" aria-labelledby="ultima">
+        <Carimbo numero={ultima.data.numero} data={ultima.data.publicadaEm} />
+        <h1 id="ultima" class="manchete destaque__manchete">{ultima.data.titulo}</h1>
+        <p class="destaque__resumo">{ultima.data.resumo}</p>
+        <a class="maquina destaque__ler" href={caminhoEdicao(ultima.data.serie, ultima.data.numero)}>LER A EDIÇÃO COM AS FONTES ›››</a>
+      </section>
+    ) : (
+      <section class="destaque">
+        <h1 class="manchete destaque__manchete">Direito nenhum caiu do céu.</h1>
+      </section>
+    )}
+
+    <h2 class="secao-titulo maquina">MEMÓRIA OPERÁRIA · TODAS AS EDIÇÕES</h2>
+    <ListaEdicoes edicoes={edicoes} />
+
+    <p class="institucional">
+      O PUKAS é um órgão de mídia & inteligência latino-americana. Toda informação aqui tem fonte.{' '}
+      <a href="/manifesto">Leia o manifesto</a>.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .destaque {
+    padding: var(--esp-5) 0 var(--esp-7);
+  }
+  .destaque__manchete {
+    margin-top: var(--esp-6);
+    font-size: clamp(48px, 12vw, 104px);
+  }
+  .destaque__resumo {
+    margin: var(--esp-5) 0;
+    font-size: 20px;
+  }
+  .destaque__ler {
+    display: inline-block;
+    padding: var(--esp-3) var(--esp-4);
+    background: var(--tinta);
+    color: var(--cal);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+  }
+  .destaque__ler:hover,
+  .destaque__ler:focus-visible {
+    background: var(--pau-brasil);
+  }
+  .institucional {
+    margin-top: var(--esp-7);
+    font-size: 16px;
+  }
+</style>

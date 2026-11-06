@@ -5,11 +5,13 @@ import Selo from '../identidade/Selo.astro';
 
 interface Props {
   selo?: string;
+  // Sobre fundo Pau-Brasil (Agitação) a Tarja vermelha sumiria: usa a versão em Tinta.
+  tarja?: 'cor' | 'tinta';
 }
-const { selo } = Astro.props;
+const { selo, tarja = 'cor' } = Astro.props;
 ---
 <header class="cabecalho">
-  <a href="/" class="cabecalho__marca"><Tarja /></a>
+  <a href="/" class="cabecalho__marca"><Tarja variante={tarja} /></a>
   {selo && <Selo texto={selo} />}
 </header>
 
