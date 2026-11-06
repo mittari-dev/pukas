@@ -18,7 +18,9 @@
 |---|---|
 | Newsletter **Memória Operária** (`/newsletter/memoria-operaria/001`) + endereço curto `/001` | ✅ código · ⏳ primeira edição |
 | Página da bio (`/links`) | ✅ |
-| Manifesto público (`/manifesto`) | ✅ código · ⏳ texto aguarda aprovação |
+| Manifesto público (`/manifesto`) | ✅ |
+| **Cultura** (`/cultura`): contos, cenas, poemas e ensaios | ✅ código · ⏳ primeira obra |
+| Menu lateral (computador) e MENU em tela cheia (celular) | ✅ |
 | Capa e RSS | ✅ |
 | Deploy | ✅ `pukas.vercel.app` · ⏳ domínio `pukas.lat` |
 | Painel `/admin`, gerador do carrossel, Raio-X, dossiês, documentários, loja | ⚪ ver o [roadmap](docs/roadmap.md) |
@@ -29,6 +31,10 @@
 2. Siga o [guia de checagem](docs/editorial/checagem.md).
 3. Abra um PR. **O build recusa** a edição sem fonte primária, sem licença ou crédito da foto, sem checagem ou com manchete de mais de 8 palavras.
 4. Depois do merge, a edição aparece em `/newsletter/memoria-operaria/001`, na capa, em `/links` e no RSS.
+
+## Como uma obra de Cultura vai ao ar
+
+Copie `src/content/cultura/modelo.mdx` para `<titulo-da-obra>.mdx`, escolha o tipo (`conto`, `cena`, `poema`, `ensaio`) e escreva. Ficção não precisa de fonte. Se tiver imagem de capa, o build exige crédito e licença. No poema, as quebras de linha ficam como você escreveu. A obra aparece em `/cultura/<titulo-da-obra>` e no botão "Novo na Cultura" de `/links`.
 
 ## Rodando localmente
 
@@ -60,10 +66,11 @@ A marca é a **Tarja**. A tipografia usa **Archivo** (manchete comprimida), **Sp
 ```
 src/
 ├─ content/newsletter/memoria-operaria/   uma edição = um arquivo .mdx
+├─ content/cultura/                        uma obra = um arquivo .mdx (modelo.mdx)
 ├─ content/paginas/                        manifesto
 ├─ lib/                                    regras puras + testes (edicoes, formato, contraste, rss)
 ├─ components/identidade/                  Tarja, Carimbo, Selo, Grão
-├─ layouts/ · pages/ · styles/ · data/links.ts
+├─ layouts/ · pages/ · styles/ · data/ (links.ts, navegacao.ts)
 docs/
 ├─ specs/ · planos/ · decisoes/           spec → plano → código
 ├─ design/                                 identidade v2.0 + originais

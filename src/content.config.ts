@@ -48,4 +48,41 @@ const paginas = defineCollection({
   }),
 });
 
-export const collections = { newsletter, paginas };
+// Cultura: contos, cenas, poemas e ensaios. Ficção não exige fonte; capa exige crédito e licença (lib/cultura.ts).
+const cultura = defineCollection({
+  loader: glob({ pattern: '*.mdx', base: './src/content/cultura' }),
+  schema: ({ image }) =>
+    z.object({
+      tipo: z.enum(['conto', 'cena', 'poema', 'ensaio']),
+      numero: z.number().int().min(1),
+      titulo: z.string().min(1),
+      resumo: z.string().min(1).max(280),
+      publicadaEm: z.coerce.date(),
+      autoria: z.string().min(1).default('PUKAS'),
+      video: z.url().optional(),
+      aviso: z.string().min(1).optional(),
+      capa: z
+        .object({
+          arquivo: image(),
+          descricao: z.string().min(1),
+          credito: z.string().optional(),
+          licenca: z.string().optional(),
+          origem: z.url().optional(),
+        })
+        .optional(),
+      fontes: z
+        .array(
+          z.object({
+            titulo: z.string().min(1),
+            instituicao: z.string().min(1),
+            url: z.url(),
+            tipo: z.enum(['primaria', 'secundaria']),
+            acessadaEm: z.coerce.date(),
+          }),
+        )
+        .default([]),
+      rascunho: z.boolean().default(false),
+    }),
+});
+
+export const collections = { newsletter, paginas, cultura };

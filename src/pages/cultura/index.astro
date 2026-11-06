@@ -1,0 +1,82 @@
+---
+import Base from '../../layouts/Base.astro';
+import { carregarObras } from '../../lib/carregar';
+import { rotuloTipo } from '../../lib/cultura';
+import { formatarData, formatarNumero } from '../../lib/formato';
+import '../../styles/leitura.css';
+
+const obras = await carregarObras();
+---
+<Base
+  titulo="Cultura"
+  descricao="Contos, cenas, poemas e ensaios do PUKAS. Saem quando ficam prontos."
+  receita="leitura"
+  selo="FRONTEIRA*"
+>
+  <div class="leitura">
+    <h1 class="manchete titulo">Cultura</h1>
+    <p class="sub">Contos, cenas, poemas e ensaios. Saem quando ficam prontos.</p>
+
+    {obras.length === 0 ? (
+      <p class="vazio">A primeira obra ainda está sendo escrita.</p>
+    ) : (
+      <ol class="lista" reversed>
+        {obras.map((o) => (
+          <li>
+            <a href={`/cultura/${o.id}`}>
+              <span class="maquina lista__meta">{rotuloTipo(o.data.tipo)} · {formatarNumero(o.data.numero)} · {formatarData(o.data.publicadaEm)}</span>
+              <span class="lista__titulo">{o.data.titulo}</span>
+              <span class="lista__resumo">{o.data.resumo}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    )}
+  </div>
+</Base>
+
+<style>
+  .titulo {
+    font-size: clamp(56px, 14vw, 112px);
+    margin-top: var(--esp-5);
+  }
+  .sub {
+    margin: var(--esp-4) 0 var(--esp-6);
+  }
+  .lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 3px solid currentColor;
+  }
+  .lista a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-1);
+    padding: var(--esp-4) 0;
+    border-bottom: 1px solid currentColor;
+    text-decoration: none;
+  }
+  .lista a:hover .lista__titulo,
+  .lista a:focus-visible .lista__titulo {
+    color: var(--acento);
+  }
+  .lista__meta {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .lista__titulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 30px;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .lista__resumo {
+    font-size: 16px;
+  }
+  .vazio {
+    font-weight: 700;
+  }
+</style>

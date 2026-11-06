@@ -2,6 +2,7 @@
 import '../styles/base.css';
 import Grao from '../components/identidade/Grao.astro';
 import Cabecalho from '../components/layout/Cabecalho.astro';
+import Navegacao from '../components/layout/Navegacao.astro';
 import Rodape from '../components/layout/Rodape.astro';
 
 interface Props {
@@ -34,11 +35,29 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:card" content={imagem ? 'summary_large_image' : 'summary'} />
   </head>
   <body class={`receita-${receita}`}>
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
     <Grao />
-    <Cabecalho selo={selo} tarja={receita === 'agitacao' ? 'tinta' : 'cor'} />
-    <main>
-      <slot />
-    </main>
-    <Rodape />
+    <div class="pagina">
+      <Navegacao tarja={receita === 'agitacao' ? 'tinta' : 'cor'} />
+      <div class="pagina__conteudo">
+        <Cabecalho selo={selo} />
+        <main id="conteudo" tabindex="-1">
+          <slot />
+        </main>
+        <Rodape />
+      </div>
+    </div>
   </body>
 </html>
+
+<style>
+  .pagina__conteudo {
+    min-width: 0;
+  }
+  @media (min-width: 1024px) {
+    .pagina {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+    }
+  }
+</style>

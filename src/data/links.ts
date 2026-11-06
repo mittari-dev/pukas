@@ -7,5 +7,6 @@ export interface LinkBio {
 
 export const links: LinkBio[] = [
   { rotulo: 'Manifesto', href: '/manifesto' },
-  { rotulo: 'Todas as edições', href: '/newsletter/memoria-operaria' },
+  { rotulo: 'Memória Operária: todas as edições', href: '/newsletter/memoria-operaria' },
+  { rotulo: 'Cultura: contos, poemas e ensaios', href: '/cultura' },
 ];

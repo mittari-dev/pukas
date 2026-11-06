@@ -32,10 +32,15 @@
   --fundo: var(--cal);
   --texto: var(--tinta);
   --acento: var(--pau-brasil);
+  --ativo: var(--pau-brasil); /* item de menu ativo / hover: 6,41:1 sobre Cal */
+  --foco: var(--tinta);
 }
 
 .receita-agitacao {
   --fundo: var(--pau-brasil);
   --texto: var(--cal);
   --acento: var(--tinta);
+  /* Tinta sobre Pau-Brasil dá 2,32:1: reprovado para texto e foco. Aqui o destaque é Cal. */
+  --ativo: var(--cal);
+  --foco: var(--cal);
 }
