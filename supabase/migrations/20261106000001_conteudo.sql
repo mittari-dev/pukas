@@ -88,18 +88,18 @@ create index historico_peca on historico (peca_id, quando);
 
 -- Mesma contagem de textoManchete/contarPalavras: | e * viram espaço.
 create function palavras_manchete(t text) returns int
-language sql immutable as $$
+language sql immutable set search_path = public as $$
   select count(*)::int
   from regexp_split_to_table(trim(regexp_replace(translate(coalesce(t, ''), '|*', '  '), '\s+', ' ', 'g')), ' ') p
   where p <> ''
 $$;
 
 create function vazio(t text) returns boolean
-language sql immutable as $$ select coalesce(trim(t), '') = '' $$;
+language sql immutable set search_path = public as $$ select coalesce(trim(t), '') = '' $$;
 
 -- Mensagens idênticas às de validarPublicavel/validarObra, na mesma ordem.
 create function pecas_travas() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 declare
   problemas text[] := '{}';
   n int;

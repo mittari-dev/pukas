@@ -6,7 +6,7 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 create function com_2fa() returns boolean
-language sql stable as $$ select coalesce(auth.jwt()->>'aal', '') = 'aal2' $$;
+language sql stable set search_path = public as $$ select coalesce(auth.jwt()->>'aal', '') = 'aal2' $$;
 
 create function no_ar(peca uuid) returns boolean
 language sql stable security definer set search_path = public as $$
@@ -48,7 +48,7 @@ create policy correcoes_editor on correcoes for insert to authenticated with che
 create policy historico_equipe_le on historico for select to authenticated using (com_2fa() and papel_atual() is not null);
 
 create function historico_imutavel() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 begin
   raise exception 'o histórico não pode ser alterado nem apagado';
 end $$;
