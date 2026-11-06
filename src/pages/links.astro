@@ -1,16 +1,18 @@
 ---
 // Página da bio do Instagram. Receita Agitação; a última edição entra sozinha no topo.
 import Base from '../layouts/Base.astro';
-import { carregarEdicoes } from '../lib/carregar';
+import { carregarEdicoes, carregarObras } from '../lib/carregar';
 import { caminhoEdicao, formatarNumero } from '../lib/formato';
 import { links } from '../data/links';
 
 const [ultima] = await carregarEdicoes();
-const botoes = [
+const [obra] = await carregarObras();
+const botoes: { rotulo: string; href: string; frase?: string }[] = [
   ...(ultima
     ? [{ rotulo: `Última Memória Operária, ${formatarNumero(ultima.data.numero)}`, href: caminhoEdicao(ultima.data.serie, ultima.data.numero), frase: ultima.data.titulo }]
     : []),
-  ...links.map((l) => ({ ...l, frase: undefined })),
+  ...(obra ? [{ rotulo: 'Novo na Cultura', href: `/cultura/${obra.id}`, frase: obra.data.titulo }] : []),
+  ...links,
 ];
 ---
 <Base titulo="Links" descricao="Tudo do PUKAS num lugar só: a última edição, o manifesto e o arquivo." receita="agitacao">

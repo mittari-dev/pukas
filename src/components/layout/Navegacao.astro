@@ -1,0 +1,139 @@
+---
+// Menu da plataforma. Computador: barra lateral fixa. Celular: barra no topo com MENU (<details>, sem JS).
+import Tarja from '../identidade/Tarja.astro';
+import { navegacao } from '../../data/navegacao';
+import { secaoAtiva } from '../../lib/navegacao';
+
+interface Props {
+  // Sobre fundo Pau-Brasil (Agitação) a Tarja vermelha sumiria: usa a versão em Tinta.
+  tarja?: 'cor' | 'tinta';
+}
+const { tarja = 'cor' } = Astro.props;
+const ativa = secaoAtiva(Astro.url.pathname, navegacao);
+---
+<aside class="lateral">
+  <a href="/" class="marca"><Tarja variante={tarja} tamanho="g" /></a>
+  <nav aria-label="Seções">
+    <ul class="itens">
+      {navegacao.map((i) => (
+        <li><a href={i.href} aria-current={i.href === ativa ? 'page' : undefined}>{i.rotulo}</a></li>
+      ))}
+    </ul>
+  </nav>
+  <p class="maquina lateral__assinatura">A TEORIA VOLTA A SER ARMA*</p>
+</aside>
+
+<div class="topo">
+  <a href="/" class="marca"><Tarja variante={tarja} /></a>
+  <details class="menu">
+    <summary class="maquina">MENU</summary>
+    <nav aria-label="Seções (celular)">
+      <ul class="itens">
+        {navegacao.map((i) => (
+          <li><a href={i.href} aria-current={i.href === ativa ? 'page' : undefined}>{i.rotulo}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </details>
+</div>
+
+<style>
+  .marca {
+    text-decoration: none;
+    line-height: 0;
+    display: inline-block;
+  }
+  .itens {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .itens a {
+    display: block;
+    padding: var(--esp-2) 0;
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 28px;
+    line-height: 0.95;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .itens a:hover,
+  .itens a:focus-visible,
+  .itens a[aria-current='page'] {
+    color: var(--acento);
+  }
+  .itens a[aria-current='page']::before {
+    content: '› ';
+  }
+
+  /* Celular: barra no topo */
+  .lateral {
+    display: none;
+  }
+  .topo {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--esp-4);
+    border-bottom: 3px solid currentColor;
+  }
+  .menu summary {
+    list-style: none;
+    cursor: pointer;
+    padding: var(--esp-3) var(--esp-4);
+    min-height: 44px;
+    border: 3px solid currentColor;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+  }
+  .menu summary::-webkit-details-marker {
+    display: none;
+  }
+  .menu[open] summary {
+    background: var(--texto);
+    color: var(--fundo);
+  }
+  .menu nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    min-height: 100vh;
+    z-index: 10;
+    padding: var(--esp-5) var(--esp-4) var(--esp-7);
+    background: var(--fundo);
+    border-bottom: 3px solid currentColor;
+  }
+  .menu .itens a {
+    font-size: 40px;
+    padding: var(--esp-3) 0;
+  }
+
+  /* Computador: barra lateral fixa */
+  @media (min-width: 1024px) {
+    .topo {
+      display: none;
+    }
+    .lateral {
+      display: flex;
+      flex-direction: column;
+      gap: var(--esp-6);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: var(--esp-6) var(--esp-5);
+      border-right: 3px solid currentColor;
+    }
+    .lateral__assinatura {
+      margin-top: auto;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+    }
+    .lateral :global(.tarja--g) {
+      font-size: 64px;
+    }
+  }
+</style>

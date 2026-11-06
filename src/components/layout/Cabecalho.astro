@@ -1,32 +1,24 @@
 ---
-// Esqueleto fixo: Tarja no canto superior esquerdo, selo de editoria no direito.
-import Tarja from '../identidade/Tarja.astro';
+// Esqueleto fixo: selo de editoria sempre no canto superior direito. A Tarja fica no menu.
 import Selo from '../identidade/Selo.astro';
 
 interface Props {
   selo?: string;
-  // Sobre fundo Pau-Brasil (Agitação) a Tarja vermelha sumiria: usa a versão em Tinta.
-  tarja?: 'cor' | 'tinta';
 }
-const { selo, tarja = 'cor' } = Astro.props;
+const { selo } = Astro.props;
 ---
-<header class="cabecalho">
-  <a href="/" class="cabecalho__marca"><Tarja variante={tarja} /></a>
-  {selo && <Selo texto={selo} />}
-</header>
+{selo && (
+  <header class="cabecalho">
+    <Selo texto={selo} />
+  </header>
+)}
 
 <style>
   .cabecalho {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--esp-4);
-    padding: var(--esp-5) var(--esp-4);
+    justify-content: flex-end;
+    padding: var(--esp-5) var(--esp-4) 0;
     max-width: 960px;
     margin: 0 auto;
-  }
-  .cabecalho__marca {
-    text-decoration: none;
-    line-height: 0;
   }
 </style>
