@@ -20,7 +20,6 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
       ))}
     </ul>
   </nav>
-  <p class="maquina lateral__assinatura">A TEORIA VOLTA A SER ARMA*</p>
 </aside>
 
 <div class="topo">
@@ -62,10 +61,16 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
   .itens a:hover,
   .itens a:focus-visible,
   .itens a[aria-current='page'] {
-    color: var(--acento);
+    color: var(--ativo);
   }
+  .itens a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 4px;
+  }
+  /* "/ ''" esconde o marcador do leitor de tela; aria-current já anuncia a página. */
   .itens a[aria-current='page']::before {
-    content: '› ';
+    content: '› ' / '';
   }
 
   /* Celular: barra no topo */
@@ -79,6 +84,9 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
     align-items: center;
     padding: var(--esp-4);
     border-bottom: 3px solid currentColor;
+  }
+  .topo :global(.tarja) {
+    font-size: 48px;
   }
   .menu summary {
     list-style: none;
@@ -127,13 +135,8 @@ const ativa = secaoAtiva(Astro.url.pathname, navegacao);
       padding: var(--esp-6) var(--esp-5);
       border-right: 3px solid currentColor;
     }
-    .lateral__assinatura {
-      margin-top: auto;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-    }
     .lateral :global(.tarja--g) {
-      font-size: 64px;
+      font-size: 92px;
     }
   }
 </style>

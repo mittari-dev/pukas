@@ -35,12 +35,13 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:card" content={imagem ? 'summary_large_image' : 'summary'} />
   </head>
   <body class={`receita-${receita}`}>
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
     <Grao />
     <div class="pagina">
       <Navegacao tarja={receita === 'agitacao' ? 'tinta' : 'cor'} />
       <div class="pagina__conteudo">
         <Cabecalho selo={selo} />
-        <main>
+        <main id="conteudo" tabindex="-1">
           <slot />
         </main>
         <Rodape />
@@ -56,7 +57,7 @@ const canonica = new URL(Astro.url.pathname, Astro.site);
   @media (min-width: 1024px) {
     .pagina {
       display: grid;
-      grid-template-columns: 280px minmax(0, 1fr);
+      grid-template-columns: 320px minmax(0, 1fr);
     }
   }
 </style>

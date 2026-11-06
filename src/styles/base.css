@@ -19,8 +19,10 @@ body {
   background: var(--fundo);
   color: var(--texto);
   font-family: var(--fonte-corpo);
+  /* 500, não 400: a Archivo regular fica fina demais no papel Cal (queixa do fundador, 06/11). */
+  font-weight: 500;
   font-size: 18px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 img {
@@ -34,8 +36,24 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid var(--acento);
+  outline: 3px solid var(--foco);
   outline-offset: 2px;
+}
+
+/* Pular o menu (WCAG 2.4.1): aparece só no foco do teclado. */
+.pular {
+  position: absolute;
+  left: var(--esp-4);
+  top: -100px;
+  z-index: 20;
+  padding: var(--esp-3) var(--esp-4);
+  background: var(--tinta);
+  color: var(--cal);
+  font-family: var(--fonte-maquina);
+  font-weight: 700;
+}
+.pular:focus {
+  top: var(--esp-4);
 }
 
 .manchete {

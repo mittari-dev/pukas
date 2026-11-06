@@ -24,7 +24,17 @@ describe('secaoAtiva', () => {
     expect(secaoAtiva('/culturas', itens)).toBeUndefined();
   });
 
-  it('não marca nada na capa', () => {
+  it('não marca nada na capa quando não há item de início', () => {
     expect(secaoAtiva('/', itens)).toBeUndefined();
+  });
+
+  const comInicio = [{ rotulo: 'Início', href: '/' }, ...itens];
+
+  it('marca Início só na capa', () => {
+    expect(secaoAtiva('/', comInicio)).toBe('/');
+  });
+
+  it('não marca Início dentro de outra seção', () => {
+    expect(secaoAtiva('/cultura/a-marmita', comInicio)).toBe('/cultura');
   });
 });

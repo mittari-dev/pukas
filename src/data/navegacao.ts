@@ -2,6 +2,7 @@
 import type { ItemNavegacao } from '../lib/navegacao';
 
 export const navegacao: ItemNavegacao[] = [
+  { rotulo: 'Início', href: '/' },
   { rotulo: 'Memória Operária', href: '/newsletter/memoria-operaria' },
   { rotulo: 'Cultura', href: '/cultura' },
   { rotulo: 'Manifesto', href: '/manifesto' },
