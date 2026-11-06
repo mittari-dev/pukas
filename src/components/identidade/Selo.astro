@@ -1,0 +1,16 @@
+---
+// Selo de editoria: sempre no canto superior direito, sempre em Space Mono.
+interface Props {
+  texto: string;
+}
+const { texto } = Astro.props;
+---
+<span class="selo maquina">{texto}</span>
+
+<style>
+  .selo {
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+</style>

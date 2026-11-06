@@ -1,0 +1,46 @@
+---
+// Marca secundária: carimbo de borracha com número de arquivo. Anton só aqui.
+import { formatarData, formatarNumero } from '../../lib/formato';
+
+interface Props {
+  numero: number;
+  data?: Date;
+}
+const { numero, data } = Astro.props;
+---
+<div class="carimbo">
+  <span class="carimbo__topo">ARQUIVO POPULAR</span>
+  <span class="carimbo__marca">PUKAS</span>
+  <span class="carimbo__numero">{formatarNumero(numero)}{data && ` · ${formatarData(data)}`}</span>
+</div>
+
+<style>
+  .carimbo {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 14px 6px;
+    border: 4px solid var(--pau-brasil);
+    outline: 2px solid var(--pau-brasil);
+    outline-offset: 4px;
+    color: var(--pau-brasil);
+    transform: rotate(-4deg);
+  }
+  .carimbo__topo,
+  .carimbo__numero {
+    font-family: var(--fonte-maquina);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+  }
+  .carimbo__marca {
+    font-family: var(--fonte-carimbo);
+    font-size: 48px;
+    line-height: 0.9;
+  }
+  .carimbo__numero {
+    border-top: 2px solid var(--pau-brasil);
+    padding-top: 3px;
+  }
+</style>

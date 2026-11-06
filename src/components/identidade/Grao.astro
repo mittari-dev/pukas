@@ -1,0 +1,15 @@
+---
+// Define o filtro de grão uma vez por página. Só a classe .manchete o usa: corpo de texto fica limpo.
+---
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <filter id="grao">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="ruido" />
+    <feDisplacementMap in="SourceGraphic" in2="ruido" scale="2.5" />
+  </filter>
+</svg>
+
+<style is:global>
+  .manchete {
+    filter: url(#grao);
+  }
+</style>

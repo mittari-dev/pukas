@@ -1,0 +1,28 @@
+---
+// Marca principal: bloco com "PUKAS" vazado. Só estas 3 versões (manual v2.0 §2).
+interface Props {
+  variante?: 'cor' | 'tinta' | 'cal';
+  tamanho?: 'p' | 'g';
+}
+const { variante = 'cor', tamanho = 'p' } = Astro.props;
+---
+<span class:list={['tarja', `tarja--${variante}`, `tarja--${tamanho}`]} role="img" aria-label="PUKAS">
+  <span aria-hidden="true">PUKAS</span>
+</span>
+
+<style>
+  .tarja {
+    display: inline-block;
+    padding: 0.08em 0.18em 0;
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+  }
+  .tarja--p { font-size: 32px; }
+  .tarja--g { font-size: clamp(72px, 18vw, 160px); }
+  .tarja--cor { background: var(--pau-brasil); color: var(--cal); }
+  .tarja--tinta { background: var(--tinta); color: var(--cal); }
+  .tarja--cal { background: var(--cal); color: var(--tinta); }
+</style>
