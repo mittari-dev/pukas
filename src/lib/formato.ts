@@ -1,4 +1,9 @@
-const MESES = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+import { prefixar, type Idioma } from './idioma';
+
+const MESES: Record<Idioma, string[]> = {
+  pt: ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'],
+  es: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'],
+};
 
 export type Serie = 'memoria-operaria';
 
@@ -8,8 +13,8 @@ export function formatarNumero(n: number): string {
   return `Nº ${tresDigitos(n)}`;
 }
 
-export function caminhoEdicao(serie: Serie, n: number): string {
-  return `/newsletter/${serie}/${tresDigitos(n)}`;
+export function caminhoEdicao(serie: Serie, n: number, idioma: Idioma = 'pt'): string {
+  return prefixar(`/newsletter/${serie}/${tresDigitos(n)}`, idioma);
 }
 
 export function caminhoCurto(n: number): string {
@@ -17,6 +22,6 @@ export function caminhoCurto(n: number): string {
 }
 
 // UTC: as datas do frontmatter são meia-noite UTC e não podem recuar um dia no fuso do Brasil.
-export function formatarData(d: Date): string {
-  return `${String(d.getUTCDate()).padStart(2, '0')} ${MESES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+export function formatarData(d: Date, idioma: Idioma = 'pt'): string {
+  return `${String(d.getUTCDate()).padStart(2, '0')} ${MESES[idioma][d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }

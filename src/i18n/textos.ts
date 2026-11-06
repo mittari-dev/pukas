@@ -1,0 +1,160 @@
+// Todos os textos fixos da interface. Espanhol: neutro latino-americano ("ustedes", sem "vosotros", sem gíria de um país).
+// Um teste garante que pt e es têm as mesmas chaves.
+
+const pt = {
+  'site.descricao': 'Órgão de mídia & inteligência latino-americana. Nada do que você tem caiu do céu: a gente lembra e mostra a prova.',
+  'site.assinatura': 'PUKAS · A TEORIA VOLTA A SER ARMA*',
+  'site.institucional': 'O PUKAS é um órgão de mídia & inteligência latino-americana. Toda informação aqui tem fonte.',
+  'site.leiaManifesto': 'Leia o manifesto',
+
+  'nav.inicio': 'Início',
+  'nav.memoria': 'Memória Operária',
+  'nav.cultura': 'Cultura',
+  'nav.manifesto': 'Manifesto',
+  'nav.links': 'Links',
+  'nav.menu': 'Menu',
+  'nav.secoes': 'Seções',
+  'nav.marca': 'PUKAS, início',
+  'nav.pular': 'Pular para o conteúdo',
+  'nav.idioma': 'Idioma',
+
+  'selo.memoria': 'MEMÓRIA OPERÁRIA*',
+  'selo.cultura': 'FRONTEIRA*',
+  'carimbo.topo': 'ARQUIVO POPULAR',
+
+  'capa.manchete': 'Direito | nenhum caiu | do céu. | *Foi luta.*',
+  'capa.lerEdicao': 'LER A EDIÇÃO COM AS FONTES ›››',
+  'capa.todasEdicoes': 'MEMÓRIA OPERÁRIA · TODAS AS EDIÇÕES',
+
+  'serie.titulo': 'Memória | Operária',
+  'serie.sub': 'Direitos que existem porque alguém lutou. Uma edição toda segunda, sempre com as fontes.',
+  'serie.vazio': 'A primeira edição sai numa segunda-feira. Volte logo.',
+
+  'edicao.foto': 'FOTO',
+  'edicao.fontes': 'FONTES',
+  'edicao.primaria': 'PRIMÁRIA',
+  'edicao.secundaria': 'SECUNDÁRIA',
+  'edicao.acessadaEm': 'ACESSADA EM',
+  'edicao.checadoPor': 'CHECADO POR',
+  'edicao.em': 'EM',
+  'edicao.correcoes': 'CORREÇÕES',
+  'edicao.chamada': 'Mande pra quem trabalha com você ›››',
+  'edicao.todas': 'TODAS AS EDIÇÕES',
+  'edicao.outras': 'Outras edições',
+  'edicao.lerEdicao': 'Ler a edição',
+
+  'traducao.automatica': 'TRADUÇÃO AUTOMÁTICA',
+  'traducao.original': 'o original está em espanhol',
+  'traducao.verOriginal': 'Ver o original',
+
+  'cultura.titulo': 'Cultura',
+  'cultura.sub': 'Contos, cenas, poemas e ensaios. Saem quando ficam prontos.',
+  'cultura.vazio': 'A primeira obra ainda está sendo escrita.',
+  'cultura.descricao': 'Contos, cenas, poemas e ensaios do PUKAS. Saem quando ficam prontos.',
+  'cultura.aviso': 'AVISO:',
+  'cultura.video': 'VER O VÍDEO DA LEITURA ›››',
+  'cultura.imagem': 'IMAGEM',
+  'cultura.chamada': 'Leu? Passe adiante ›››',
+  'cultura.todas': 'TODAS AS OBRAS',
+  'tipo.conto': 'CONTO',
+  'tipo.cena': 'CENA',
+  'tipo.poema': 'POEMA',
+  'tipo.ensaio': 'ENSAIO',
+
+  'links.titulo': 'Links',
+  'links.descricao': 'Tudo do PUKAS num lugar só: a última edição, o manifesto e o arquivo.',
+  'links.manchete': 'Direito | nenhum caiu | do céu.',
+  'links.ultimaEdicao': 'Última Memória Operária,',
+  'links.novoCultura': 'Novo na Cultura',
+  'links.manifesto': 'Manifesto',
+  'links.memoria': 'Memória Operária: todas as edições',
+  'links.cultura': 'Cultura: contos, poemas e ensaios',
+  'links.nota': 'TODA INFORMAÇÃO AQUI TEM FONTE. LEU? PASSE ADIANTE.',
+
+  'manifesto.titulo': 'Manifesto',
+  'manifesto.emBreve': 'EM BREVE.',
+
+  'rss.titulo': 'PUKAS — Memória Operária',
+  'rss.descricao': 'Direitos que existem porque alguém lutou. Uma edição toda segunda, sempre com as fontes.',
+} as const;
+
+export type Chave = keyof typeof pt;
+
+const es: Record<Chave, string> = {
+  'site.descricao': 'Medio de comunicación e inteligencia latinoamericana. Nada de lo que tienes cayó del cielo: lo recordamos y mostramos la prueba.',
+  'site.assinatura': 'PUKAS · LA TEORÍA VUELVE A SER ARMA*',
+  'site.institucional': 'PUKAS es un medio de comunicación e inteligencia latinoamericana. Toda la información aquí tiene fuente.',
+  'site.leiaManifesto': 'Lee el manifiesto',
+
+  'nav.inicio': 'Inicio',
+  'nav.memoria': 'Memoria Obrera',
+  'nav.cultura': 'Cultura',
+  'nav.manifesto': 'Manifiesto',
+  'nav.links': 'Links',
+  'nav.menu': 'Menú',
+  'nav.secoes': 'Secciones',
+  'nav.marca': 'PUKAS, inicio',
+  'nav.pular': 'Saltar al contenido',
+  'nav.idioma': 'Idioma',
+
+  'selo.memoria': 'MEMORIA OBRERA*',
+  'selo.cultura': 'FRONTERA*',
+  'carimbo.topo': 'ARCHIVO POPULAR',
+
+  'capa.manchete': 'Ningún derecho | cayó | del cielo. | *Fue lucha.*',
+  'capa.lerEdicao': 'LEER LA EDICIÓN CON LAS FUENTES ›››',
+  'capa.todasEdicoes': 'MEMORIA OBRERA · TODAS LAS EDICIONES',
+
+  'serie.titulo': 'Memoria | Obrera',
+  'serie.sub': 'Derechos que existen porque alguien luchó. Una edición cada lunes, siempre con las fuentes.',
+  'serie.vazio': 'Todavía no hay ediciones en español. Vuelve pronto.',
+
+  'edicao.foto': 'FOTO',
+  'edicao.fontes': 'FUENTES',
+  'edicao.primaria': 'PRIMARIA',
+  'edicao.secundaria': 'SECUNDARIA',
+  'edicao.acessadaEm': 'CONSULTADA EL',
+  'edicao.checadoPor': 'VERIFICADO POR',
+  'edicao.em': 'EL',
+  'edicao.correcoes': 'CORRECCIONES',
+  'edicao.chamada': 'Mándaselo a quien trabaja contigo ›››',
+  'edicao.todas': 'TODAS LAS EDICIONES',
+  'edicao.outras': 'Otras ediciones',
+  'edicao.lerEdicao': 'Leer la edición',
+
+  'traducao.automatica': 'TRADUCCIÓN AUTOMÁTICA',
+  'traducao.original': 'el original está en portugués',
+  'traducao.verOriginal': 'Ver el original',
+
+  'cultura.titulo': 'Cultura',
+  'cultura.sub': 'Cuentos, escenas, poemas y ensayos. Salen cuando están listos.',
+  'cultura.vazio': 'Todavía no hay obras en español. Vuelve pronto.',
+  'cultura.descricao': 'Cuentos, escenas, poemas y ensayos de PUKAS. Salen cuando están listos.',
+  'cultura.aviso': 'ADVERTENCIA:',
+  'cultura.video': 'VER EL VIDEO DE LA LECTURA ›››',
+  'cultura.imagem': 'IMAGEN',
+  'cultura.chamada': '¿Lo leíste? Pásalo ›››',
+  'cultura.todas': 'TODAS LAS OBRAS',
+  'tipo.conto': 'CUENTO',
+  'tipo.cena': 'ESCENA',
+  'tipo.poema': 'POEMA',
+  'tipo.ensaio': 'ENSAYO',
+
+  'links.titulo': 'Links',
+  'links.descricao': 'Todo PUKAS en un solo lugar: la última edición, el manifiesto y el archivo.',
+  'links.manchete': 'Ningún derecho | cayó | del cielo.',
+  'links.ultimaEdicao': 'Última Memoria Obrera,',
+  'links.novoCultura': 'Nuevo en Cultura',
+  'links.manifesto': 'Manifiesto',
+  'links.memoria': 'Memoria Obrera: todas las ediciones',
+  'links.cultura': 'Cultura: cuentos, poemas y ensayos',
+  'links.nota': 'TODA LA INFORMACIÓN AQUÍ TIENE FUENTE. ¿LO LEÍSTE? PÁSALO.',
+
+  'manifesto.titulo': 'Manifiesto',
+  'manifesto.emBreve': 'PRÓXIMAMENTE.',
+
+  'rss.titulo': 'PUKAS — Memoria Obrera',
+  'rss.descricao': 'Derechos que existen porque alguien luchó. Una edición cada lunes, siempre con las fuentes.',
+};
+
+export const textos = { pt: pt as Record<Chave, string>, es };
