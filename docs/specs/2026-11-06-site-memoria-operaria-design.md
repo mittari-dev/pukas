@@ -5,15 +5,32 @@
 - **Substitui:** [2026-11-05-fundacao-e-publicacao-design.md](2026-11-05-fundacao-e-publicacao-design.md)
 - **Depende de:** [ADR-0001](../decisoes/ADR-0001-linguagem-e-stack.md) · [Identidade v2.0](../design/identidade-visual.md)
 
+## 0. Contexto: o site é uma plataforma, e esta spec é o núcleo dela
+
+```
+pukas.lat
+├─ /                                     capa da plataforma           ← esta spec
+├─ /newsletter/memoria-operaria/001      edição completa + fontes      ← esta spec
+├─ /001                                  endereço curto → edição       ← esta spec
+├─ /links                                página temática da bio        ← esta spec
+├─ /manifesto                            manifesto público             ← esta spec
+├─ /admin                                painel com login              depois (ADR-0002 pendente)
+├─ /dossies · /documentarios · /loja     seções futuras                depois
+```
+
+**Fluxo editorial:** a **newsletter é a fonte**. Cada edição da Memória Operária conta o que a classe já conquistou, o que ainda está batalhando e para onde está indo, com o texto completo e as fontes. Da edição nasce o **carrossel** de 4 a 6 imagens, que chama para o link da bio. O link da bio leva para `/links`, e de lá para a última edição.
+
+Neste documento, "peça" e "edição" são a mesma coisa: uma edição da newsletter Memória Operária.
+
 ## 1. Objetivo
 
-Lançar a série **Memória Operária** no Instagram (um carrossel toda **segunda-feira**, por 10 semanas) com **credibilidade desde o primeiro dia**. Cada peça tem uma página no site com as fontes. O site é pequeno, mas já é a infraestrutura própria.
+Lançar a série **Memória Operária**: uma edição da newsletter no site e um carrossel no Instagram toda **segunda-feira**, por 10 semanas, com **credibilidade desde o primeiro dia**. Cada edição traz as suas fontes. O núcleo é pequeno, mas já é a infraestrutura da plataforma.
 
 **Por quê:** o que separa o PUKAS de uma página de meme é o dado verificável. Peça política sem fonte é alvo fácil de "fake news". Com a fonte visível, a resposta já está pronta.
 
 **Pronto quando:**
 
-1. Uma peça escrita num arquivo MDX, depois de aprovada por PR, aparece em `pukas.lat/001` com as fontes, o crédito da foto e o registro de checagem.
+1. Uma edição escrita num arquivo MDX, depois de aprovada por PR, aparece em `pukas.lat/newsletter/memoria-operaria/001`, com as fontes, o crédito da foto e o registro de checagem. O endereço `pukas.lat/001` leva até ela.
 2. `pukas.lat/links` mostra a última peça publicada sem nenhuma edição manual.
 3. O build **recusa** uma peça sem fonte primária, sem licença da foto ou sem checagem.
 4. As páginas passam no Lighthouse com Performance ≥ 95 e Acessibilidade ≥ 95 no celular.
@@ -30,25 +47,30 @@ O PUKAS fala **como conversa de bar**: simples, densa, visceral, "desconfortavel
 
 | Rota | O que é | Receita |
 |---|---|---|
-| `/` | Capa: Tarja, a frase da última peça, o arquivo da série, link para o manifesto | Leitura |
-| `/001`, `/002`… | **Página de fontes** de cada peça | Leitura |
+| `/` | Capa: Tarja, a frase da última edição, o arquivo da série, link para o manifesto | Leitura |
+| `/newsletter/memoria-operaria/001`… | **Edição completa**: texto e fontes | Leitura |
+| `/newsletter/memoria-operaria` | Arquivo da série | Leitura |
+| `/001`, `/002`… | Endereço curto impresso no carrossel. Redireciona para a edição | — |
 | `/links` | Página da bio do Instagram: última peça (automática), manifesto, arquivo | Agitação |
 | `/manifesto` | Manifesto público curto em linguagem de rua (rascunho do Claude, aprovado pelo fundador) | Leitura |
 | `/rss.xml` | Feed das peças | — |
 
 ### Fica de fora (agora)
 
-- Newsletter, dossiê, Raio-X (perto do mês 3) e loja ou impressos (ver o roadmap).
+- **Painel de administrador** (`/admin`, com login e senha). A ferramenta fica para o ADR-0002. Até lá, publica-se por PR.
+- Outras séries da newsletter, dossiês, documentários, Raio-X (perto do mês 3), loja e impressos (ver o roadmap).
+- Envio da newsletter por e-mail (Resend, numa fase posterior).
 - **Gerador automático dos slides do carrossel.** Tem plano próprio, logo depois do site.
 - O manifesto antigo (vanguarda, hegemonia) **não é publicado**. Vira `docs/produto/fundamentos-interno.md`.
 
 ## 4. Uma peça = um arquivo
 
-`src/content/pecas/001-<slug>.mdx`. O frontmatter guarda os dados estruturados e o corpo guarda o texto da página.
+`src/content/newsletter/memoria-operaria/001-<slug>.mdx`. O frontmatter guarda os dados estruturados e o corpo guarda o texto da edição.
 
 | Campo | Tipo | Regra |
 |---|---|---|
-| `numero` | inteiro ≥ 1 | Único. A URL é `/` + número com 3 dígitos |
+| `serie` | `'memoria-operaria'` | Por enquanto existe só uma série. A lista cresce quando chegarem outras |
+| `numero` | inteiro ≥ 1 | Único dentro da série. A URL é `/newsletter/<serie>/` + número com 3 dígitos |
 | `titulo` | texto | A frase da capa. **No máximo 8 palavras** |
 | `publicadaEm` | data | Segunda-feira de publicação |
 | `resumo` | texto ≤ 280 | Para a capa, os links e o RSS |
@@ -61,7 +83,7 @@ O PUKAS fala **como conversa de bar**: simples, densa, visceral, "desconfortavel
 
 **Fonte primária:** lei ou decreto (Planalto, Diário Oficial), jornal da época (Hemeroteca Digital da Biblioteca Nacional), documento de acervo (Arquivo Nacional, Arquivo Edgard Leuenroth/Unicamp, CPDOC/FGV) ou depoimento registrado. O fluxo está em `docs/editorial/checagem.md`.
 
-## 5. Página de fontes (`/001`)
+## 5. Página da edição (`/newsletter/memoria-operaria/001`)
 
 De cima para baixo:
 1. Tarja + selo `MEMÓRIA OPERÁRIA*`.
