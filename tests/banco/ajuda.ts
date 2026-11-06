@@ -1,5 +1,6 @@
 // Ajudas dos testes de banco: rodam contra o Supabase local (`npx supabase start`).
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { codigoTotp } from './totp';
 
 export const URL_LOCAL = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
 
@@ -13,6 +14,28 @@ const semSessao = { auth: { persistSession: false, autoRefreshToken: false } };
 
 export const clienteServico = (): SupabaseClient => createClient(URL_LOCAL, chave('SERVICE_ROLE_KEY'), semSessao);
 export const clienteAnonimo = (): SupabaseClient => createClient(URL_LOCAL, chave('ANON_KEY'), semSessao);
+
+// Cria uma conta com o papel dado e devolve um cliente logado nela; com aal2, já cadastra e verifica o TOTP.
+export async function entrarComo(papel: 'editor' | 'revisor' | 'redator', { aal2 }: { aal2: boolean }): Promise<SupabaseClient> {
+  const email = `${papel}-${unico()}@teste.pukas`;
+  const senha = `senha-${unico()}-forte`;
+  const servico = clienteServico();
+  const { data: criado, error } = await servico.auth.admin.createUser({ email, password: senha, email_confirm: true });
+  if (error) throw error;
+  const { error: erroPerfil } = await servico.from('perfis').insert({ id: criado.user.id, nome: papel, papel });
+  if (erroPerfil) throw erroPerfil;
+
+  const cliente = clienteAnonimo();
+  const { error: erroLogin } = await cliente.auth.signInWithPassword({ email, password: senha });
+  if (erroLogin) throw erroLogin;
+  if (aal2) {
+    const { data: fator, error: erroFator } = await cliente.auth.mfa.enroll({ factorType: 'totp' });
+    if (erroFator) throw erroFator;
+    const { error: erroCodigo } = await cliente.auth.mfa.challengeAndVerify({ factorId: fator.id, code: codigoTotp(fator.totp.secret) });
+    if (erroCodigo) throw erroCodigo;
+  }
+  return cliente;
+}
 
 let contador = 0;
 const unico = () => `${Date.now()}${contador++}`;
