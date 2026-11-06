@@ -31,6 +31,16 @@ export function validarNumerosTraducao(original: string, traducao: string): stri
   return [...(restantes.length ? [`faltam: ${restantes.join(', ')}`] : []), ...(sobram.length ? [`sobram: ${sobram.join(', ')}`] : [])];
 }
 
+const conta = (s: string, c: string) => s.split(c).length - 1;
+
+// Checagem que o script de tradução roda antes de gravar: marcações da manchete e números do texto inteiro.
+export function problemasDaTraducao(original: { titulo: string; corpo: string }, traducao: { titulo: string; corpo: string }): string[] {
+  const marcas = ['|', '*']
+    .filter((c) => conta(original.titulo, c) !== conta(traducao.titulo, c))
+    .map((c) => `manchete com ${conta(traducao.titulo, c)} "${c}" (original tem ${conta(original.titulo, c)})`);
+  return [...marcas, ...validarNumerosTraducao(`${original.titulo}\n${original.corpo}`, `${traducao.titulo}\n${traducao.corpo}`)];
+}
+
 interface ComTexto {
   id: string;
   body?: string;

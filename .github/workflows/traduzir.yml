@@ -1,0 +1,57 @@
+name: Tradução automática
+
+# Em PRs que mexem no conteúdo, gera a versão em espanhol das peças novas e faz commit no próprio PR.
+# Precisa do segredo ANTHROPIC_API_KEY (Settings → Secrets and variables → Actions). Sem ele, não faz nada.
+on:
+  pull_request:
+    paths:
+      - 'src/content/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: traduzir-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  traduzir:
+    # Commits do próprio bot não disparam de novo.
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - name: Segredo configurado?
+        id: segredo
+        run: echo "ok=${{ env.ANTHROPIC_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.segredo.outputs.ok == 'true'
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: actions/setup-node@v4
+        if: steps.segredo.outputs.ok == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Traduzir peças novas
+        if: steps.segredo.outputs.ok == 'true'
+        run: |
+          npm ci
+          npm run traduzir
+
+      - name: Commit da tradução no PR
+        if: steps.segredo.outputs.ok == 'true'
+        run: |
+          if [ -n "$(git status --porcelain src/content/es)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/content/es
+            git commit -m "texto(es): tradução automática das peças novas"
+            git push
+          else
+            echo "Nenhuma tradução nova."
+          fi

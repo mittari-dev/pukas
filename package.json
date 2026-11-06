@@ -12,7 +12,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "traduzir": "node scripts/traduzir.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.3",
@@ -24,9 +25,12 @@
     "astro": "^7.4.7"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
     "@astrojs/check": "^0.9.12",
     "@types/node": "^24.19.2",
     "typescript": "^6.0.3",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
   }
 }

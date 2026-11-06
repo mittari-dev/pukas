@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aplicarTraducoes, mesclarEdicao, mesclarObra, numerosDoTexto, validarNumerosTraducao } from './traducao';
+import { aplicarTraducoes, mesclarEdicao, mesclarObra, numerosDoTexto, problemasDaTraducao, validarNumerosTraducao } from './traducao';
 import type { Edicao } from './edicoes';
 import type { Obra } from './cultura';
 
@@ -56,6 +56,28 @@ describe('mesclarEdicao', () => {
     expect(m.data.fontes).toBe(original.data.fontes);
     expect(m.data.checagem).toBe(original.data.checagem);
     expect(m.traducao).toEqual({ revisado: false, modelo: 'claude-opus-5-5' });
+  });
+});
+
+describe('problemasDaTraducao', () => {
+  const original = { titulo: 'Férias | não caíram *do céu*', corpo: 'Em 1925, 15 dias.' };
+
+  it('aceita tradução fiel', () => {
+    expect(problemasDaTraducao(original, { titulo: 'Las vacaciones | no cayeron *del cielo*', corpo: 'En 1925, 15 días.' })).toEqual([]);
+  });
+
+  it('acusa quebra de linha perdida na manchete', () => {
+    expect(problemasDaTraducao(original, { titulo: 'Las vacaciones no cayeron *del cielo*', corpo: 'En 1925, 15 días.' })).toEqual([
+      'manchete com 0 "|" (original tem 1)',
+    ]);
+  });
+
+  it('acusa destaque perdido e número trocado', () => {
+    expect(problemasDaTraducao(original, { titulo: 'Las vacaciones | no cayeron del cielo', corpo: 'En 1926, 15 días.' })).toEqual([
+      'manchete com 0 "*" (original tem 2)',
+      'faltam: 1925',
+      'sobram: 1926',
+    ]);
   });
 });
 
