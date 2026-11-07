@@ -207,4 +207,22 @@ describe.skipIf(!base)('painel', () => {
     expect(pagina).not.toContain('name="dia_semana"');
     expect(await (await redator.ir('/painel/agenda/ritmo', { acao: 'salvar', dia_semana: '5', tipo: 'noticia' })).text()).toContain('Só quem é editor muda o ritmo.');
   });
+
+  test('começar a escrever: o item abre o editor e a peça já sai ligada', async () => {
+    const { ir, email, senha } = await criarFundador();
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+    const servico = clienteServico();
+    const { data: item } = await servico.from('agenda').insert({ dia: '2026-11-16', tipo: 'newsletter', serie: 'memoria-operaria', titulo: 'Item para escrever' }).select('id').single();
+
+    const pagina = await (await ir(`/painel/agenda?dia=2026-11-16&item=${item!.id}`)).text();
+    const alvo = `/painel/peca/nova?tipo=newsletter&amp;serie=memoria-operaria&amp;agenda=${item!.id}`;
+    expect(pagina).toContain(alvo);
+
+    const salvou = await ir(alvo.replaceAll('&amp;', '&'), { serie: 'memoria-operaria', numero: '777', titulo: 'Item para escrever', resumo: 'r', corpo: 'Texto.', agenda: item!.id, acao: 'salvar' });
+    expect(salvou.status).toBe(303);
+    const { data: depois } = await servico.from('agenda').select('peca_id').eq('id', item!.id).single();
+    expect(depois!.peca_id).toBeTruthy();
+    expect(await (await ir('/painel/agenda?dia=2026-11-16')).text()).toContain('ESCREVENDO');
+  });
 });

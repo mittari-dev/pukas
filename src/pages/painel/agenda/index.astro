@@ -171,6 +171,9 @@ const tituloMes = fmt(dia, { month: 'long', year: 'numeric' });
           <select id="i-peca" name="peca_id"><option value="">Nenhuma</option>{pecasParaLigar.map((p) => <option value={p.id} selected={p.id === aberto?.peca_id}>{p.titulo || '(sem título)'}</option>)}</select>
         </div>
         <div class="nova__acoes">
+          {aberto && !aberto.peca_id && (
+            <a class="botao botao--linha" href={`/painel/peca/nova?${new URLSearchParams({ tipo: aberto.tipo, ...(aberto.serie ? { serie: aberto.serie } : {}), agenda: aberto.id })}`}>Começar a escrever</a>
+          )}
           <a class="botao botao--linha" href={aqui()} data-fechar-item>Fechar</a>
           <button class="botao botao--marca" type="submit">Salvar</button>
         </div>
