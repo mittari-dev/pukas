@@ -1,68 +1,152 @@
 ---
+// Capa de jornal: cabeçalho com data entre fios, manchete principal (última Memória Operária) e,
+// ao lado, as colunas de Notícias e Cultura. No celular tudo vira uma coluna, nessa ordem.
 import Base from '../layouts/Base.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import ListaEdicoes from '../components/ListaEdicoes.astro';
-import { carregarEdicoes } from '../lib/carregar';
-import { caminhoEdicao } from '../lib/formato';
+import { carregarEdicoes, carregarNoticias, carregarObras } from '../lib/carregar';
+import { caminhoEdicao, formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
+import { linhaDoCabecalho, ultimaPublicacao } from '../lib/jornal';
+import { textoManchete } from '../lib/manchete';
 import '../styles/leitura.css';
 
 interface Props {
   idioma: Idioma;
 }
 const { idioma } = Astro.props;
-const edicoes = await carregarEdicoes(idioma);
+const [edicoes, noticias, obras] = await Promise.all([carregarEdicoes(idioma), carregarNoticias(idioma), carregarObras(idioma)]);
 const ultima = edicoes[0];
+const cabecalho = linhaDoCabecalho(ultimaPublicacao(edicoes, noticias, obras), idioma);
+const chapeuMemoria = t(idioma, 'selo.memoria').replace('*', '');
 ---
-<Base titulo="PUKAS" descricao={t(idioma, 'site.descricao')} receita="leitura" selo={t(idioma, 'selo.memoria')} idioma={idioma}>
+<Base titulo="PUKAS" descricao={t(idioma, 'site.descricao')} receita="leitura" idioma={idioma}>
   <div class="capa">
-    {ultima ? (
-      <section class="destaque" aria-labelledby="ultima">
-        <Carimbo numero={ultima.data.numero} data={ultima.data.publicadaEm} />
-        <div class="destaque__manchete"><Manchete id="ultima" titulo={ultima.data.titulo} /></div>
-        <p class="destaque__resumo">{ultima.data.resumo}</p>
-        <a class="maquina destaque__ler" href={caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma)}>{t(idioma, 'capa.lerEdicao')}</a>
-      </section>
-    ) : (
-      <section class="destaque">
-        <div class="destaque__manchete"><Manchete titulo={t(idioma, 'capa.manchete')} /></div>
+    <p class="cabecalho maquina">
+      {cabecalho.map((parte, i) => <>{i > 0 && <span aria-hidden="true"> · </span>}<span>{parte}</span></>)}
+    </p>
+
+    <div class="capa__grade">
+      {ultima ? (
+        <section class="principal" aria-labelledby="ultima">
+          <p class="chapeu">{chapeuMemoria}</p>
+          <Carimbo numero={ultima.data.numero} data={ultima.data.publicadaEm} />
+          <div class="principal__manchete"><Manchete id="ultima" titulo={ultima.data.titulo} /></div>
+          <p class="principal__resumo">{ultima.data.resumo}</p>
+          <a class="maquina principal__ler" href={caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma)}>{t(idioma, 'capa.lerEdicao')}</a>
+        </section>
+      ) : (
+        <section class="principal">
+          <p class="chapeu">{chapeuMemoria}</p>
+          <div class="principal__manchete"><Manchete titulo={t(idioma, 'capa.manchete')} /></div>
+          <p class="principal__resumo">{t(idioma, 'serie.vazio')}</p>
+        </section>
+      )}
+
+      <aside class="colunas">
+        <section aria-labelledby="col-noticias">
+          <h2 id="col-noticias" class="coluna__titulo maquina">{t(idioma, 'capa.noticias')}</h2>
+          {noticias.length === 0 ? (
+            <p class="coluna__vazio">{t(idioma, 'capa.semNoticias')}</p>
+          ) : (
+            <ul class="chamadas">
+              {noticias.slice(0, 5).map((n) => (
+                <li>
+                  <a href={prefixar(`/noticias/${n.id}`, idioma)}>
+                    <span class="maquina chamada__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
+                    <span class="chamada__titulo">{textoManchete(n.data.titulo)}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          <a class="maquina coluna__mais" href={prefixar('/noticias', idioma)}>{t(idioma, 'capa.verNoticias')}</a>
+        </section>
+
+        <section aria-labelledby="col-cultura">
+          <h2 id="col-cultura" class="coluna__titulo maquina">{t(idioma, 'capa.cultura')}</h2>
+          {obras[0] ? (
+            <a class="chamada" href={prefixar(`/cultura/${obras[0].id}`, idioma)}>
+              <span class="maquina chamada__meta">{t(idioma, `tipo.${obras[0].data.tipo}`)}</span>
+              <span class="chamada__titulo">{textoManchete(obras[0].data.titulo)}</span>
+              <span class="chamada__resumo">{obras[0].data.resumo}</span>
+            </a>
+          ) : (
+            <p class="coluna__vazio">{t(idioma, 'capa.semCultura')}</p>
+          )}
+          <a class="maquina coluna__mais" href={prefixar('/cultura', idioma)}>{t(idioma, 'capa.verCultura')}</a>
+        </section>
+      </aside>
+    </div>
+
+    {edicoes.length > 0 && (
+      <section class="capa__arquivo" aria-labelledby="arquivo">
+        <h2 id="arquivo" class="secao-titulo maquina">{t(idioma, 'capa.todasEdicoes')}</h2>
+        <ListaEdicoes edicoes={edicoes} />
       </section>
     )}
 
-    <div class="capa__resto">
-    <h2 class="secao-titulo maquina">{t(idioma, 'capa.todasEdicoes')}</h2>
-    <ListaEdicoes edicoes={edicoes} />
-
-    <p class="institucional">
-      {t(idioma, 'site.institucional')}{' '}
+    <p class="expediente">
+      {t(idioma, 'capa.expediente')} {t(idioma, 'site.institucional')}{' '}
       <a href={prefixar('/manifesto', idioma)}>{t(idioma, 'site.leiaManifesto')}</a>.
     </p>
-    </div>
   </div>
 </Base>
 
 <style>
-  /* Capa mais larga que a leitura: a manchete precisa de espaço; o resto segue a medida de 68ch. */
+  /* Capa mais larga que a leitura: duas colunas no computador; o texto corrido segue a medida de 68ch. */
   .capa {
-    max-width: 1040px;
+    max-width: 1120px;
     margin: 0 auto;
     padding: 0 var(--esp-4);
   }
-  .capa__resto {
-    max-width: 68ch;
+
+  /* Linha do cabeçalho entre fios: grosso em cima, fino embaixo, como num jornal impresso. */
+  .cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 var(--esp-1);
+    margin: var(--esp-4) 0 var(--esp-6);
+    padding: var(--esp-2) 0;
+    border-top: 3px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-align: center;
   }
-  .destaque {
-    padding: var(--esp-5) 0 var(--esp-7);
+
+  .capa__grade {
+    display: grid;
+    gap: var(--esp-7);
   }
-  .destaque__manchete {
-    margin-top: var(--esp-6);
+  @media (min-width: 900px) {
+    .capa__grade {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: 0;
+    }
+    .principal {
+      padding-right: var(--esp-6);
+    }
+    .colunas {
+      padding-left: var(--esp-6);
+      border-left: 1px solid currentColor;
+    }
   }
-  .destaque__resumo {
+
+  .chapeu {
+    margin: 0 0 var(--esp-3);
+  }
+  .principal__manchete {
+    margin-top: var(--esp-5);
+  }
+  .principal__resumo {
     margin: var(--esp-5) 0;
     font-size: 20px;
+    max-width: 52ch;
   }
-  .destaque__ler {
+  .principal__ler {
     display: inline-block;
     padding: var(--esp-3) var(--esp-4);
     background: var(--tinta);
@@ -70,12 +154,84 @@ const ultima = edicoes[0];
     text-decoration: none;
     letter-spacing: 0.08em;
   }
-  .destaque__ler:hover,
-  .destaque__ler:focus-visible {
+  .principal__ler:hover,
+  .principal__ler:focus-visible {
     background: var(--pau-brasil);
   }
-  .institucional {
+
+  .colunas {
+    display: grid;
+    align-content: start;
+    gap: var(--esp-6);
+  }
+  .coluna__titulo {
+    margin: 0 0 var(--esp-2);
+    padding: var(--esp-2) 0;
+    border-top: 3px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+  }
+  .chamadas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .chamadas li + li {
+    border-top: 1px solid currentColor;
+  }
+  .chamadas a,
+  .chamada {
+    display: grid;
+    gap: var(--esp-1);
+    padding: var(--esp-3) 0;
+    text-decoration: none;
+  }
+  .chamada__meta {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .chamada__titulo {
+    font-family: var(--fonte-manchete);
+    font-stretch: var(--largura-manchete);
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .chamadas a:hover .chamada__titulo,
+  .chamadas a:focus-visible .chamada__titulo,
+  .chamada:hover .chamada__titulo,
+  .chamada:focus-visible .chamada__titulo {
+    color: var(--pau-brasil);
+  }
+  .chamada__resumo {
+    font-size: 15px;
+  }
+  .coluna__vazio {
+    margin: var(--esp-3) 0;
+    font-size: 15px;
+  }
+  .coluna__mais {
+    display: inline-block;
+    padding: var(--esp-2) 0;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .capa__arquivo {
+    max-width: 68ch;
     margin-top: var(--esp-7);
-    font-size: 16px;
+  }
+  /* O título da seção já fecha com um fio: a lista não repete o dela. */
+  .capa__arquivo :global(.lista) {
+    border-top: 0;
+  }
+  .expediente {
+    max-width: 68ch;
+    margin: var(--esp-7) 0 0;
+    padding-top: var(--esp-3);
+    border-top: 1px solid currentColor;
+    font-size: 15px;
   }
 </style>

@@ -13,6 +13,18 @@
   max-width: 62ch;
 }
 
+/* Capitular: a primeira letra do texto grande, como no jornal impresso. */
+.leitura .corpo > p:first-child::first-letter {
+  float: left;
+  font-family: var(--fonte-manchete);
+  font-stretch: var(--largura-manchete);
+  font-weight: 900;
+  font-size: 4.2em;
+  line-height: 0.8;
+  margin: 0.06em 0.08em 0 0;
+  color: var(--acento);
+}
+
 .leitura .corpo p + p {
   margin-top: 1.1em;
 }
@@ -58,8 +70,13 @@
 
 .secao-titulo {
   margin: var(--esp-7) 0 var(--esp-3);
-  padding-top: var(--esp-3);
+  padding: var(--esp-2) 0;
   border-top: 3px solid currentColor;
+  border-bottom: 1px solid currentColor;
   font-size: 14px;
   letter-spacing: 0.14em;
+}
+
+.edicao__chapeu {
+  margin: var(--esp-5) 0 var(--esp-2);
 }
