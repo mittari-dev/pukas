@@ -45,7 +45,7 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
         <li>
           <a href={`/admin/peca/${p.id}`}>
             <span class="maquina fila__meta">
-              {nomeTipo[p.tipo]}{p.numero !== null && p.tipo !== 'pagina' ? ` · ${formatarNumero(p.numero)}` : ''} · {p.autor} · {quando(p.atualizado_em)}
+              {nomeTipo[p.tipo]}{p.numero !== null && p.tipo !== 'pagina' ? ` · ${formatarNumero(p.numero)}` : ''} · {quando(p.atualizado_em)}
             </span>
             <span class="fila__titulo">{textoManchete(p.titulo) || '(sem título)'}</span>
           </a>
@@ -70,26 +70,51 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
     border: 3px solid var(--tinta);
     background: var(--cal);
   }
-  .abas,
+  /* Estado: abas coladas, como fichário. Tipo: etiquetas soltas, menores. */
+  .abas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    border: 3px solid var(--tinta);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: var(--esp-4);
+  }
+  .abas a {
+    display: grid;
+    place-items: center;
+    min-height: 48px;
+    padding: 0 var(--esp-3);
+    text-decoration: none;
+    color: inherit;
+  }
+  .abas a + a {
+    border-left: 1px solid var(--tinta);
+  }
+  .abas [aria-current] {
+    background: var(--tinta);
+    color: var(--cal);
+  }
   .filtro {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--esp-2) var(--esp-4);
-    font-size: 13px;
-    margin-bottom: var(--esp-3);
+    gap: var(--esp-2);
+    font-size: 12px;
+    margin-bottom: var(--esp-6);
   }
-  .abas a,
   .filtro a {
-    display: inline-block;
-    padding: var(--esp-3) 0;
+    display: inline-grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 var(--esp-3);
+    border: 1px solid var(--tinta);
+    text-decoration: none;
+    color: inherit;
   }
-  .abas [aria-current],
   .filtro [aria-current] {
-    color: var(--pau-brasil);
-    text-decoration-thickness: 3px;
-  }
-  .filtro {
-    margin-bottom: var(--esp-5);
+    border-color: var(--pau-brasil);
+    background: var(--pau-brasil);
+    color: var(--cal);
   }
   .fila {
     list-style: none;
