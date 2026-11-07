@@ -187,4 +187,24 @@ describe.skipIf(!base)('painel', () => {
     const mes = await (await ir('/painel/agenda?visao=mes&dia=2026-11-11')).text();
     expect(mes).toContain('data-mes="2026-11"');
   });
+
+  test('ritmo: o editor cria e pausa um compromisso; o redator só vê', async () => {
+    const { ir, email, senha } = await criarFundador();
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+    expect((await ir('/painel/agenda/ritmo', { acao: 'salvar', dia_semana: '4', tipo: 'noticia', rotulo: 'Investigação' })).status).toBe(303);
+    expect(await (await ir('/painel/agenda?dia=2026-11-11')).text()).toContain('data-ritmo="2026-11-12"');
+
+    const { data: c } = await clienteServico().from('ritmo').select('id').eq('rotulo', 'Investigação').single();
+    expect((await ir('/painel/agenda/ritmo', { acao: 'pausar', id: c!.id })).status).toBe(303);
+    expect(await (await ir('/painel/agenda?dia=2026-11-11')).text()).not.toContain('data-ritmo="2026-11-12"');
+
+    const redator = await criarFundador('redator');
+    await redator.ir('/painel/entrar', { email: redator.email, senha: redator.senha });
+    await confirmar2fa(redator.ir);
+    const pagina = await (await redator.ir('/painel/agenda/ritmo')).text();
+    expect(pagina).toContain('Memória Operária');
+    expect(pagina).not.toContain('name="dia_semana"');
+    expect(await (await redator.ir('/painel/agenda/ritmo', { acao: 'salvar', dia_semana: '5', tipo: 'noticia' })).text()).toContain('Só quem é editor muda o ritmo.');
+  });
 });
