@@ -3,6 +3,7 @@ import type { Edicao, Fonte } from '../edicoes';
 import type { Obra, TipoObra } from '../cultura';
 import type { MarcaTraducao } from '../traducao';
 import type { EstadoPeca, TipoPeca } from '../painel/travas';
+import { linkWeb } from '../link';
 
 export interface LinhaTraducao {
   idioma: string;
@@ -51,10 +52,10 @@ export type ComCorpo<T> = T & MarcaTraducao & { body?: string; pecaId?: string }
 export const urlFoto = (base: string, caminho: string) => `${base}/storage/v1/object/public/fotos/${caminho}`;
 
 const opcional = <T>(v: T | null): T | undefined => v ?? undefined;
-const fontes = (l: LinhaPeca): Fonte[] => l.fontes.map((f) => ({ ...f, acessadaEm: new Date(f.acessadaEm) }));
+const fontes = (l: LinhaPeca): Fonte[] => l.fontes.map((f) => ({ ...f, url: linkWeb(f.url) ?? '', acessadaEm: new Date(f.acessadaEm) }));
 const foto = (l: LinhaPeca, base: string) =>
   l.foto_caminho
-    ? { arquivo: urlFoto(base, l.foto_caminho), descricao: l.foto_descricao ?? '', credito: opcional(l.foto_credito), licenca: opcional(l.foto_licenca), origem: opcional(l.foto_origem) }
+    ? { arquivo: urlFoto(base, l.foto_caminho), descricao: l.foto_descricao ?? '', credito: opcional(l.foto_credito), licenca: opcional(l.foto_licenca), origem: linkWeb(l.foto_origem) }
     : undefined;
 
 export function paraEdicao(l: LinhaPeca, base: string): ComCorpo<Edicao> {
@@ -90,7 +91,7 @@ export function paraObra(l: LinhaPeca, base: string): ComCorpo<Obra> {
       resumo: l.resumo,
       publicadaEm: new Date(l.publicada_em ?? Date.now()),
       autoria: l.autoria,
-      video: opcional(l.video),
+      video: linkWeb(l.video),
       aviso: opcional(l.aviso),
       capa: foto(l, base),
       fontes: fontes(l),

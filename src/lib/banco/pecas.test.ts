@@ -32,6 +32,22 @@ describe('paraEdicao', () => {
   });
 });
 
+describe('links externos', () => {
+  test('só http e https chegam ao site; javascript: e outros somem', () => {
+    const l = linha({
+      foto_origem: 'javascript:alert(1)',
+      fontes: [
+        { titulo: 'Boa', instituicao: 'I', url: 'https://planalto.gov.br', tipo: 'primaria', acessadaEm: '2026-11-01' },
+        { titulo: 'Má', instituicao: 'I', url: ' JavaScript:fetch(1)', tipo: 'secundaria', acessadaEm: '2026-11-01' },
+      ],
+    });
+    const e = paraEdicao(l, 'u');
+    expect(e.data.fontes.map((f) => f.url)).toEqual(['https://planalto.gov.br', '']);
+    expect(e.data.foto.origem).toBeUndefined();
+    expect(paraObra(linha({ tipo: 'cultura', slug: 's', subtipo: 'conto', video: 'data:text/html,x' }), 'u').data.video).toBeUndefined();
+  });
+});
+
 describe('paraObra', () => {
   test('o id da obra é o slug (endereço /cultura/<slug>)', () => {
     const o = paraObra(linha({ tipo: 'cultura', serie: null, slug: 'a-marmita', subtipo: 'poema', foto_caminho: null }), 'u');

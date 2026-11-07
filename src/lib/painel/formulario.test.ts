@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { lerFormularioPeca, paraLinha } from './formulario';
+import { lerFormularioPeca, linksInvalidos, paraLinha } from './formulario';
 import { traduzirErroBanco } from './erros';
 
 function form(campos: Record<string, string>): FormData {
@@ -42,6 +42,14 @@ describe('lerFormularioPeca', () => {
   test('traduzir desmarcado', () => {
     const { traduzir, ...sem } = newsletter;
     expect(lerFormularioPeca(form(sem), 'newsletter', 'rascunho').traduzir).toBe(false);
+  });
+});
+
+describe('linksInvalidos', () => {
+  test('aponta link de fonte, origem da foto ou vídeo que não é http(s)', () => {
+    const p = lerFormularioPeca(form({ ...newsletter, 'fonte[1][url]': 'javascript:alert(1)', foto_caminho: 'a.jpg', foto_origem: 'ftp://x', video: 'https://youtu.be/x' }), 'newsletter', 'rascunho');
+    expect(linksInvalidos(p)).toEqual(['fonte "Jornal"', 'origem da foto']);
+    expect(linksInvalidos(lerFormularioPeca(form(newsletter), 'newsletter', 'rascunho'))).toEqual([]);
   });
 });
 

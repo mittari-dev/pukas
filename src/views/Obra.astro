@@ -50,7 +50,7 @@ const capa = d.capa?.arquivo as string | undefined;
         <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>
         <ol>
           {ordenarFontes(d.fontes).map((f) => (
-            <li class="obra__fonte"><a href={f.url}>{f.titulo}</a> · {f.instituicao} <span class="maquina">· {t(idioma, 'edicao.acessadaEm')} {formatarData(f.acessadaEm, idioma)}</span></li>
+            <li class="obra__fonte"><a href={f.url || undefined}>{f.titulo}</a> · {f.instituicao} <span class="maquina">· {t(idioma, 'edicao.acessadaEm')} {formatarData(f.acessadaEm, idioma)}</span></li>
           ))}
         </ol>
       </section>

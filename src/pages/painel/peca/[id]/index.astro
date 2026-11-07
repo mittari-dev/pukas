@@ -6,7 +6,7 @@ import Manchete from '../../../../components/identidade/Manchete.astro';
 import { buscarPeca, corrigir, enviarFoto, renovarPaginas, salvar } from '../../../../lib/banco/painel';
 import { urlBanco } from '../../../../lib/banco/cliente';
 import { urlFoto, type LinhaPeca } from '../../../../lib/banco/pecas';
-import { lerFormularioPeca } from '../../../../lib/painel/formulario';
+import { lerFormularioPeca, linksInvalidos } from '../../../../lib/painel/formulario';
 import { pode, type Acao } from '../../../../lib/painel/permissoes';
 import { travasDaPeca, type EstadoPeca, type PecaEntrada, type TipoPeca } from '../../../../lib/painel/travas';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
@@ -40,6 +40,7 @@ if (Astro.request.method === 'POST') {
   if (!destino || !pode(usuario!.papel, permissao, estadoAtual)) erro = 'Você não pode fazer isso com esta peça.';
   else if (estadoAtual === 'publicada' && !form.get('e_correcao')) erro = 'A peça está no ar: diga se esta mudança é uma correção.';
   else if (ehCorrecao && !correcao) erro = 'Escreva em uma linha o que foi corrigido. Esse texto aparece na página.';
+  else if (linksInvalidos(enviado).length) erro = `Link precisa começar com https:// (${linksInvalidos(enviado).join(', ')}).`;
 
   const arquivo = form.get('foto_arquivo');
   if (!erro && arquivo instanceof File && arquivo.size > 0) {
