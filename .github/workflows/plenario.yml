@@ -1,0 +1,37 @@
+name: Robô do plenário
+
+# Uma vez por dia (7h40 em Brasília): placar do plenário da Câmara e do Senado nas votações e fechamento pelo prazo.
+on:
+  schedule:
+    - cron: '40 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  plenario:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RENOVAR_SEGREDO: ${{ secrets.RENOVAR_SEGREDO }}
+      SITE_URL: ${{ secrets.SITE_URL }}
+    steps:
+      - name: Segredos configurados?
+        id: segredos
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] && [ -n "$RENOVAR_SEGREDO" ] && [ -n "$SITE_URL" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Segredos ainda não configurados; nada a fazer."
+          fi
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/checkout@v4
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - if: steps.segredos.outputs.ok == 'true'
+        run: npm ci
+      - if: steps.segredos.outputs.ok == 'true'
+        run: npx tsx scripts/plenario.ts
