@@ -105,3 +105,21 @@ describe('fotos', () => {
     expect((await servico.storage.getBucket('fotos')).data?.public).toBe(true);
   });
 });
+
+describe('dados plantados pelo redator', () => {
+  test('publicada_em e atualizado_por do rascunho não sobrevivem à publicação', async () => {
+    const { data: falso } = await servico.auth.admin.createUser({ email: `falso-${Date.now()}@teste.pukas`, password: 'senha-qualquer-123', email_confirm: true });
+    const { data: peca, error } = await redator
+      .from('pecas')
+      .insert({ ...pecaValida('pagina'), estado: 'rascunho', publicada_em: '2020-01-01T00:00:00Z', atualizado_por: falso.user!.id })
+      .select('id, atualizado_por')
+      .single();
+    expect(error).toBeNull();
+    const { data: eu } = await editor.auth.getUser();
+    const { error: erroPub } = await editor.from('pecas').update({ estado: 'publicada' }).eq('id', peca!.id);
+    expect(erroPub).toBeNull();
+    const { data: depois } = await servico.from('pecas').select('publicada_em, atualizado_por').eq('id', peca!.id).single();
+    expect(new Date(depois!.publicada_em).getFullYear()).toBeGreaterThanOrEqual(2026);
+    expect(depois!.atualizado_por).toBe(eu.user!.id);
+  });
+});

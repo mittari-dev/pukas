@@ -38,6 +38,8 @@ export function validarPublicavel(e: Edicao): string[] {
   const { fontes, foto, checagem, titulo } = e.data;
   const problemas: string[] = [];
   if (!fontes.some((f) => f.tipo === 'primaria')) problemas.push('sem fonte primária');
+  if (!foto.arquivo) problemas.push('sem foto');
+  else if (!foto.descricao?.trim()) problemas.push('foto sem descrição');
   if (!foto.licenca?.trim()) problemas.push('foto sem licença');
   if (!foto.credito?.trim()) problemas.push('foto sem crédito');
   if (!checagem) problemas.push('sem checagem');
