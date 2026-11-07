@@ -34,6 +34,7 @@ const pt = {
   'capa.semCultura': 'Ainda não há obras publicadas.',
   'capa.expediente': 'Erros são corrigidos na própria matéria, com a data da correção.',
 
+  'newsletter.titulo': 'Newsletter',
   'serie.titulo': 'Memória | Operária',
   'serie.sub': 'Direito nenhum caiu do céu. Foi luta. Uma edição toda segunda, com as fontes.',
   'serie.vazio': 'A primeira edição ainda não foi publicada.',
@@ -81,7 +82,7 @@ const pt = {
 
   'links.titulo': 'Links',
   'links.descricao': 'Tudo do PUKAS num lugar só: a última edição, o manifesto e o arquivo.',
-  'links.manchete': 'Direito | nenhum caiu | do céu.',
+  'links.manchete': 'Direito | nenhum caiu | do céu. | *Foi luta.*',
   'links.ultimaEdicao': 'Última Memória Operária,',
   'links.novoCultura': 'Novo na Cultura',
   'links.manifesto': 'Manifesto',
@@ -130,6 +131,7 @@ const es: Record<Chave, string> = {
   'capa.semCultura': 'Todavía no hay obras publicadas.',
   'capa.expediente': 'Los errores se corrigen en la propia nota, con la fecha de la corrección.',
 
+  'newsletter.titulo': 'Newsletter',
   'serie.titulo': 'Memoria | Obrera',
   'serie.sub': 'Ningún derecho cayó del cielo. Fue lucha. Una edición cada lunes, con las fuentes.',
   'serie.vazio': 'Todavía no hay ediciones en español.',
@@ -177,7 +179,7 @@ const es: Record<Chave, string> = {
 
   'links.titulo': 'Links',
   'links.descricao': 'Todo PUKAS en un solo lugar: la última edición, el manifiesto y el archivo.',
-  'links.manchete': 'Ningún derecho | cayó | del cielo.',
+  'links.manchete': 'Ningún derecho | cayó | del cielo. | *Fue lucha.*',
   'links.ultimaEdicao': 'Última Memoria Obrera,',
   'links.novoCultura': 'Nuevo en Cultura',
   'links.manifesto': 'Manifiesto',
