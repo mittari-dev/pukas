@@ -18,3 +18,31 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+
+  banco:
+    # Regras do banco (travas, RLS, histórico) contra um Supabase local no runner.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,realtime,mailpit,postgres-meta
+      - run: npm run test:banco
+      # O site novo, lido do banco local já migrado, tem que ser igual ao retrato do site antigo.
+      - name: Retrato do site
+        run: |
+          eval "$(npx supabase status -o env | sed 's/^/export /')"
+          export SUPABASE_URL="$API_URL" SUPABASE_ANON_KEY="$ANON_KEY" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          # Banco limpo (sem as peças dos testes acima) e só o conteúdo migrado.
+          npx supabase db reset
+          node scripts/migrar-para-banco.ts
+          # Backup diário: com o conteúdo migrado, rodar duas vezes dá o mesmo arquivo.
+          npx tsx scripts/exportar-publicado.ts && cp arquivo/publicado.json /tmp/a.json
+          npx tsx scripts/exportar-publicado.ts && cmp /tmp/a.json arquivo/publicado.json
+          node -e "const a=require('./arquivo/publicado.json'); if (a.pecas.length !== 1 || a.pecas[0].slug !== 'manifesto') throw new Error('backup deveria ter só o manifesto publicado')"
+          npx astro dev --port 4321 > astro-dev.log 2>&1 &
+          for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:4321/ && break; sleep 1; done
+          RETRATO_URL=http://localhost:4321 npx vitest run --config vitest.banco.config.ts tests/retrato || { tail -50 astro-dev.log; exit 1; }

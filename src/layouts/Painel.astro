@@ -1,0 +1,146 @@
+---
+// Casca do painel: mesma identidade (receita Leitura), feito para o celular, fora do Google.
+import '../styles/base.css';
+import '../styles/leitura.css';
+import Tarja from '../components/identidade/Tarja.astro';
+
+interface Props {
+  titulo: string;
+}
+const { titulo } = Astro.props;
+const usuario = Astro.locals.painel?.usuario;
+---
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{titulo} · Painel PUKAS</title>
+  </head>
+  <body class="receita-leitura">
+    <header class="topo">
+      <a href="/admin" class="marca"><Tarja variante="cor" rotulo="Painel PUKAS" /></a>
+      <span class="maquina topo__rotulo">PAINEL</span>
+      {usuario && (
+        <form method="post" action="/admin/sair" class="topo__sair">
+          <span class="maquina">{usuario.nome || usuario.email} · {usuario.papel.toUpperCase()}</span>
+          <button class="maquina botao botao--linha" type="submit">Sair</button>
+        </form>
+      )}
+    </header>
+    <main id="conteudo" class="painel">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  .painel {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--esp-5) var(--esp-4) var(--esp-8);
+  }
+  .painel h1 {
+    font-family: var(--fonte-manchete);
+    font-stretch: var(--largura-manchete);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(36px, 9vw, 56px);
+    line-height: 0.95;
+    margin: 0 0 var(--esp-5);
+  }
+  .campo {
+    display: grid;
+    gap: var(--esp-2);
+    margin-bottom: var(--esp-4);
+  }
+  .campo label,
+  .campo legend {
+    font-family: var(--fonte-maquina);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .campo input,
+  .campo textarea,
+  .campo select {
+    font: inherit;
+    padding: var(--esp-3);
+    border: 3px solid var(--tinta);
+    background: var(--cal);
+    color: var(--tinta);
+    min-height: 48px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .campo textarea {
+    min-height: 12rem;
+    line-height: 1.5;
+  }
+  .campo input:focus-visible,
+  .campo textarea:focus-visible,
+  .campo select:focus-visible {
+    outline: 3px solid var(--pau-brasil);
+    outline-offset: 2px;
+  }
+  .ajuda {
+    font-size: 14px;
+    margin: 0;
+  }
+  .botao {
+    font-family: var(--fonte-maquina);
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    min-height: 48px;
+    padding: var(--esp-3) var(--esp-4);
+    border: 3px solid var(--tinta);
+    background: var(--tinta);
+    color: var(--cal);
+    cursor: pointer;
+  }
+  .botao--marca {
+    background: var(--pau-brasil);
+    border-color: var(--pau-brasil);
+  }
+  .botao--linha {
+    background: transparent;
+    color: var(--tinta);
+  }
+  .botao:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .mensagem {
+    border: 3px solid var(--pau-brasil);
+    padding: var(--esp-3) var(--esp-4);
+    margin: 0 0 var(--esp-5);
+  }
+</style>
+
+<style>
+  .topo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--esp-3) var(--esp-4);
+    padding: var(--esp-3) var(--esp-4);
+    border-bottom: 3px solid currentColor;
+  }
+  .marca :global(svg),
+  .marca :global(.tarja) {
+    height: 40px;
+  }
+  .topo__rotulo {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+  .topo__sair {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--esp-3);
+    font-size: 12px;
+  }
+</style>

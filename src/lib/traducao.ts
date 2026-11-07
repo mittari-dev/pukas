@@ -12,7 +12,8 @@ export interface Traducao {
 }
 
 export interface MarcaTraducao {
-  traducao?: { revisado: boolean; modelo?: string };
+  // pendente: em /es, a tradução ainda não ficou pronta e a página mostra o original.
+  traducao?: { revisado: boolean; modelo?: string; pendente?: boolean };
 }
 
 // "1.000" (milhar pt/es) conta como 1000; "13º" conta como 13.

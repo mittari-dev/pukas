@@ -1,0 +1,117 @@
+---
+// Fila do painel: abas por estado, filtro por tipo, botão de peça nova.
+import Painel from '../../layouts/Painel.astro';
+import { listarFila } from '../../lib/banco/painel';
+import { formatarNumero } from '../../lib/formato';
+import { textoManchete } from '../../lib/manchete';
+import type { EstadoPeca, TipoPeca } from '../../lib/painel/travas';
+
+const ABAS: [EstadoPeca, string][] = [['rascunho', 'Rascunhos'], ['em_revisao', 'Em revisão'], ['publicada', 'Publicadas'], ['rejeitada', 'Rejeitadas']];
+const TIPOS: [TipoPeca, string][] = [['newsletter', 'Memória Operária'], ['noticia', 'Notícia'], ['cultura', 'Cultura'], ['pagina', 'Página']];
+
+const pedidoEstado = Astro.url.searchParams.get('estado');
+const estado = (ABAS.find(([e]) => e === pedidoEstado)?.[0] ?? 'rascunho') as EstadoPeca;
+const pedidoTipo = Astro.url.searchParams.get('tipo');
+const tipo = TIPOS.find(([t]) => t === pedidoTipo)?.[0];
+const pecas = await listarFila(Astro.locals.painel!.cliente, estado, tipo);
+const nomeTipo = Object.fromEntries(TIPOS);
+const link = (e: EstadoPeca, t?: TipoPeca) => `/admin?estado=${e}${t ? `&tipo=${t}` : ''}`;
+const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
+---
+<Painel titulo="Fila">
+  <h1>Fila</h1>
+
+  <form method="get" action="/admin/peca/nova" class="nova">
+    <label class="maquina" for="tipo-nova">Nova peça</label>
+    <select id="tipo-nova" name="tipo">
+      {TIPOS.map(([t, nome]) => <option value={t}>{nome}</option>)}
+    </select>
+    <button class="botao botao--marca" type="submit">Criar</button>
+  </form>
+
+  <nav class="abas maquina" aria-label="Estado">
+    {ABAS.map(([e, nome]) => <a href={link(e, tipo)} aria-current={e === estado ? 'page' : undefined}>{nome}</a>)}
+  </nav>
+  <nav class="filtro maquina" aria-label="Tipo">
+    <a href={link(estado)} aria-current={!tipo ? 'page' : undefined}>Todos</a>
+    {TIPOS.map(([t, nome]) => <a href={link(estado, t)} aria-current={t === tipo ? 'page' : undefined}>{nome}</a>)}
+  </nav>
+
+  {pecas.length === 0 ? (
+    <p>Nada aqui.</p>
+  ) : (
+    <ul class="fila">
+      {pecas.map((p) => (
+        <li>
+          <a href={`/admin/peca/${p.id}`}>
+            <span class="maquina fila__meta">
+              {nomeTipo[p.tipo]}{p.numero !== null && p.tipo !== 'pagina' ? ` · ${formatarNumero(p.numero)}` : ''} · {p.autor} · {quando(p.atualizado_em)}
+            </span>
+            <span class="fila__titulo">{textoManchete(p.titulo) || '(sem título)'}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</Painel>
+
+<style>
+  .nova {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--esp-3);
+    margin-bottom: var(--esp-6);
+  }
+  .nova select {
+    font: inherit;
+    min-height: 48px;
+    padding: 0 var(--esp-3);
+    border: 3px solid var(--tinta);
+    background: var(--cal);
+  }
+  .abas,
+  .filtro {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-2) var(--esp-4);
+    font-size: 13px;
+    margin-bottom: var(--esp-3);
+  }
+  .abas a,
+  .filtro a {
+    display: inline-block;
+    padding: var(--esp-3) 0;
+  }
+  .abas [aria-current],
+  .filtro [aria-current] {
+    color: var(--pau-brasil);
+    text-decoration-thickness: 3px;
+  }
+  .filtro {
+    margin-bottom: var(--esp-5);
+  }
+  .fila {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 3px solid var(--tinta);
+  }
+  .fila a {
+    display: grid;
+    gap: var(--esp-1);
+    padding: var(--esp-4) 0;
+    border-bottom: 1px solid var(--tinta);
+    text-decoration: none;
+    color: inherit;
+  }
+  .fila__meta {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+  .fila__titulo {
+    font-weight: 700;
+    font-size: 20px;
+    text-decoration: underline;
+  }
+</style>

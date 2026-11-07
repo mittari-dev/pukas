@@ -1,0 +1,329 @@
+---
+// Editar peça (spec painel §4). /admin/peca/nova?tipo=... cria; /admin/peca/<id> edita.
+// Cada botão manda "acao"; o servidor confere o papel (pode) e o banco confere de novo (RLS + travas).
+import Painel from '../../../../layouts/Painel.astro';
+import Manchete from '../../../../components/identidade/Manchete.astro';
+import { buscarPeca, corrigir, enviarFoto, renovarPaginas, salvar } from '../../../../lib/banco/painel';
+import { urlBanco } from '../../../../lib/banco/cliente';
+import { urlFoto, type LinhaPeca } from '../../../../lib/banco/pecas';
+import { lerFormularioPeca } from '../../../../lib/painel/formulario';
+import { pode, type Acao } from '../../../../lib/painel/permissoes';
+import { travasDaPeca, type EstadoPeca, type PecaEntrada, type TipoPeca } from '../../../../lib/painel/travas';
+import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
+import { enviarTraducao } from '../../../../lib/traducao/lote';
+
+const { cliente, usuario } = Astro.locals.painel!;
+const TIPOS: TipoPeca[] = ['newsletter', 'noticia', 'cultura', 'pagina'];
+const NOME: Record<TipoPeca, string> = { newsletter: 'Memória Operária', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página' };
+const ESTADO: Record<EstadoPeca, string> = { rascunho: 'Rascunho', em_revisao: 'Em revisão', publicada: 'Publicada', rejeitada: 'Rejeitada' };
+const DESTINO: Record<Exclude<Acao, 'editar' | 'corrigir'>, EstadoPeca> = { enviar_revisao: 'em_revisao', rejeitar: 'rejeitada', publicar: 'publicada' };
+
+const id = Astro.params.id === 'nova' ? undefined : Astro.params.id;
+let linha = id ? await buscarPeca(cliente, id) : null;
+if (id && !linha) return Astro.rewrite('/404');
+const tipo = (linha?.tipo ?? TIPOS.find((t) => t === Astro.url.searchParams.get('tipo')) ?? 'newsletter') as TipoPeca;
+const estadoAtual: EstadoPeca = linha?.estado ?? 'rascunho';
+
+let erro = '';
+let aviso = Astro.url.searchParams.get('ok') ? 'Salvo.' : '';
+let enviado: PecaEntrada | undefined;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const acao = String(form.get('acao') ?? 'salvar');
+  const permissao: Acao = acao === 'salvar' ? 'editar' : (acao as Acao);
+  const destino = acao === 'salvar' ? estadoAtual : DESTINO[acao as keyof typeof DESTINO];
+  enviado = lerFormularioPeca(form, tipo, destino ?? estadoAtual);
+  const correcao = String(form.get('correcao_texto') ?? '').trim();
+  const ehCorrecao = form.get('e_correcao') === 'sim';
+
+  if (!destino || !pode(usuario!.papel, permissao, estadoAtual)) erro = 'Você não pode fazer isso com esta peça.';
+  else if (estadoAtual === 'publicada' && !form.get('e_correcao')) erro = 'A peça está no ar: diga se esta mudança é uma correção.';
+  else if (ehCorrecao && !correcao) erro = 'Escreva em uma linha o que foi corrigido. Esse texto aparece na página.';
+
+  const arquivo = form.get('foto_arquivo');
+  if (!erro && arquivo instanceof File && arquivo.size > 0) {
+    const r = await enviarFoto(cliente, arquivo);
+    if (r.ok) enviado.foto = { caminho: r.valor, descricao: enviado.foto?.descricao ?? '', credito: enviado.foto?.credito, licenca: enviado.foto?.licenca, origem: enviado.foto?.origem };
+    else erro = r.erro;
+  }
+
+  if (!erro) {
+    const r = await salvar(cliente, enviado, usuario!.id, id);
+    if (!r.ok) erro = r.erro;
+    else {
+      if (ehCorrecao) {
+        const c = await corrigir(cliente, r.valor, correcao);
+        if (!c.ok) erro = c.erro;
+      }
+      const noAr = destino === 'publicada';
+      if (!erro && noAr && acao === 'publicar' && enviado.traduzir) await enviarTraducao(cliente, r.valor);
+      if (!erro && (noAr || estadoAtual === 'publicada')) {
+        const renovou = await renovarPaginas(r.valor);
+        if (!renovou) aviso = 'Salvo, mas o site pode demorar a mostrar a mudança. Use "Renovar páginas".';
+      }
+      if (!erro) return Astro.redirect(`/admin/peca/${r.valor}?ok=1`, 303);
+    }
+  }
+  if (id) linha = await buscarPeca(cliente, id);
+}
+
+// O que aparece no formulário: o que acabou de ser enviado (se deu erro) ou o que está no banco.
+const base = urlBanco();
+const v = enviado ?? (linha ? deLinha(linha) : vazia(tipo));
+function deLinha(l: LinhaPeca): PecaEntrada {
+  return {
+    tipo: l.tipo, estado: l.estado, serie: l.serie ?? undefined, numero: l.numero ?? undefined, slug: l.slug ?? undefined,
+    subtipo: (l.subtipo ?? undefined) as PecaEntrada['subtipo'], autoria: l.autoria, titulo: l.titulo, resumo: l.resumo,
+    legenda: l.legenda ?? undefined, aviso: l.aviso ?? undefined, corpo: l.corpo, video: l.video ?? undefined,
+    foto: l.foto_caminho ? { caminho: l.foto_caminho, descricao: l.foto_descricao ?? '', credito: l.foto_credito ?? undefined, licenca: l.foto_licenca ?? undefined, origem: l.foto_origem ?? undefined } : undefined,
+    fontes: l.fontes.map((f) => ({ ...f, acessadaEm: new Date(f.acessadaEm) })),
+    checagem: l.checagem ? { por: l.checagem.por, em: new Date(l.checagem.em) } : undefined,
+    traduzir: l.traduzir,
+  };
+}
+function vazia(t: TipoPeca): PecaEntrada {
+  return { tipo: t, estado: 'rascunho', serie: t === 'newsletter' ? 'memoria-operaria' : undefined, autoria: 'PUKAS', titulo: '', resumo: '', corpo: '', fontes: [], traduzir: true };
+}
+const travas = travasDaPeca(v);
+const pronta = travas.every((t) => t.ok);
+const papel = usuario!.papel;
+const dia = (d?: Date) => (d ? d.toISOString().slice(0, 10) : '');
+const fontes = [...v.fontes, { titulo: '', instituicao: '', url: '', tipo: 'primaria' as const, acessadaEm: new Date() }];
+const pedeChecagem = tipo === 'newsletter' || tipo === 'noticia';
+const traducao = linha?.traducoes?.[0];
+---
+<Painel titulo={linha ? 'Editar peça' : 'Nova peça'}>
+  <p class="maquina"><a href="/admin">‹ Fila</a> · {NOME[tipo]} · {ESTADO[estadoAtual]}</p>
+  <h1>{linha ? 'Editar' : 'Nova'}</h1>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+  {aviso && !erro && <p class="mensagem mensagem--ok" role="status">{aviso}</p>}
+  <p class="restaurar" hidden><button type="button" class="botao botao--linha" data-restaurar>Restaurar o texto que ficou guardado neste aparelho</button></p>
+
+  <form method="post" enctype="multipart/form-data" class="editor" data-chave={`pukas:peca:${id ?? `nova-${tipo}`}`} data-atualizado={linha?.atualizado_em ?? ''} data-limpar={Astro.url.searchParams.get('ok') ? '1' : undefined}>
+    {tipo === 'newsletter' && (
+      <div class="linha">
+        <div class="campo"><label for="serie">Série</label><select id="serie" name="serie"><option value="memoria-operaria" selected>Memória Operária</option></select></div>
+        <div class="campo"><label for="numero">Número</label><input id="numero" name="numero" type="number" min="1" value={v.numero} required /></div>
+      </div>
+    )}
+    {tipo === 'cultura' && (
+      <div class="linha">
+        <div class="campo"><label for="numero">Número</label><input id="numero" name="numero" type="number" min="1" value={v.numero} required /></div>
+        <div class="campo">
+          <label for="subtipo">Tipo</label>
+          <select id="subtipo" name="subtipo">{['conto', 'cena', 'poema', 'ensaio'].map((s) => <option value={s} selected={v.subtipo === s}>{s}</option>)}</select>
+        </div>
+      </div>
+    )}
+    {tipo !== 'newsletter' && (
+      <div class="campo">
+        <label for="slug">Endereço</label>
+        <input id="slug" name="slug" value={v.slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
+        <p class="ajuda">Só letras minúsculas, números e hífen. Vira {tipo === 'cultura' ? '/cultura/' : tipo === 'noticia' ? '/noticias/' : '/'}<strong>endereço</strong>.</p>
+      </div>
+    )}
+
+    <div class="campo">
+      <label for="titulo">Manchete</label>
+      <input id="titulo" name="titulo" value={v.titulo} required data-contar />
+      <p class="ajuda"><span data-contador>{contarPalavras(v.titulo)}</span> de {MAX_PALAVRAS_MANCHETE} palavras. Use | para quebrar a linha e *trecho* para destacar.</p>
+      {v.titulo && <div class="previa" aria-label="Prévia da manchete"><Manchete titulo={v.titulo} tamanho="m" nivel={2} /></div>}
+    </div>
+
+    <div class="campo"><label for="resumo">Resumo</label><textarea id="resumo" name="resumo" maxlength="280" rows="3">{v.resumo}</textarea></div>
+    {tipo === 'newsletter' && <div class="campo"><label for="legenda">Legenda do Instagram</label><textarea id="legenda" name="legenda" maxlength="2200" rows="4">{v.legenda}</textarea></div>}
+    {tipo === 'cultura' && (
+      <>
+        <div class="campo"><label for="autoria">Autoria</label><input id="autoria" name="autoria" value={v.autoria} /></div>
+        <div class="campo"><label for="aviso">Aviso de conteúdo (opcional)</label><input id="aviso" name="aviso" value={v.aviso} /></div>
+        <div class="campo"><label for="video">Vídeo (opcional)</label><input id="video" name="video" type="url" value={v.video} /></div>
+      </>
+    )}
+
+    <div class="campo">
+      <label for="corpo">Texto (Markdown)</label>
+      <textarea id="corpo" name="corpo" rows="16">{v.corpo}</textarea>
+      <p class="ajuda">## para subtítulo, **negrito**, [texto](link). Linha em branco separa parágrafos.</p>
+    </div>
+
+    {tipo !== 'pagina' && (
+      <fieldset class="campo">
+        <legend>{tipo === 'cultura' ? 'Capa (opcional)' : tipo === 'noticia' ? 'Foto (opcional)' : 'Foto'}</legend>
+        {v.foto && <img class="foto" src={urlFoto(base, v.foto.caminho)} alt="" width="240" />}
+        <input type="hidden" name="foto_caminho" value={v.foto?.caminho} />
+        <label for="foto_arquivo">{v.foto ? 'Trocar foto' : 'Enviar foto'} (JPG, PNG ou WebP, até 5 MB)</label>
+        <input id="foto_arquivo" name="foto_arquivo" type="file" accept="image/jpeg,image/png,image/webp" />
+        <label for="foto_descricao">Descrição para quem não enxerga</label><input id="foto_descricao" name="foto_descricao" value={v.foto?.descricao} />
+        <label for="foto_credito">Crédito</label><input id="foto_credito" name="foto_credito" value={v.foto?.credito} />
+        <label for="foto_licenca">Licença</label><input id="foto_licenca" name="foto_licenca" value={v.foto?.licenca} />
+        <label for="foto_origem">De onde veio (link)</label><input id="foto_origem" name="foto_origem" type="url" value={v.foto?.origem} />
+      </fieldset>
+    )}
+
+    {tipo !== 'pagina' && (
+      <fieldset class="campo">
+        <legend>Fontes</legend>
+        {fontes.map((f, i) => (
+          <div class="fonte">
+            <label for={`f${i}t`}>Título</label><input id={`f${i}t`} name={`fonte[${i}][titulo]`} value={f.titulo} />
+            <label for={`f${i}i`}>Instituição</label><input id={`f${i}i`} name={`fonte[${i}][instituicao]`} value={f.instituicao} />
+            <label for={`f${i}u`}>Link</label><input id={`f${i}u`} name={`fonte[${i}][url]`} type="url" value={f.url} />
+            <div class="linha">
+              <div><label for={`f${i}p`}>Tipo</label><select id={`f${i}p`} name={`fonte[${i}][tipo]`}><option value="primaria" selected={f.tipo === 'primaria'}>Primária</option><option value="secundaria" selected={f.tipo === 'secundaria'}>Secundária</option></select></div>
+              <div><label for={`f${i}a`}>Acessada em</label><input id={`f${i}a`} name={`fonte[${i}][acessadaEm]`} type="date" value={dia(f.acessadaEm)} /></div>
+            </div>
+          </div>
+        ))}
+        <p class="ajuda">Para mais uma fonte, salve: aparece um bloco vazio novo. Para tirar uma, apague o título e o link.</p>
+      </fieldset>
+    )}
+
+    {pedeChecagem && (
+      <fieldset class="campo">
+        <legend>Checagem</legend>
+        <div class="linha">
+          <div><label for="checagem_por">Quem checou</label><input id="checagem_por" name="checagem_por" value={v.checagem?.por} /></div>
+          <div><label for="checagem_em">Quando</label><input id="checagem_em" name="checagem_em" type="date" value={dia(v.checagem?.em)} /></div>
+        </div>
+      </fieldset>
+    )}
+
+    <label class="marcar"><input type="checkbox" name="traduzir" checked={v.traduzir} /> Traduzir para o espanhol ao publicar</label>
+
+    {travas.length > 0 && (
+      <section class="travas" aria-labelledby="pronto">
+        <h2 id="pronto" class="maquina">Pronto para publicar?</h2>
+        <ul>{travas.map((t) => <li class:list={{ falta: !t.ok }}>{t.ok ? '✓' : '✗'} {t.ok ? t.rotulo : t.mensagem}</li>)}</ul>
+      </section>
+    )}
+
+    {estadoAtual === 'publicada' && (
+      <fieldset class="campo correcao">
+        <legend>A peça está no ar. Esta mudança é uma correção?</legend>
+        <label class="marcar"><input type="radio" name="e_correcao" value="sim" /> Sim: corrige um fato, número ou nome</label>
+        <label class="marcar"><input type="radio" name="e_correcao" value="nao" /> Não: só erro de digitação</label>
+        <label for="correcao_texto">O que foi corrigido (aparece na página)</label>
+        <input id="correcao_texto" name="correcao_texto" />
+      </fieldset>
+    )}
+
+    <div class="acoes">
+      {pode(papel, 'editar', estadoAtual) && <button class="botao" name="acao" value="salvar">Salvar</button>}
+      {linha && pode(papel, 'enviar_revisao', estadoAtual) && <button class="botao botao--linha" name="acao" value="enviar_revisao">Enviar para revisão</button>}
+      {linha && pode(papel, 'rejeitar', estadoAtual) && <button class="botao botao--linha" name="acao" value="rejeitar">Rejeitar</button>}
+      {pode(papel, 'publicar', estadoAtual) && <button class="botao botao--marca" name="acao" value="publicar" disabled={!pronta}>Publicar</button>}
+    </div>
+  </form>
+
+  {linha && linha.traduzir && (
+    <section class="espanhol" aria-labelledby="es">
+      <h2 id="es" class="maquina">Espanhol</h2>
+      {!traducao && <p>{estadoAtual === 'publicada' ? 'Ainda não foi enviada para tradução.' : 'A tradução é pedida quando a peça é publicada.'}</p>}
+      {traducao?.estado === 'pendente' && <p>Tradução em andamento. Costuma ficar pronta em alguns minutos.</p>}
+      {traducao?.estado === 'erro' && <p class="mensagem">A tradução falhou: {traducao.erro}</p>}
+      {traducao && traducao.estado !== 'pendente' && <p><a href={`/admin/peca/${linha.id}/espanhol`}>{traducao.estado === 'pronta' ? 'Ver e revisar a tradução' : 'Tentar de novo'}</a></p>}
+    </section>
+  )}
+</Painel>
+
+<script>
+  // Rascunho guardado no aparelho: se a conexão cair ou a sessão expirar, o texto não se perde.
+  const form = document.querySelector<HTMLFormElement>('form.editor');
+  const contador = document.querySelector('[data-contador]');
+  const titulo = document.querySelector<HTMLInputElement>('[data-contar]');
+  titulo?.addEventListener('input', () => {
+    if (contador) contador.textContent = String(titulo.value.replace(/[|*]/g, ' ').split(/\s+/).filter(Boolean).length);
+  });
+  if (form) {
+    const chave = form.dataset.chave!;
+    const ler = () => { try { return JSON.parse(localStorage.getItem(chave) ?? 'null'); } catch { return null; } };
+    const gravar = () => {
+      const campos: Record<string, string> = {};
+      for (const el of form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name]:not([type=file]):not([type=hidden]):not([type=radio]):not([type=checkbox]), textarea[name]')) campos[el.name] = el.value;
+      try { localStorage.setItem(chave, JSON.stringify({ em: new Date().toISOString(), campos })); } catch {}
+    };
+    if (form.dataset.limpar) { try { localStorage.removeItem(chave); } catch {} }
+    const guardado = ler();
+    if (guardado && !form.dataset.limpar && (!form.dataset.atualizado || guardado.em > form.dataset.atualizado)) {
+      const aviso = document.querySelector<HTMLElement>('.restaurar');
+      if (aviso) aviso.hidden = false;
+      document.querySelector('[data-restaurar]')?.addEventListener('click', () => {
+        for (const [nome, valor] of Object.entries(guardado.campos as Record<string, string>)) {
+          const el = form.querySelector<HTMLInputElement>(`[name="${CSS.escape(nome)}"]`);
+          if (el) el.value = valor;
+        }
+        if (aviso) aviso.hidden = true;
+      });
+    }
+    let espera: number | undefined;
+    form.addEventListener('input', () => { clearTimeout(espera); espera = window.setTimeout(gravar, 500); });
+  }
+</script>
+
+<style>
+  .linha {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--esp-3);
+  }
+  fieldset.campo {
+    border: 3px solid var(--tinta);
+    padding: var(--esp-4);
+  }
+  .fonte {
+    display: grid;
+    gap: var(--esp-2);
+    padding-bottom: var(--esp-4);
+    margin-bottom: var(--esp-4);
+    border-bottom: 1px solid var(--tinta);
+  }
+  .foto {
+    max-width: 240px;
+    height: auto;
+    filter: grayscale(1);
+  }
+  .previa {
+    padding: var(--esp-4) 0;
+  }
+  .marcar {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-2);
+    min-height: 44px;
+    margin-bottom: var(--esp-3);
+  }
+  .travas {
+    border: 3px solid var(--tinta);
+    padding: var(--esp-3) var(--esp-4);
+    margin: var(--esp-5) 0;
+  }
+  .travas h2 {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    margin: 0 0 var(--esp-2);
+  }
+  .travas ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .falta {
+    color: var(--pau-brasil);
+    font-weight: 700;
+  }
+  .acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-3);
+    margin-top: var(--esp-5);
+  }
+  .mensagem--ok {
+    border-color: var(--tinta);
+  }
+  .espanhol {
+    margin-top: var(--esp-7);
+    border-top: 3px solid var(--tinta);
+    padding-top: var(--esp-4);
+  }
+</style>

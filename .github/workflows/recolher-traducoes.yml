@@ -1,0 +1,38 @@
+name: Recolher traduções
+
+# Busca no lote do Claude as traduções para o espanhol enviadas ao publicar e grava no banco.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  recolher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      RENOVAR_SEGREDO: ${{ secrets.RENOVAR_SEGREDO }}
+      SITE_URL: ${{ secrets.SITE_URL }}
+    steps:
+      - name: Segredos configurados?
+        id: segredos
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] && [ -n "$ANTHROPIC_API_KEY" ] && [ -n "$RENOVAR_SEGREDO" ] && [ -n "$SITE_URL" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Segredos ainda não configurados; nada a fazer."
+          fi
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/checkout@v4
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - if: steps.segredos.outputs.ok == 'true'
+        run: npm ci
+      - if: steps.segredos.outputs.ok == 'true'
+        run: npx tsx scripts/recolher-traducoes.ts

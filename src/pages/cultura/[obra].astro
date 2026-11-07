@@ -2,19 +2,14 @@
 import Obra from '../../views/Obra.astro';
 import { carregarObras } from '../../lib/carregar';
 import { prefixar } from '../../lib/idioma';
+import { etiquetaPeca } from '../../lib/cache';
 
-export async function getStaticPaths() {
-  const obras = await carregarObras('pt');
-  const noOutro = new Set((await carregarObras('es')).map((o) => o.id));
-  return obras.map((obra) => ({
-    params: { obra: obra.id },
-    props: {
-      obra,
-      alternativa: noOutro.has(obra.id)
-        ? { href: prefixar(`/cultura/${obra.id}`, 'es'), equivalente: true }
-        : { href: prefixar('/cultura', 'es'), equivalente: false },
-    },
-  }));
-}
+const obra = (await carregarObras('pt')).find((o) => o.id === Astro.params.obra);
+if (!obra) return Astro.rewrite('/404');
+Astro.locals.etiquetas = [etiquetaPeca(obra.id)];
+const traduzida = (await carregarObras('es')).some((o) => o.id === obra.id);
+const alternativa = traduzida
+  ? { href: prefixar(`/cultura/${obra.id}`, 'es'), equivalente: true }
+  : { href: prefixar('/cultura', 'es'), equivalente: false };
 ---
-<Obra idioma="pt" {...Astro.props} />
+<Obra idioma="pt" obra={obra} alternativa={alternativa} />

@@ -5,6 +5,7 @@ import type { Chave } from '../i18n/textos';
 export const navegacao: { chave: Chave; href: string }[] = [
   { chave: 'nav.inicio', href: '/' },
   { chave: 'nav.memoria', href: '/newsletter/memoria-operaria' },
+  { chave: 'nav.noticias', href: '/noticias' },
   { chave: 'nav.cultura', href: '/cultura' },
   { chave: 'nav.manifesto', href: '/manifesto' },
   { chave: 'nav.links', href: '/links' },

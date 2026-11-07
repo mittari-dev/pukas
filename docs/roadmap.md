@@ -17,8 +17,10 @@ Cada subprojeto segue o ciclo **spec → plano → implementação**, com milest
 | # | Subprojeto | Entrega | Status |
 |---|---|---|---|
 | 1 | **Site: núcleo** | Edição da newsletter com fontes, `/links`, manifesto, capa, RSS | ✅ no ar em `pukas.vercel.app` |
-| 2 | **Seção de cultura** | Rota própria para contos, cenas, poemas e ensaios | ⚪ próxima spec |
-| 3 | **Painel `/admin` (Supabase)** | Publicar e editar pelo navegador, com login, senha e 2FA ([ADR-0002](decisoes/ADR-0002-supabase-backend.md)) | ⚪ |
+| 2 | **Seção de cultura** | Rota própria para contos, cenas, poemas e ensaios | ✅ |
+| 3 | **Painel `/admin` (Supabase)** | Publicar, corrigir e revisar o espanhol pelo navegador, com senha e 2FA; seção `/noticias` ([spec](specs/2026-11-06-painel-design.md)) | ✅ código · ⏳ no ar |
+| 3.2 | **Robô de notícias** | Busca nas fontes fixas e na web, lê as matérias e deixa rascunhos na fila do painel; o fundador aprova. Roda dentro da assinatura do Claude, sem custo extra | ⚪ |
+| 3.3 | **Radar e pistas** | Acompanhar figuras públicas e guardar pistas privadas (bucket `arquivos`); pista nunca é publicada como acusação | ⚪ |
 | 4 | **Newsletter por e-mail** | Inscrição e envio de cada edição pelo Resend | ⚪ |
 | 5 | **Gerador do carrossel e do vídeo** | Slides PNG 1080×1350 e vídeo de 60 a 90 s gerados a partir da edição | ⚪ |
 | 6 | **Votações auditáveis** | Consulta à base sobre medidas do Congresso, com antibot, metodologia aberta e comprovante de voto | ⚪ |
@@ -51,6 +53,10 @@ O ciclo funciona assim:
 ### Loja e materiais impressos
 
 Jornais de formação sobre socialismo, revoluções, luta de classes e consciência de classe. A ideia é que quem compra **vire porta-voz**: o material ensina a espalhar, a falar e a apresentar essas ideias. Conecta com os princípios "reproduzível à mão" e "sobrevive à xerox".
+
+### Monitor da cota parlamentar
+
+Cruzar os gastos da cota parlamentar (dados abertos da Câmara e do Senado) com notas fiscais e empresas, e sinalizar o que foge do padrão. O monitor gera pista para o radar, não manchete. A peça só sai com documento público por trás.
 
 ### Outros módulos
 

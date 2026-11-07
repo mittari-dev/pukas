@@ -1,0 +1,48 @@
+// Quem entra no /admin (spec painel §4 e §5). Sem 2FA confirmado (aal2), só abrem o login e o 2FA.
+// O banco confere de novo em cada gravação; isto só decide para onde mandar a pessoa.
+
+export interface Sessao {
+  caminho: string;
+  logado: boolean;
+  aal: 'aal1' | 'aal2' | null;
+  temFator: boolean;
+}
+
+export type Decisao = { tipo: 'seguir' } | { tipo: 'redirecionar'; para: string };
+
+const ENTRAR = '/admin/entrar';
+const DOIS_FATORES = '/admin/2fa';
+
+// Volta só para dentro do painel: nada de outro site nem de //host.
+export function voltaSegura(volta: string | null | undefined): string {
+  return volta && /^\/admin(\/|$)/.test(volta) ? volta : '/admin';
+}
+
+const com = (destino: string, volta: string) => `${destino}?volta=${encodeURIComponent(voltaSegura(volta))}`;
+
+export function decidirAcessoAdmin({ caminho, logado, aal }: Sessao): Decisao {
+  if (caminho === ENTRAR) return { tipo: 'seguir' };
+  if (!logado) return { tipo: 'redirecionar', para: com(ENTRAR, caminho === DOIS_FATORES ? '/admin' : caminho) };
+  if (caminho === DOIS_FATORES) return { tipo: 'seguir' };
+  if (aal !== 'aal2') return { tipo: 'redirecionar', para: com(DOIS_FATORES, caminho) };
+  return { tipo: 'seguir' };
+}
+
+export function cabecalhosAdmin(urlBanco: string): Record<string, string> {
+  return {
+    'Cache-Control': 'private, no-store',
+    'X-Robots-Tag': 'noindex',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'same-origin',
+    'Content-Security-Policy': [
+      "default-src 'self'",
+      `img-src 'self' ${urlBanco} data:`,
+      `connect-src 'self' ${urlBanco}`,
+      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; '),
+  };
+}

@@ -3,22 +3,18 @@ import Edicao from '../../../views/Edicao.astro';
 import { carregarEdicoes } from '../../../lib/carregar';
 import { caminhoEdicao } from '../../../lib/formato';
 import { prefixar } from '../../../lib/idioma';
+import { acharEdicao } from '../../../lib/rotas';
+import { etiquetaPeca } from '../../../lib/cache';
 
-export async function getStaticPaths() {
-  const edicoes = await carregarEdicoes('pt');
-  const noOutro = new Set((await carregarEdicoes('es')).map((e) => e.id));
-  // A lista vem do número maior para o menor: a seguinte é a de índice menor.
-  return edicoes.map((edicao, i) => ({
-    params: { serie: edicao.data.serie, numero: String(edicao.data.numero).padStart(3, '0') },
-    props: {
-      edicao,
-      seguinte: edicoes[i - 1],
-      anterior: edicoes[i + 1],
-      alternativa: noOutro.has(edicao.id)
-        ? { href: caminhoEdicao(edicao.data.serie, edicao.data.numero, 'es'), equivalente: true }
-        : { href: prefixar('/newsletter/memoria-operaria', 'es'), equivalente: false },
-    },
-  }));
-}
+const edicoes = await carregarEdicoes('pt');
+const i = acharEdicao(edicoes, Astro.params.serie, Astro.params.numero);
+if (i < 0) return Astro.rewrite('/404');
+const edicao = edicoes[i];
+Astro.locals.etiquetas = [etiquetaPeca(edicao.id)];
+const traduzida = (await carregarEdicoes('es')).some((e) => e.id === edicao.id);
+// A lista vem do número maior para o menor: a seguinte é a de índice menor.
+const alternativa = traduzida
+  ? { href: caminhoEdicao(edicao.data.serie, edicao.data.numero, 'es'), equivalente: true }
+  : { href: prefixar('/newsletter/memoria-operaria', 'es'), equivalente: false };
 ---
-<Edicao idioma="pt" {...Astro.props} />
+<Edicao idioma="pt" edicao={edicao} seguinte={edicoes[i - 1]} anterior={edicoes[i + 1]} alternativa={alternativa} />

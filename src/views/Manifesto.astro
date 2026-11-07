@@ -1,23 +1,22 @@
 ---
-import { getEntry, render } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import { t, type Idioma } from '../lib/idioma';
+import { carregarPagina } from '../lib/carregar';
+import { renderizarMarkdown } from '../lib/markdown';
 import '../styles/leitura.css';
 
 interface Props {
   idioma: Idioma;
 }
 const { idioma } = Astro.props;
-const pagina = idioma === 'es' ? await getEntry('paginasEs', 'manifesto') : await getEntry('paginas', 'manifesto');
-if (!pagina) throw new Error(`manifesto (${idioma}) não encontrado em src/content`);
-const publicado = !pagina.data.rascunho;
-const { Content } = await render(pagina);
+const pagina = await carregarPagina('manifesto', idioma);
+const corpo = pagina ? await renderizarMarkdown(pagina.body) : '';
 ---
-<Base titulo={pagina.data.titulo} descricao={pagina.data.resumo} receita="leitura" idioma={idioma}>
+<Base titulo={pagina?.titulo ?? t(idioma, 'manifesto.titulo')} descricao={pagina?.resumo ?? ''} receita="leitura" idioma={idioma}>
   <article class="leitura">
     <div class="titulo"><Manchete titulo={t(idioma, 'manifesto.titulo')} tamanho="m" /></div>
-    {publicado ? <div class="corpo"><Content /></div> : <p class="maquina">{t(idioma, 'manifesto.emBreve')}</p>}
+    {pagina ? <div class="corpo" set:html={corpo} /> : <p class="maquina">{t(idioma, 'manifesto.emBreve')}</p>}
   </article>
 </Base>
 

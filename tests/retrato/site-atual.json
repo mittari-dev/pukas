@@ -1,0 +1,74 @@
+[
+  {
+    "url": "/",
+    "status": 200,
+    "titulo": "Direito nenhum caiu do céu. Foi luta.",
+    "texto": "Direito nenhum caiu do céu. Foi luta. MEMÓRIA OPERÁRIA · TODAS AS EDIÇÕES A primeira edição sai numa segunda-feira. Volte logo. O PUKAS é um órgão de mídia &amp; inteligência latino-americana. Toda informação aqui tem fonte. Leia o manifesto ."
+  },
+  {
+    "url": "/es/",
+    "status": 200,
+    "titulo": "Ningún derecho cayó del cielo. Fue lucha.",
+    "texto": "Ningún derecho cayó del cielo. Fue lucha. MEMORIA OBRERA · TODAS LAS EDICIONES Todavía no hay ediciones en español. Vuelve pronto. PUKAS es un medio de comunicación e inteligencia latinoamericana. Toda la información aquí tiene fuente. Lee el manifiesto ."
+  },
+  {
+    "url": "/links",
+    "status": 200,
+    "titulo": "Direito nenhum caiu do céu.",
+    "texto": "Direito nenhum caiu do céu. 01 Manifesto ››› 02 Memória Operária: todas as edições ››› 03 Cultura: contos, poemas e ensaios ››› TODA INFORMAÇÃO AQUI TEM FONTE. LEU? PASSE ADIANTE."
+  },
+  {
+    "url": "/es/links",
+    "status": 200,
+    "titulo": "Ningún derecho cayó del cielo.",
+    "texto": "Ningún derecho cayó del cielo. 01 Manifiesto ››› 02 Memoria Obrera: todas las ediciones ››› 03 Cultura: cuentos, poemas y ensayos ››› TODA LA INFORMACIÓN AQUÍ TIENE FUENTE. ¿LO LEÍSTE? PÁSALO."
+  },
+  {
+    "url": "/manifesto",
+    "status": 200,
+    "titulo": "Manifesto",
+    "texto": "Manifesto A gente trabalha. E mesmo assim falta. Falta dinheiro no fim do mês, falta tempo, falta descanso. E o problema não é preguiça: o que você produz não fica com você. O PUKAS existe pra contar essa história do jeito que ela é, sem palavra difícil e sem papo de gabinete. Se precisar de dicionário pra entender, quem errou fomos nós. Nada do que você tem caiu do céu. Férias, 13º, hora extra paga, jornada de 8 horas: cada uma dessas coisas alguém conquistou, junto com os outros, quando ninguém queria dar. E dá pra perder tudo isso se a gente esquecer como chegou aqui. Por isso a gente lembra, e mostra a prova. Aqui, o fato ganha. Toda informação tem fonte, e a fonte fica à vista. Se a gente errar, corrige em público. Se um fato bater de frente com o que a gente pensa, fica o fato, porque mentira a favor da gente continua sendo mentira. A gente não quer seguidor. Quer gente que passe adiante. A gente não pede voto e não vende curso. Leu? Manda pro grupo da família, tira print, fala no ponto de ônibus. Informação parada não muda nada."
+  },
+  {
+    "url": "/es/manifesto",
+    "status": 200,
+    "titulo": "Manifiesto",
+    "texto": "Manifiesto Trabajamos. Y aun así no alcanza. Falta dinero a fin de mes, falta tiempo, falta descanso. Y el problema no es la pereza: lo que tú produces no se queda contigo. PUKAS existe para contar esta historia tal como es, sin palabras difíciles y sin palabrería de escritorio. Si hace falta un diccionario para entenderla, los que fallamos somos nosotros. Nada de lo que tienes cayó del cielo. Vacaciones, aguinaldo, horas extra pagadas, jornada de 8 horas: cada una de estas cosas alguien la conquistó, junto con otros, cuando nadie quería darla. Y todo eso se puede perder si olvidamos cómo llegamos hasta aquí. Por eso recordamos, y mostramos la prueba. Aquí, el hecho gana. Toda la información tiene fuente, y la fuente queda a la vista. Si nos equivocamos, corregimos en público. Si un hecho choca con lo que pensamos, se queda el hecho, porque una mentira a nuestro favor sigue siendo mentira. No queremos seguidores. Queremos gente que lo pase. No pedimos votos y no vendemos cursos. ¿Lo leíste? Mándalo al grupo de la familia, sácale una captura, coméntalo en la parada del autobús. La información quieta no cambia nada."
+  },
+  {
+    "url": "/cultura",
+    "status": 200,
+    "titulo": "Cultura",
+    "texto": "Cultura Contos, cenas, poemas e ensaios. Saem quando ficam prontos. A primeira obra ainda está sendo escrita."
+  },
+  {
+    "url": "/es/cultura",
+    "status": 200,
+    "titulo": "Cultura",
+    "texto": "Cultura Cuentos, escenas, poemas y ensayos. Salen cuando están listos. Todavía no hay obras en español. Vuelve pronto."
+  },
+  {
+    "url": "/newsletter/memoria-operaria",
+    "status": 200,
+    "titulo": "Memória Operária",
+    "texto": "Memória Operária Direitos que existem porque alguém lutou. Uma edição toda segunda, sempre com as fontes. A primeira edição sai numa segunda-feira. Volte logo."
+  },
+  {
+    "url": "/es/newsletter/memoria-operaria",
+    "status": 200,
+    "titulo": "Memoria Obrera",
+    "texto": "Memoria Obrera Derechos que existen porque alguien luchó. Una edición cada lunes, siempre con las fuentes. Todavía no hay ediciones en español. Vuelve pronto."
+  },
+  {
+    "url": "/rss.xml",
+    "status": 200,
+    "titulo": "PUKAS — Memória Operária",
+    "texto": "PUKAS — Memória Operária Direitos que existem porque alguém lutou. Uma edição toda segunda, sempre com as fontes. https://pukas.vercel.app/ pt-BR"
+  },
+  {
+    "url": "/es/rss.xml",
+    "status": 200,
+    "titulo": "PUKAS — Memoria Obrera",
+    "texto": "PUKAS — Memoria Obrera Derechos que existen porque alguien luchó. Una edición cada lunes, siempre con las fuentes. https://pukas.vercel.app/ es-419"
+  }
+]

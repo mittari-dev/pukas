@@ -1,0 +1,34 @@
+---
+// Login do painel: e-mail e senha. O 2FA vem logo depois (/admin/2fa); sem ele nada abre.
+import Painel from '../../layouts/Painel.astro';
+import { voltaSegura } from '../../lib/painel/acesso';
+
+const volta = voltaSegura(Astro.url.searchParams.get('volta'));
+let erro = Astro.url.searchParams.get('erro') === 'sem-acesso' ? 'Esta conta não faz parte da equipe.' : '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const { error } = await Astro.locals.painel!.cliente.auth.signInWithPassword({
+    email: String(form.get('email') ?? '').trim(),
+    password: String(form.get('senha') ?? ''),
+  });
+  // Mensagem genérica de propósito: não conta se o e-mail existe.
+  if (!error) return Astro.redirect(`/admin/2fa?volta=${encodeURIComponent(volta)}`, 303);
+  erro = 'E-mail, senha ou código errados.';
+}
+---
+<Painel titulo="Entrar">
+  <h1>Entrar</h1>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+  <form method="post">
+    <div class="campo">
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" autocomplete="username" required />
+    </div>
+    <div class="campo">
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" autocomplete="current-password" required />
+    </div>
+    <button class="botao botao--marca" type="submit">Entrar</button>
+  </form>
+</Painel>
