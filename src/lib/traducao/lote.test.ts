@@ -57,6 +57,23 @@ describe('recolherPendentes', () => {
     expect(r).toEqual([{ peca_id: original.id, campos: { estado: 'pronta', revisado: false, erro: null, titulo: 'En *1925*, la ley', resumo: 'Quince días.', corpo: 'En 1925, 15 días de vacaciones.', legenda: null, aviso: null } }]);
   });
 
+  test('um lote com defeito não trava os outros: 404 vira erro, falha passageira fica para a próxima', async () => {
+    const outra = { ...pendente, peca_id: 'outra', lote_id: 'lote_2', original: { ...original, id: 'outra' } };
+    const terceira = { ...pendente, peca_id: 'terceira', lote_id: 'lote_3', original: { ...original, id: 'terceira' } };
+    const ok = sucesso({ titulo: 'En *1925*, la ley', resumo: 'Quince días.', corpo: 'En 1925, 15 días de vacaciones.' });
+    const api = {
+      retrieve: async (id: string) => {
+        if (id === 'lote_1') throw Object.assign(new Error('not found'), { status: 404 });
+        if (id === 'lote_2') throw Object.assign(new Error('overloaded'), { status: 529 });
+        return { processing_status: 'ended' };
+      },
+      results: async () => (async function* () { yield { custom_id: 'terceira', result: ok }; })(),
+    } as never;
+    const r = await recolherPendentes([pendente, outra, terceira], api);
+    expect(r.map((x) => [x.peca_id, x.campos.estado])).toEqual([[original.id, 'erro'], ['terceira', 'pronta']]);
+    expect(r[0].campos.erro).toBe('o lote não existe mais na API; use "tentar de novo" no painel');
+  });
+
   test('lote encerrado sem o resultado da peça vira erro', async () => {
     expect(await recolherPendentes([pendente], api('ended', []))).toEqual([{ peca_id: original.id, campos: { estado: 'erro', erro: 'o lote terminou sem resultado para esta peça' } }]);
   });
