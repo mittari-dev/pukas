@@ -39,6 +39,10 @@ jobs:
           # Banco limpo (sem as peças dos testes acima) e só o conteúdo migrado.
           npx supabase db reset
           node scripts/migrar-para-banco.ts
+          # Backup diário: com o conteúdo migrado, rodar duas vezes dá o mesmo arquivo.
+          npx tsx scripts/exportar-publicado.ts && cp arquivo/publicado.json /tmp/a.json
+          npx tsx scripts/exportar-publicado.ts && cmp /tmp/a.json arquivo/publicado.json
+          node -e "const a=require('./arquivo/publicado.json'); if (a.pecas.length < 3) throw new Error('backup vazio')"
           npx astro dev --port 4321 > astro-dev.log 2>&1 &
           for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:4321/ && break; sleep 1; done
           RETRATO_URL=http://localhost:4321 npx vitest run --config vitest.banco.config.ts tests/retrato || { tail -50 astro-dev.log; exit 1; }

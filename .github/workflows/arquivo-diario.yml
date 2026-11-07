@@ -1,0 +1,47 @@
+name: Arquivo diário
+
+# Backup do publicado em arquivo/publicado.json. A consulta diária também impede o Supabase grátis de pausar.
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  arquivar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - name: Segredos configurados?
+        id: segredos
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Segredos ainda não configurados; nada a fazer."
+          fi
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/checkout@v4
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - if: steps.segredos.outputs.ok == 'true'
+        run: npm ci
+      - if: steps.segredos.outputs.ok == 'true'
+        run: npx tsx scripts/exportar-publicado.ts
+      - if: steps.segredos.outputs.ok == 'true'
+        name: Commit só se mudou
+        run: |
+          git add arquivo/publicado.json
+          if git diff --cached --quiet; then echo "Nada mudou."; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "chore(arquivo): backup do publicado"
+          git push
