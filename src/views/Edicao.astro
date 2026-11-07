@@ -45,7 +45,7 @@ const foto = d.foto.arquivo as string;
       <ol class="fontes">
         {ordenarFontes(d.fontes).map((f) => (
           <li>
-            <a href={f.url}>{f.titulo}</a> · {f.instituicao}
+            <a href={f.url || undefined}>{f.titulo}</a> · {f.instituicao}
             <span class="maquina fontes__meta">
               {f.tipo === 'primaria' ? t(idioma, 'edicao.primaria') : t(idioma, 'edicao.secundaria')} · {t(idioma, 'edicao.acessadaEm')} {formatarData(f.acessadaEm, idioma)}
             </span>

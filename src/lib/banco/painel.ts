@@ -10,7 +10,8 @@ import type { LinhaPeca } from './pecas';
 export type Resultado<T = void> = { ok: true; valor: T } | { ok: false; erro: string };
 
 const TIPOS_FOTO: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
-export const FOTO_MAX_BYTES = 5 * 1024 * 1024;
+// O Vercel recusa requisição acima de 4,5 MB antes de chegar aqui; a foto vai junto com o texto do formulário.
+export const FOTO_MAX_BYTES = 4 * 1024 * 1024;
 
 export interface LinhaFila {
   id: string;
@@ -65,7 +66,7 @@ export async function corrigir(cliente: SupabaseClient, id: string, texto: strin
 export async function enviarFoto(cliente: SupabaseClient, arquivo: File): Promise<Resultado<string>> {
   const extensao = TIPOS_FOTO[arquivo.type];
   if (!extensao) return { ok: false, erro: 'A foto precisa ser JPG, PNG ou WebP.' };
-  if (arquivo.size > FOTO_MAX_BYTES) return { ok: false, erro: 'A foto passa de 5 MB. Diminua e envie de novo.' };
+  if (arquivo.size > FOTO_MAX_BYTES) return { ok: false, erro: 'A foto passa de 4 MB. Diminua e envie de novo.' };
   const caminho = `${crypto.randomUUID()}.${extensao}`;
   const { error } = await cliente.storage.from('fotos').upload(caminho, arquivo, { contentType: arquivo.type });
   return error ? { ok: false, erro: 'Não deu para enviar a foto. Tente de novo.' } : { ok: true, valor: caminho };

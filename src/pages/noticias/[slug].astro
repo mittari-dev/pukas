@@ -2,11 +2,11 @@
 import Noticia from '../../views/Noticia.astro';
 import { carregarNoticias } from '../../lib/carregar';
 import { prefixar } from '../../lib/idioma';
-import { etiquetaPeca } from '../../lib/cache';
+import { etiquetasDaPeca } from '../../lib/cache';
 
 const noticia = (await carregarNoticias('pt')).find((n) => n.id === Astro.params.slug);
 if (!noticia) return Astro.rewrite('/404');
-Astro.locals.etiquetas = [etiquetaPeca(noticia.id)];
+Astro.locals.etiquetas = etiquetasDaPeca(noticia);
 const traduzida = (await carregarNoticias('es')).some((n) => n.id === noticia.id);
 const alternativa = traduzida
   ? { href: prefixar(`/noticias/${noticia.id}`, 'es'), equivalente: true }

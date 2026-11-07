@@ -1,6 +1,7 @@
 // Formulário da peça (painel) ↔ PecaEntrada ↔ linha do banco.
 import type { Fonte } from '../edicoes';
 import type { EstadoPeca, PecaEntrada, TipoPeca } from './travas';
+import { ehLinkWeb } from '../link';
 
 const texto = (f: FormData, nome: string) => {
   const v = f.get(nome);
@@ -75,4 +76,25 @@ export function paraLinha(p: PecaEntrada): Record<string, unknown> {
     checagem: p.checagem ? { por: p.checagem.por, em: dia(p.checagem.em) } : null,
     traduzir: p.traduzir,
   };
+}
+
+// Links que não são http(s) (javascript:, data:…) são recusados ao salvar; o site também os descarta ao mostrar.
+export function linksInvalidos(p: PecaEntrada): string[] {
+  const ruim = (u?: string) => Boolean(u) && !ehLinkWeb(u!);
+  return [
+    ...p.fontes.filter((f) => ruim(f.url)).map((f) => `fonte "${f.titulo || f.url}"`),
+    ...(ruim(p.foto?.origem) ? ['origem da foto'] : []),
+    ...(ruim(p.video) ? ['vídeo'] : []),
+  ];
+}
+
+// Mudou algo que a tradução cobre? Correção numa peça já traduzida precisa de tradução nova.
+export function textoMudou(
+  antes: { titulo: string; resumo: string; legenda: string | null; aviso: string | null; corpo: string },
+  depois: PecaEntrada,
+): boolean {
+  return (
+    antes.titulo !== depois.titulo || antes.resumo !== depois.resumo || (antes.legenda ?? undefined) !== depois.legenda ||
+    (antes.aviso ?? undefined) !== depois.aviso || antes.corpo.trim() !== depois.corpo
+  );
 }

@@ -1,7 +1,7 @@
 ---
 import Obra from '../../../views/Obra.astro';
 import { carregarObras, pendente } from '../../../lib/carregar';
-import { etiquetaPeca } from '../../../lib/cache';
+import { etiquetasDaPeca } from '../../../lib/cache';
 
 let obra = (await carregarObras('es')).find((o) => o.id === Astro.params.obra);
 if (!obra) {
@@ -9,6 +9,6 @@ if (!obra) {
   if (!original) return Astro.rewrite('/es/404');
   obra = pendente(original);
 }
-Astro.locals.etiquetas = [etiquetaPeca(obra.id)];
+Astro.locals.etiquetas = etiquetasDaPeca(obra);
 ---
 <Obra idioma="es" obra={obra} alternativa={{ href: `/cultura/${obra.id}`, equivalente: true }} />

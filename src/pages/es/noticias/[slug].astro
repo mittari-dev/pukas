@@ -1,7 +1,7 @@
 ---
 import Noticia from '../../../views/Noticia.astro';
 import { carregarNoticias, pendente } from '../../../lib/carregar';
-import { etiquetaPeca } from '../../../lib/cache';
+import { etiquetasDaPeca } from '../../../lib/cache';
 
 let noticia = (await carregarNoticias('es')).find((n) => n.id === Astro.params.slug);
 if (!noticia) {
@@ -9,6 +9,6 @@ if (!noticia) {
   if (!original) return Astro.rewrite('/es/404');
   noticia = pendente(original);
 }
-Astro.locals.etiquetas = [etiquetaPeca(noticia.id)];
+Astro.locals.etiquetas = etiquetasDaPeca(noticia);
 ---
 <Noticia idioma="es" noticia={noticia} alternativa={{ href: `/noticias/${noticia.id}`, equivalente: true }} />

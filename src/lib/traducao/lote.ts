@@ -79,9 +79,15 @@ type ApiLotes = Pick<Anthropic.Messages.Batches, 'retrieve' | 'results'>;
 export async function recolherPendentes(pendentes: Pendente[], api: ApiLotes): Promise<{ peca_id: string; campos: Record<string, unknown> }[]> {
   const saida = [];
   for (const p of pendentes) {
-    if ((await api.retrieve(p.lote_id)).processing_status !== 'ended') continue;
     let leitura: Leitura = { ok: false, erro: 'o lote terminou sem resultado para esta peça' };
-    for await (const r of await api.results(p.lote_id)) if (r.custom_id === p.peca_id) leitura = lerResultado(p.original, r.result);
+    // Uma peça com problema não pode travar as outras: 404 é definitivo, o resto tenta de novo na próxima rodada.
+    try {
+      if ((await api.retrieve(p.lote_id)).processing_status !== 'ended') continue;
+      for await (const r of await api.results(p.lote_id)) if (r.custom_id === p.peca_id) leitura = lerResultado(p.original, r.result);
+    } catch (erro) {
+      if ((erro as { status?: number }).status !== 404) continue;
+      leitura = { ok: false, erro: 'o lote não existe mais na API; use "Pedir tradução de novo" na aba Espanhol' };
+    }
     if (!leitura.ok) {
       saida.push({ peca_id: p.peca_id, campos: { estado: 'erro', erro: leitura.erro } });
       continue;

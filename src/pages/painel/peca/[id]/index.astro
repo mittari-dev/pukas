@@ -6,8 +6,8 @@ import Manchete from '../../../../components/identidade/Manchete.astro';
 import { buscarPeca, corrigir, enviarFoto, renovarPaginas, salvar } from '../../../../lib/banco/painel';
 import { urlBanco } from '../../../../lib/banco/cliente';
 import { urlFoto, type LinhaPeca } from '../../../../lib/banco/pecas';
-import { lerFormularioPeca } from '../../../../lib/painel/formulario';
-import { pode, type Acao } from '../../../../lib/painel/permissoes';
+import { lerFormularioPeca, linksInvalidos, textoMudou } from '../../../../lib/painel/formulario';
+import { destinoAoSalvar, pode, type Acao } from '../../../../lib/painel/permissoes';
 import { travasDaPeca, type EstadoPeca, type PecaEntrada, type TipoPeca } from '../../../../lib/painel/travas';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
 import { enviarTraducao } from '../../../../lib/traducao/lote';
@@ -32,7 +32,7 @@ if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const acao = String(form.get('acao') ?? 'salvar');
   const permissao: Acao = acao === 'salvar' ? 'editar' : (acao as Acao);
-  const destino = acao === 'salvar' ? estadoAtual : DESTINO[acao as keyof typeof DESTINO];
+  const destino = acao === 'salvar' ? destinoAoSalvar(estadoAtual) : DESTINO[acao as keyof typeof DESTINO];
   enviado = lerFormularioPeca(form, tipo, destino ?? estadoAtual);
   const correcao = String(form.get('correcao_texto') ?? '').trim();
   const ehCorrecao = form.get('e_correcao') === 'sim';
@@ -40,6 +40,7 @@ if (Astro.request.method === 'POST') {
   if (!destino || !pode(usuario!.papel, permissao, estadoAtual)) erro = 'Você não pode fazer isso com esta peça.';
   else if (estadoAtual === 'publicada' && !form.get('e_correcao')) erro = 'A peça está no ar: diga se esta mudança é uma correção.';
   else if (ehCorrecao && !correcao) erro = 'Escreva em uma linha o que foi corrigido. Esse texto aparece na página.';
+  else if (linksInvalidos(enviado).length) erro = `Link precisa começar com https:// (${linksInvalidos(enviado).join(', ')}).`;
 
   const arquivo = form.get('foto_arquivo');
   if (!erro && arquivo instanceof File && arquivo.size > 0) {
@@ -57,7 +58,9 @@ if (Astro.request.method === 'POST') {
         if (!c.ok) erro = c.erro;
       }
       const noAr = destino === 'publicada';
-      if (!erro && noAr && acao === 'publicar' && enviado.traduzir) await enviarTraducao(cliente, r.valor);
+      // Publicar traduz; editar o texto de uma peça no ar (correção) pede tradução nova, senão o espanhol fica com a versão velha.
+      const traduzirDeNovo = acao === 'publicar' || (estadoAtual === 'publicada' && linha !== null && textoMudou(linha, enviado));
+      if (!erro && noAr && enviado.traduzir && traduzirDeNovo) await enviarTraducao(cliente, r.valor);
       if (!erro && (noAr || estadoAtual === 'publicada')) {
         const renovou = await renovarPaginas(r.valor);
         if (!renovou) aviso = 'Salvo, mas o site pode demorar a mostrar a mudança. Use "Renovar páginas".';
@@ -152,8 +155,9 @@ const traducao = linha?.traducoes?.[0];
         <legend>{tipo === 'cultura' ? 'Capa (opcional)' : tipo === 'noticia' ? 'Foto (opcional)' : 'Foto'}</legend>
         {v.foto && <img class="foto" src={urlFoto(base, v.foto.caminho)} alt="" width="240" />}
         <input type="hidden" name="foto_caminho" value={v.foto?.caminho} />
-        <label for="foto_arquivo">{v.foto ? 'Trocar foto' : 'Enviar foto'} (JPG, PNG ou WebP, até 5 MB)</label>
-        <input id="foto_arquivo" name="foto_arquivo" type="file" accept="image/jpeg,image/png,image/webp" />
+        <label for="foto_arquivo">{v.foto ? 'Trocar foto' : 'Enviar foto'} (JPG, PNG ou WebP, até 4 MB; foto grande do celular é diminuída sozinha)</label>
+        <input id="foto_arquivo" name="foto_arquivo" type="file" accept="image/jpeg,image/png,image/webp" data-foto />
+        <p class="ajuda" data-foto-aviso hidden></p>
         <label for="foto_descricao">Descrição para quem não enxerga</label><input id="foto_descricao" name="foto_descricao" value={v.foto?.descricao} />
         <label for="foto_credito">Crédito</label><input id="foto_credito" name="foto_credito" value={v.foto?.credito} />
         <label for="foto_licenca">Licença</label><input id="foto_licenca" name="foto_licenca" value={v.foto?.licenca} />
@@ -227,39 +231,7 @@ const traducao = linha?.traducoes?.[0];
   )}
 </Painel>
 
-<script>
-  // Rascunho guardado no aparelho: se a conexão cair ou a sessão expirar, o texto não se perde.
-  const form = document.querySelector<HTMLFormElement>('form.editor');
-  const contador = document.querySelector('[data-contador]');
-  const titulo = document.querySelector<HTMLInputElement>('[data-contar]');
-  titulo?.addEventListener('input', () => {
-    if (contador) contador.textContent = String(titulo.value.replace(/[|*]/g, ' ').split(/\s+/).filter(Boolean).length);
-  });
-  if (form) {
-    const chave = form.dataset.chave!;
-    const ler = () => { try { return JSON.parse(localStorage.getItem(chave) ?? 'null'); } catch { return null; } };
-    const gravar = () => {
-      const campos: Record<string, string> = {};
-      for (const el of form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name]:not([type=file]):not([type=hidden]):not([type=radio]):not([type=checkbox]), textarea[name]')) campos[el.name] = el.value;
-      try { localStorage.setItem(chave, JSON.stringify({ em: new Date().toISOString(), campos })); } catch {}
-    };
-    if (form.dataset.limpar) { try { localStorage.removeItem(chave); } catch {} }
-    const guardado = ler();
-    if (guardado && !form.dataset.limpar && (!form.dataset.atualizado || guardado.em > form.dataset.atualizado)) {
-      const aviso = document.querySelector<HTMLElement>('.restaurar');
-      if (aviso) aviso.hidden = false;
-      document.querySelector('[data-restaurar]')?.addEventListener('click', () => {
-        for (const [nome, valor] of Object.entries(guardado.campos as Record<string, string>)) {
-          const el = form.querySelector<HTMLInputElement>(`[name="${CSS.escape(nome)}"]`);
-          if (el) el.value = valor;
-        }
-        if (aviso) aviso.hidden = true;
-      });
-    }
-    let espera: number | undefined;
-    form.addEventListener('input', () => { clearTimeout(espera); espera = window.setTimeout(gravar, 500); });
-  }
-</script>
+<script is:inline src="/editor.js" defer></script>
 
 <style>
   .linha {
