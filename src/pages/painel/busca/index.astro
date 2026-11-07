@@ -1,0 +1,271 @@
+---
+// Busca (spec busca §4): a pauta do robô, a escolha das candidatas, o gasto do mês e o "Rodar agora".
+// O robô roda no GitHub Actions (scripts/busca.ts); daqui só se pede rodada e se escolhe.
+import Painel from '../../../layouts/Painel.astro';
+import { candidatasDa, descartar, escolher, gastoDoMes, lerConfig, pedirRodada, rodadas, type Candidata, type Rodada } from '../../../lib/banco/busca';
+import { custoMedio, inicioDoMes, podeRodar } from '../../../lib/busca/regras';
+
+const { cliente, usuario } = Astro.locals.painel!;
+const editor = usuario?.papel === 'editor';
+const escolhe = editor || usuario?.papel === 'revisor';
+const REGIAO: Record<Candidata['regiao'], string> = { brasil: 'Brasil', 'america-latina': 'América Latina', mundo: 'Mundo' };
+const ESTADO: Record<Rodada['estado'], string> = { na_fila: 'Na fila', rodando: 'Rodando', pronta: 'Pronta', erro: 'Erro', teto: 'Teto atingido' };
+const reais = (v: number) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
+
+let [cfg, historico, gasto] = await Promise.all([lerConfig(cliente), rodadas(cliente), gastoDoMes(cliente, inicioDoMes(new Date()))]);
+const emAndamento = () => historico.some((r) => r.estado === 'na_fila' || r.estado === 'rodando');
+const cabe = () => podeRodar(gasto, Number(cfg.teto_brl), custoMedio(historico));
+
+let erro = '';
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const acao = String(f.get('acao') ?? '');
+  const id = String(f.get('id') ?? '');
+  let r: { ok: boolean; erro?: string } = { ok: false, erro: 'Ação desconhecida.' };
+  if (acao === 'rodar') {
+    if (!editor) r = { ok: false, erro: 'Só quem é editor pede uma rodada.' };
+    else if (emAndamento()) r = { ok: false, erro: 'Já tem uma rodada na fila ou rodando.' };
+    else if (!cabe()) r = { ok: false, erro: 'O teto do mês não comporta mais uma rodada.' };
+    else r = await pedirRodada(cliente, usuario!.id);
+  } else if (acao === 'escolher' && id) r = escolhe ? await escolher(cliente, id) : { ok: false, erro: 'Só editor e revisor escolhem as candidatas.' };
+  else if (acao === 'descartar' && id) r = escolhe ? await descartar(cliente, id, String(f.get('motivo') ?? '').trim()) : { ok: false, erro: 'Só editor e revisor escolhem as candidatas.' };
+  if (r.ok) return Astro.redirect(`/painel/busca${Astro.url.search}`, 303);
+  erro = r.erro ?? 'Não deu para salvar. Tente de novo.';
+}
+
+// Pauta mostrada: a rodada pedida no endereço, ou a última pronta.
+const pedida = historico.find((r) => r.id === Astro.url.searchParams.get('rodada'));
+const mostrada = pedida ?? historico.find((r) => r.estado === 'pronta');
+const candidatas = mostrada ? await candidatasDa(cliente, mostrada.id) : [];
+const andamento = historico.find((r) => r.estado === 'na_fila' || r.estado === 'rodando');
+const teto = Number(cfg.teto_brl);
+const porcento = teto > 0 ? Math.min(100, Math.round((gasto / teto) * 100)) : 100;
+---
+<Painel titulo="Busca">
+  <header class="busca__cabeca">
+    <h1>Busca</h1>
+    {editor && <a class="maquina busca__config" href="/painel/busca/config">Configuração</a>}
+  </header>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+
+  <section class="painel-gasto" aria-labelledby="gasto-titulo">
+    <h2 id="gasto-titulo" class="maquina rotulo">Gasto do mês</h2>
+    <p class="gasto"><strong>{reais(gasto)}</strong> de {reais(teto)}</p>
+    <div class="barra-gasto" role="img" aria-label={`${porcento}% do teto do mês`}><span style={`width: ${porcento}%`}></span></div>
+    <p class="ajuda">
+      {cfg.ativo ? `O robô roda às ${cfg.hora}h nos dias marcados na configuração.` : 'O robô está desligado; só roda quando alguém pede.'}
+      {andamento && <> <strong>{ESTADO[andamento.estado]}:</strong> {andamento.estado === 'na_fila' ? 'começa em até 15 minutos.' : 'a pauta sai em alguns minutos.'}</>}
+    </p>
+    {editor && (
+      <form method="post">
+        <button class="botao botao--marca" name="acao" value="rodar" disabled={!!andamento || !cabe()}>Rodar agora</button>
+      </form>
+    )}
+  </section>
+
+  <section aria-labelledby="pauta-titulo">
+    <h2 id="pauta-titulo" class="secao">{mostrada ? `Pauta de ${quando(mostrada.criada_em)}` : 'Pauta'}</h2>
+    {!mostrada ? (
+      <p class="vazio">Ainda não há pauta. {editor ? 'Aperte "Rodar agora" ou espere o próximo dia marcado.' : 'Ela aparece aqui depois da primeira rodada.'}</p>
+    ) : candidatas.length === 0 ? (
+      <p class="vazio">Esta rodada não trouxe candidatas.{mostrada.erro && ` ${mostrada.erro}`}</p>
+    ) : (
+      <ol class="pauta">
+        {candidatas.map((c) => (
+          <li class:list={['candidata', `candidata--${c.estado}`]}>
+            <p class="chapeu">{REGIAO[c.regiao]}{c.tema && ` · ${c.tema}`}</p>
+            <h3 class="candidata__titulo">{c.titulo}</h3>
+            <p>{c.porque}</p>
+            {c.falta_confirmar && <p class="ajuda"><strong>Falta confirmar:</strong> {c.falta_confirmar}</p>}
+            <ul class="candidata__fontes maquina">
+              {c.fontes.map((f) => <li><a href={f.url} rel="noopener noreferrer" target="_blank">{f.veiculo}: {f.titulo}</a>{!f.fixa && ' · LIVRE'}</li>)}
+            </ul>
+            {c.estado === 'rascunho' && c.peca_id ? (
+              <p class="maquina candidata__estado"><a href={`/painel/peca/${c.peca_id}`}>Rascunho pronto no Estúdio ›</a></p>
+            ) : c.estado === 'pedida' ? (
+              <p class="maquina candidata__estado">RASCUNHO PEDIDO · sai em até 15 minutos</p>
+            ) : c.estado === 'descartada' ? (
+              <p class="maquina candidata__estado">DESCARTADA{c.motivo_descarte && ` · ${c.motivo_descarte}`}</p>
+            ) : escolhe && (
+              <div class="candidata__acoes">
+                <form method="post">
+                  <input type="hidden" name="id" value={c.id} />
+                  <button class="botao botao--marca" name="acao" value="escolher">Virar rascunho</button>
+                </form>
+                <form method="post" class="descartar">
+                  <input type="hidden" name="id" value={c.id} />
+                  <label class="sr-only" for={`motivo-${c.id}`}>Motivo do descarte</label>
+                  <input id={`motivo-${c.id}`} name="motivo" placeholder="Por que não serve?" maxlength="200" />
+                  <button class="botao botao--linha" name="acao" value="descartar">Descartar</button>
+                </form>
+              </div>
+            )}
+          </li>
+        ))}
+      </ol>
+    )}
+  </section>
+
+  <section aria-labelledby="historico-titulo">
+    <h2 id="historico-titulo" class="secao">Rodadas</h2>
+    {historico.length === 0 ? (
+      <p class="vazio">Nenhuma rodada ainda.</p>
+    ) : (
+      <table class="historico">
+        <thead class="maquina"><tr><th>Quando</th><th>Situação</th><th>Buscas</th><th>Custo</th></tr></thead>
+        <tbody>
+          {historico.map((r) => (
+            <tr aria-current={r.id === mostrada?.id ? 'true' : undefined}>
+              <td>{r.estado === 'pronta' ? <a href={`/painel/busca?rodada=${r.id}`}>{quando(r.criada_em)}</a> : quando(r.criada_em)}<span class="maquina"> · {r.pedida_por ? 'pedida' : 'agendada'}</span></td>
+              <td>{ESTADO[r.estado]}{r.erro && r.estado === 'erro' && <span class="ajuda"> · {r.erro}</span>}</td>
+              <td>{r.buscas}</td>
+              <td>{reais(r.custo_brl)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </section>
+</Painel>
+
+<style>
+  .busca__cabeca {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--esp-3);
+    margin-bottom: var(--esp-5);
+  }
+  .busca__cabeca h1 {
+    margin: 0;
+  }
+  .busca__config {
+    font-size: 13px;
+    padding: var(--esp-2) 0;
+  }
+  .painel-gasto {
+    display: grid;
+    gap: var(--esp-2);
+    padding: var(--esp-4);
+    border: 1px solid var(--tinta);
+    margin-bottom: var(--esp-6);
+  }
+  .rotulo {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .gasto {
+    margin: 0;
+    font-size: 20px;
+  }
+  .barra-gasto {
+    height: 8px;
+    border: 1px solid var(--tinta);
+  }
+  .barra-gasto span {
+    display: block;
+    height: 100%;
+    background: var(--pau-brasil);
+  }
+  .painel-gasto form {
+    margin-top: var(--esp-2);
+  }
+  .secao {
+    font-family: var(--fonte-maquina);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: var(--esp-2) 0;
+    border-top: 3px solid var(--tinta);
+    border-bottom: 1px solid var(--tinta);
+    margin: var(--esp-6) 0 var(--esp-4);
+  }
+  .pauta {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--esp-4);
+  }
+  .candidata {
+    display: grid;
+    gap: var(--esp-2);
+    padding: var(--esp-4);
+    border: 1px solid var(--tinta);
+  }
+  .candidata p {
+    margin: 0;
+  }
+  .candidata--descartada {
+    opacity: 0.55;
+  }
+  .candidata--pedida,
+  .candidata--rascunho {
+    border-left: 4px solid var(--pau-brasil);
+  }
+  .candidata__titulo {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.2;
+  }
+  .candidata__fontes {
+    margin: 0;
+    padding-left: var(--esp-4);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+  .candidata__estado {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+  .candidata__acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-3);
+    margin-top: var(--esp-2);
+  }
+  .descartar {
+    display: flex;
+    flex: 1 1 260px;
+    gap: var(--esp-2);
+  }
+  .descartar input {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0 var(--esp-3);
+    border: 1px solid var(--tinta);
+    background: var(--cal);
+    font: inherit;
+  }
+  .historico {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .historico th,
+  .historico td {
+    text-align: left;
+    padding: var(--esp-2);
+    border-bottom: 1px solid var(--tinta);
+    vertical-align: top;
+  }
+  .historico th {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .historico [aria-current] {
+    background: color-mix(in srgb, var(--pau-brasil) 8%, transparent);
+  }
+  @media (max-width: 600px) {
+    .historico th:nth-child(3),
+    .historico td:nth-child(3) {
+      display: none;
+    }
+  }
+</style>
