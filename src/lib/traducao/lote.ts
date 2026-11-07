@@ -86,7 +86,7 @@ export async function recolherPendentes(pendentes: Pendente[], api: ApiLotes): P
       for await (const r of await api.results(p.lote_id)) if (r.custom_id === p.peca_id) leitura = lerResultado(p.original, r.result);
     } catch (erro) {
       if ((erro as { status?: number }).status !== 404) continue;
-      leitura = { ok: false, erro: 'o lote não existe mais na API; use "tentar de novo" no painel' };
+      leitura = { ok: false, erro: 'o lote não existe mais na API; use "Pedir tradução de novo" na aba Espanhol' };
     }
     if (!leitura.ok) {
       saida.push({ peca_id: p.peca_id, campos: { estado: 'erro', erro: leitura.erro } });

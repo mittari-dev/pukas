@@ -6,7 +6,7 @@ import Manchete from '../../../../components/identidade/Manchete.astro';
 import { buscarPeca, corrigir, enviarFoto, renovarPaginas, salvar } from '../../../../lib/banco/painel';
 import { urlBanco } from '../../../../lib/banco/cliente';
 import { urlFoto, type LinhaPeca } from '../../../../lib/banco/pecas';
-import { lerFormularioPeca, linksInvalidos } from '../../../../lib/painel/formulario';
+import { lerFormularioPeca, linksInvalidos, textoMudou } from '../../../../lib/painel/formulario';
 import { pode, type Acao } from '../../../../lib/painel/permissoes';
 import { travasDaPeca, type EstadoPeca, type PecaEntrada, type TipoPeca } from '../../../../lib/painel/travas';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
@@ -58,7 +58,9 @@ if (Astro.request.method === 'POST') {
         if (!c.ok) erro = c.erro;
       }
       const noAr = destino === 'publicada';
-      if (!erro && noAr && acao === 'publicar' && enviado.traduzir) await enviarTraducao(cliente, r.valor);
+      // Publicar traduz; editar o texto de uma peça no ar (correção) pede tradução nova, senão o espanhol fica com a versão velha.
+      const traduzirDeNovo = acao === 'publicar' || (estadoAtual === 'publicada' && linha !== null && textoMudou(linha, enviado));
+      if (!erro && noAr && enviado.traduzir && traduzirDeNovo) await enviarTraducao(cliente, r.valor);
       if (!erro && (noAr || estadoAtual === 'publicada')) {
         const renovou = await renovarPaginas(r.valor);
         if (!renovou) aviso = 'Salvo, mas o site pode demorar a mostrar a mudança. Use "Renovar páginas".';

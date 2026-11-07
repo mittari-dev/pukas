@@ -71,7 +71,7 @@ describe('recolherPendentes', () => {
     } as never;
     const r = await recolherPendentes([pendente, outra, terceira], api);
     expect(r.map((x) => [x.peca_id, x.campos.estado])).toEqual([[original.id, 'erro'], ['terceira', 'pronta']]);
-    expect(r[0].campos.erro).toBe('o lote não existe mais na API; use "tentar de novo" no painel');
+    expect(r[0].campos.erro).toBe('o lote não existe mais na API; use "Pedir tradução de novo" na aba Espanhol');
   });
 
   test('lote encerrado sem o resultado da peça vira erro', async () => {
