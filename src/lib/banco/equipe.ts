@@ -1,5 +1,6 @@
 // Equipe do painel: convidar (link), trocar papel, tirar. Única parte do site que usa a chave mestra (service_role),
 // porque criar e apagar contas no Auth exige. Só é chamada de /painel/equipe, depois de conferir editor com 2FA.
+// `mestre` também serve a src/lib/banco/votos.ts: o voto do público só entra pela rota, com essa chave.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { urlBanco } from './cliente';
 import type { Papel } from '../painel/travas';
@@ -14,7 +15,7 @@ export interface Membro {
 
 type Resultado = { ok: true } | { ok: false; erro: string };
 
-function mestre(): SupabaseClient {
+export function mestre(): SupabaseClient {
   const chave = process.env.SUPABASE_SERVICE_ROLE_KEY ?? import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!chave) throw new Error('SUPABASE_SERVICE_ROLE_KEY não definida');
   return createClient(urlBanco(), chave, { auth: { persistSession: false, autoRefreshToken: false } });
