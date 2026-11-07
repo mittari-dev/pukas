@@ -28,12 +28,12 @@ function navegador() {
   };
 }
 
-async function criarFundador() {
+async function criarFundador(papel: 'editor' | 'revisor' | 'redator' = 'editor') {
   const email = `fundador-${Date.now()}-${Math.random().toString(36).slice(2, 6)}@teste.pukas`;
   const senha = 'uma-senha-bem-comprida-123';
   const servico = clienteServico();
   const { data: criado } = await servico.auth.admin.createUser({ email, password: senha, email_confirm: true });
-  await servico.from('perfis').insert({ id: criado.user!.id, nome: 'Fundador', papel: 'editor' });
+  await servico.from('perfis').insert({ id: criado.user!.id, nome: 'Fundador', papel });
   return { ir: navegador(), email, senha };
 }
 
@@ -96,5 +96,40 @@ describe.skipIf(!base)('painel', () => {
     const depois = await (await fetch(new URL(`/noticias/${slug}`, base))).text();
     expect(depois).toContain('Os estivadores pararam por 4 dias.');
     expect(depois).toContain('Eram 4 dias, não 3.');
+  });
+
+  test('convite: a pessoa cria a senha pelo link, cai no 2FA; o editor muda o papel dela', async () => {
+    const servico = clienteServico();
+    const email = `convidada-${Date.now()}@teste.pukas`;
+    // No CI não há servidor de e-mail: o link é gerado direto, igual ao do e-mail.
+    const { data: link } = await servico.auth.admin.generateLink({ type: 'invite', email });
+    await servico.from('perfis').insert({ id: link.user!.id, nome: 'Convidada', papel: 'redator' });
+
+    const convidada = navegador();
+    const token = link.properties!.hashed_token;
+    expect((await convidada(`/admin/convite?token_hash=${token}&type=invite`)).status).toBe(200);
+    const curta = await convidada('/admin/convite', { token_hash: token, senha: 'curta', repetir: 'curta' });
+    expect(await curta.text()).toContain('pelo menos 12 caracteres');
+    const criou = await convidada('/admin/convite', { token_hash: token, senha: 'senha-da-convidada-1', repetir: 'senha-da-convidada-1' });
+    expect(criou.status).toBe(303);
+    expect(criou.headers.get('location')).toBe('/admin/2fa');
+    expect((await convidada('/admin/convite', { token_hash: token, senha: 'senha-da-convidada-1', repetir: 'senha-da-convidada-1' })).status).toBe(200);
+
+    const { ir, email: emailEditor, senha } = await criarFundador();
+    await ir('/admin/entrar', { email: emailEditor, senha });
+    await confirmar2fa(ir);
+    const pagina = await (await ir('/admin/equipe')).text();
+    expect(pagina).toContain(email);
+    const mudou = await ir('/admin/equipe', { acao: 'papel', id: link.user!.id, papel: 'revisor' });
+    expect(await mudou.text()).toContain('Papel mudado.');
+    const { data: perfil } = await servico.from('perfis').select('papel').eq('id', link.user!.id).single();
+    expect(perfil!.papel).toBe('revisor');
+  });
+
+  test('quem não é editor não vê a equipe', async () => {
+    const { ir, email, senha } = await criarFundador('redator');
+    await ir('/admin/entrar', { email, senha });
+    await confirmar2fa(ir);
+    expect((await ir('/admin/equipe')).status).toBe(404);
   });
 });

@@ -53,3 +53,9 @@ describe('cabecalhosAdmin', () => {
     expect(c['Content-Security-Policy']).toContain('img-src \'self\' https://banco.supabase.co data:');
   });
 });
+
+describe('convite', () => {
+  test('a página do convite abre sem login (é ela que cria a sessão)', () => {
+    expect(decidirAcessoAdmin(sessao({ caminho: '/admin/convite', logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'seguir' });
+  });
+});
