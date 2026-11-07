@@ -1,5 +1,46 @@
 {
   "correcoes": [],
-  "pecas": [],
-  "traducoes": []
+  "pecas": [
+    {
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": null,
+      "corpo": "## A gente trabalha. E mesmo assim falta.\n\nFalta dinheiro no fim do mês, falta tempo, falta descanso. E o problema não é preguiça: o que você produz não fica com você.\n\nO PUKAS existe pra contar essa história do jeito que ela é, sem palavra difícil e sem papo de gabinete. Se precisar de dicionário pra entender, quem errou fomos nós.\n\n## Nada do que você tem caiu do céu.\n\nFérias, 13º, hora extra paga, jornada de 8 horas: cada uma dessas coisas alguém conquistou, junto com os outros, quando ninguém queria dar. E dá pra perder tudo isso se a gente esquecer como chegou aqui. Por isso a gente lembra, e mostra a prova.\n\n## Aqui, o fato ganha.\n\nToda informação tem fonte, e a fonte fica à vista. Se a gente errar, corrige em público. Se um fato bater de frente com o que a gente pensa, fica o fato, porque mentira a favor da gente continua sendo mentira.\n\n## A gente não quer seguidor. Quer gente que passe adiante.\n\nA gente não pede voto e não vende curso. Leu? Manda pro grupo da família, tira print, fala no ponto de ônibus. Informação parada não muda nada.",
+      "estado": "publicada",
+      "fontes": [],
+      "foto_caminho": null,
+      "foto_credito": null,
+      "foto_descricao": null,
+      "foto_licenca": null,
+      "foto_origem": null,
+      "id": "33681d2f-5a0f-4b5d-8c40-a5b56d663075",
+      "legenda": null,
+      "numero": null,
+      "publicada_em": "2026-11-07T01:59:45.090351+00:00",
+      "resumo": "Nada do que você tem caiu do céu. A gente lembra, mostra a prova e passa adiante.",
+      "serie": null,
+      "slug": "manifesto",
+      "subtipo": null,
+      "tipo": "pagina",
+      "titulo": "Manifesto",
+      "traduzir": true,
+      "video": null
+    }
+  ],
+  "traducoes": [
+    {
+      "aviso": null,
+      "corpo": "## Trabajamos. Y aun así no alcanza.\n\nFalta dinero a fin de mes, falta tiempo, falta descanso. Y el problema no es la pereza: lo que tú produces no se queda contigo.\n\nPUKAS existe para contar esta historia tal como es, sin palabras difíciles y sin palabrería de escritorio. Si hace falta un diccionario para entenderla, los que fallamos somos nosotros.\n\n## Nada de lo que tienes cayó del cielo.\n\nVacaciones, aguinaldo, horas extra pagadas, jornada de 8 horas: cada una de estas cosas alguien la conquistó, junto con otros, cuando nadie quería darla. Y todo eso se puede perder si olvidamos cómo llegamos hasta aquí. Por eso recordamos, y mostramos la prueba.\n\n## Aquí, el hecho gana.\n\nToda la información tiene fuente, y la fuente queda a la vista. Si nos equivocamos, corregimos en público. Si un hecho choca con lo que pensamos, se queda el hecho, porque una mentira a nuestro favor sigue siendo mentira.\n\n## No queremos seguidores. Queremos gente que lo pase.\n\nNo pedimos votos y no vendemos cursos. ¿Lo leíste? Mándalo al grupo de la familia, sácale una captura, coméntalo en la parada del autobús. La información quieta no cambia nada.",
+      "erro": null,
+      "estado": "pronta",
+      "idioma": "es",
+      "legenda": null,
+      "lote_id": null,
+      "modelo": "manual",
+      "peca_id": "33681d2f-5a0f-4b5d-8c40-a5b56d663075",
+      "resumo": "Nada de lo que tienes cayó del cielo. Lo recordamos, mostramos la prueba y lo pasamos.",
+      "revisado": true,
+      "titulo": "Manifiesto"
+    }
+  ]
 }
