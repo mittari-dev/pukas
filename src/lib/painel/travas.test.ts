@@ -18,15 +18,23 @@ const falhas = (p: PecaEntrada) => travasDaPeca(p).filter((t) => !t.ok).map((t) 
 describe('travasDaPeca', () => {
   test('newsletter completa passa em tudo', () => {
     expect(falhas(newsletter())).toEqual([]);
-    expect(travasDaPeca(newsletter()).map((t) => t.chave)).toEqual(['fonte', 'foto_licenca', 'foto_credito', 'checagem', 'manchete']);
+    expect(travasDaPeca(newsletter()).map((t) => t.chave)).toEqual(['fonte', 'foto', 'foto_descricao', 'foto_licenca', 'foto_credito', 'checagem', 'manchete']);
   });
 
   test('mesmas mensagens do banco e de validarPublicavel', () => {
     const p = newsletter({ fontes: [{ ...fonte, tipo: 'secundaria' }], foto: { ...foto, licenca: '', credito: undefined }, checagem: undefined, titulo: 'um dois três quatro cinco seis sete oito nove' });
     const esperado = ['sem fonte primária', 'foto sem licença', 'foto sem crédito', 'sem checagem', 'manchete com 9 palavras (máx. 8)'];
     expect(falhas(p)).toEqual(esperado);
-    const edicao = { id: 'x', data: { ...p, publicadaEm: new Date(), foto: { arquivo: null, ...p.foto }, correcoes: [], rascunho: false } } as unknown as Edicao;
+    const edicao = { id: 'x', data: { ...p, publicadaEm: new Date(), foto: { arquivo: 'a.jpg', ...p.foto }, correcoes: [], rascunho: false } } as unknown as Edicao;
     expect(validarPublicavel(edicao)).toEqual(esperado);
+  });
+
+  test('newsletter sem foto ou sem descrição da foto não publica (no painel e no site)', () => {
+    expect(falhas(newsletter({ foto: undefined }))).toEqual(['sem foto', 'foto sem licença', 'foto sem crédito']);
+    expect(falhas(newsletter({ foto: { ...foto, descricao: ' ' } }))).toEqual(['foto sem descrição']);
+    const sem = newsletter({ foto: undefined });
+    const edicao = { id: 'x', data: { ...sem, publicadaEm: new Date(), foto: { arquivo: '', descricao: '' }, correcoes: [], rascunho: false } } as unknown as Edicao;
+    expect(validarPublicavel(edicao)).toEqual(['sem foto', 'foto sem licença', 'foto sem crédito']);
   });
 
   test('manchete com | e * conta só palavras', () => {

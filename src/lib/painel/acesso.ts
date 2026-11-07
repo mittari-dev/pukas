@@ -53,3 +53,10 @@ export function cabecalhosAdmin(urlBanco: string): Record<string, string> {
 export function enderecoNovo(caminho: string): string | null {
   return /^\/admin(\/|$)/.test(caminho) ? caminho.replace(/^\/admin/, '/painel') : null;
 }
+
+// Login: senha errada e banco fora do ar não podem dar a mesma mensagem (o fundador acharia que errou a senha).
+// A mensagem de credencial é genérica de propósito: não conta se o e-mail existe.
+export function mensagemDeLogin(erro: { status?: number; name?: string }): string {
+  const foraDoAr = erro.name === 'AuthRetryableFetchError' || !erro.status || erro.status >= 500;
+  return foraDoAr ? 'O painel não conseguiu falar com o banco agora. Tente de novo em instantes.' : 'E-mail, senha ou código errados.';
+}

@@ -20,6 +20,13 @@ describe('travas ao publicar', () => {
     expect(error?.message).toContain('sem fonte primária');
   });
 
+  test('recusa newsletter sem foto e sem descrição da foto', async () => {
+    const semFoto = { ...pecaValida('newsletter'), foto_caminho: null, foto_descricao: null };
+    expect((await inserir(semFoto)).error?.message).toContain('sem foto');
+    const semDescricao = { ...pecaValida('newsletter'), foto_descricao: '' };
+    expect((await inserir(semDescricao)).error?.message).toContain('foto sem descrição');
+  });
+
   test('recusa foto sem licença e sem crédito', async () => {
     const { error } = await inserir({ ...pecaValida('newsletter'), foto_licenca: null, foto_credito: ' ' });
     expect(error?.message).toContain('foto sem licença');

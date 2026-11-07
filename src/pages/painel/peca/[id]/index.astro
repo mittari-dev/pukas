@@ -45,6 +45,8 @@ if (Astro.request.method === 'POST') {
   else if (linksInvalidos(enviado).length) erro = `Link precisa começar com https:// (${linksInvalidos(enviado).join(', ')}).`;
 
   const arquivo = form.get('foto_arquivo');
+  // O Storage só aceita foto do editor: avisa antes, sem perder o texto.
+  if (!erro && arquivo instanceof File && arquivo.size > 0 && usuario!.papel !== 'editor') erro = 'Só quem é editor envia foto. Salve sem a foto e peça para um editor colocar.';
   if (!erro && arquivo instanceof File && arquivo.size > 0) {
     const r = await enviarFoto(cliente, arquivo);
     if (r.ok) enviado.foto = { caminho: r.valor, descricao: enviado.foto?.descricao ?? '', credito: enviado.foto?.credito, licenca: enviado.foto?.licenca, origem: enviado.foto?.origem };
@@ -65,7 +67,7 @@ if (Astro.request.method === 'POST') {
       if (!erro && noAr && enviado.traduzir && traduzirDeNovo) await enviarTraducao(cliente, r.valor);
       if (!erro && (noAr || estadoAtual === 'publicada')) {
         const renovou = await renovarPaginas(r.valor);
-        if (!renovou) aviso = 'Salvo, mas o site pode demorar a mostrar a mudança. Use "Renovar páginas".';
+        if (!renovou) aviso = 'Salvo, mas o site pode demorar alguns minutos para mostrar a mudança.';
       }
       // Veio de "Começar a escrever" na agenda: a peça nova já fica ligada ao item.
       const agenda = String(form.get('agenda') ?? '');
@@ -166,8 +168,12 @@ const traducao = linha?.traducoes?.[0];
         <legend>{tipo === 'cultura' ? 'Capa (opcional)' : tipo === 'noticia' ? 'Foto (opcional)' : 'Foto'}</legend>
         {v.foto && <img class="foto" src={urlFoto(base, v.foto.caminho)} alt="" width="240" />}
         <input type="hidden" name="foto_caminho" value={v.foto?.caminho} />
-        <label for="foto_arquivo">{v.foto ? 'Trocar foto' : 'Enviar foto'} (JPG, PNG ou WebP, até 4 MB; foto grande do celular é diminuída sozinha)</label>
-        <input id="foto_arquivo" name="foto_arquivo" type="file" accept="image/jpeg,image/png,image/webp" data-foto />
+        {usuario!.papel === 'editor' ? (
+          <>
+            <label for="foto_arquivo">{v.foto ? 'Trocar foto' : 'Enviar foto'} (JPG, PNG ou WebP, até 4 MB; foto grande do celular é diminuída sozinha)</label>
+            <input id="foto_arquivo" name="foto_arquivo" type="file" accept="image/jpeg,image/png,image/webp" data-foto />
+          </>
+        ) : <p class="ajuda">Só quem é editor envia foto. Descreva aqui embaixo a foto que você imagina, e um editor coloca.</p>}
         <p class="ajuda" data-foto-aviso hidden></p>
         <label for="foto_descricao">Descrição para quem não enxerga</label><input id="foto_descricao" name="foto_descricao" value={v.foto?.descricao} />
         <label for="foto_credito">Crédito</label><input id="foto_credito" name="foto_credito" value={v.foto?.credito} />
