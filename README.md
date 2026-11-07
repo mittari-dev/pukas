@@ -24,14 +24,14 @@
 | Capa e RSS | ✅ |
 | Deploy | ✅ `pukas.vercel.app` · ⏳ domínio `pukas.lat` |
 | **Notícias** (`/noticias`) | ✅ código · ⏳ primeira notícia |
-| Painel `/admin` (Supabase, senha + 2FA) | ✅ código · ⏳ no ar |
+| Painel `/painel` (Supabase, senha + 2FA) | ✅ código · ⏳ no ar |
 | Robô de notícias, gerador do carrossel, Raio-X, dossiês, documentários, loja | ⚪ ver o [roadmap](docs/roadmap.md) |
 
 ## Como uma peça vai ao ar
 
-Todo o conteúdo mora no **Supabase**. Edição, obra de Cultura, notícia e manifesto são publicados pelo painel em **`/admin`**, que pede senha e 2FA.
+Todo o conteúdo mora no **Supabase**. Edição, obra de Cultura, notícia e manifesto são publicados pelo painel em **`/painel`**, que pede senha e 2FA.
 
-1. Em `/admin`, crie a peça e preencha: frase, texto, foto (com crédito e licença), fontes e checagem. Siga o [guia de checagem](docs/editorial/checagem.md).
+1. Em `/painel`, crie a peça e preencha: frase, texto, foto (com crédito e licença), fontes e checagem. Siga o [guia de checagem](docs/editorial/checagem.md).
 2. **O banco recusa a publicação** quando falta fonte primária, falta licença ou crédito da foto, falta checagem ou a manchete passa de 8 palavras. O painel mostra o motivo.
 3. Ao publicar, a peça aparece na hora no endereço dela, na capa, em `/links` e no RSS: o cache da borda é renovado pelas etiquetas.
 4. Para corrigir uma peça já publicada, use "corrigir" no painel. A correção aparece em público na peça, e o histórico guarda a versão anterior.
@@ -90,7 +90,7 @@ A marca é a **Tarja**. A tipografia usa **Archivo** (manchete comprimida), **Sp
 
 ```
 src/
-├─ pages/admin/                            painel (fila, edição, espanhol, login com 2FA)
+├─ pages/painel/                            painel (fila, edição, espanhol, login com 2FA)
 ├─ lib/                                    regras puras + testes (edicoes, formato, banco, painel, traducao, cache)
 ├─ components/identidade/                  Tarja, Carimbo, Selo, Grão
 ├─ layouts/ · pages/ · styles/ · data/ (links.ts, navegacao.ts)

@@ -1,5 +1,5 @@
 ---
-// Editar peça (spec painel §4). /admin/peca/nova?tipo=... cria; /admin/peca/<id> edita.
+// Editar peça (spec painel §4). /painel/peca/nova?tipo=... cria; /painel/peca/<id> edita.
 // Cada botão manda "acao"; o servidor confere o papel (pode) e o banco confere de novo (RLS + travas).
 import Painel from '../../../../layouts/Painel.astro';
 import Manchete from '../../../../components/identidade/Manchete.astro';
@@ -62,7 +62,7 @@ if (Astro.request.method === 'POST') {
         const renovou = await renovarPaginas(r.valor);
         if (!renovou) aviso = 'Salvo, mas o site pode demorar a mostrar a mudança. Use "Renovar páginas".';
       }
-      if (!erro) return Astro.redirect(`/admin/peca/${r.valor}?ok=1`, 303);
+      if (!erro) return Astro.redirect(`/painel/peca/${r.valor}?ok=1`, 303);
     }
   }
   if (id) linha = await buscarPeca(cliente, id);
@@ -94,7 +94,7 @@ const pedeChecagem = tipo === 'newsletter' || tipo === 'noticia';
 const traducao = linha?.traducoes?.[0];
 ---
 <Painel titulo={linha ? 'Editar peça' : 'Nova peça'}>
-  <p class="maquina"><a href="/admin">‹ Fila</a> · {NOME[tipo]} · {ESTADO[estadoAtual]}</p>
+  <p class="maquina"><a href="/painel">‹ Estúdio</a> · {NOME[tipo]} · {ESTADO[estadoAtual]}</p>
   <h1>{linha ? 'Editar' : 'Nova'}</h1>
   {erro && <p class="mensagem" role="alert">{erro}</p>}
   {aviso && !erro && <p class="mensagem mensagem--ok" role="status">{aviso}</p>}
@@ -222,7 +222,7 @@ const traducao = linha?.traducoes?.[0];
       {!traducao && <p>{estadoAtual === 'publicada' ? 'Ainda não foi enviada para tradução.' : 'A tradução é pedida quando a peça é publicada.'}</p>}
       {traducao?.estado === 'pendente' && <p>Tradução em andamento. Costuma ficar pronta em alguns minutos.</p>}
       {traducao?.estado === 'erro' && <p class="mensagem">A tradução falhou: {traducao.erro}</p>}
-      {traducao && traducao.estado !== 'pendente' && <p><a href={`/admin/peca/${linha.id}/espanhol`}>{traducao.estado === 'pronta' ? 'Ver e revisar a tradução' : 'Tentar de novo'}</a></p>}
+      {traducao && traducao.estado !== 'pendente' && <p><a href={`/painel/peca/${linha.id}/espanhol`}>{traducao.estado === 'pronta' ? 'Ver e revisar a tradução' : 'Tentar de novo'}</a></p>}
     </section>
   )}
 </Painel>
@@ -312,11 +312,18 @@ const traducao = linha?.traducoes?.[0];
     color: var(--pau-brasil);
     font-weight: 700;
   }
+  /* Salvar e Publicar sempre à mão: presos no pé da tela enquanto o formulário rola. */
   .acoes {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
     display: flex;
     flex-wrap: wrap;
     gap: var(--esp-3);
     margin-top: var(--esp-5);
+    padding: var(--esp-3) 0;
+    background: var(--fundo);
+    border-top: 3px solid var(--tinta);
   }
   .mensagem--ok {
     border-color: var(--tinta);

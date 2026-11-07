@@ -1,5 +1,5 @@
 ---
-// Login do painel: e-mail e senha. O 2FA vem logo depois (/admin/2fa); sem ele nada abre.
+// Login do painel: e-mail e senha. O 2FA vem logo depois (/painel/2fa); sem ele nada abre.
 import Painel from '../../layouts/Painel.astro';
 import { voltaSegura } from '../../lib/painel/acesso';
 
@@ -13,7 +13,7 @@ if (Astro.request.method === 'POST') {
     password: String(form.get('senha') ?? ''),
   });
   // Mensagem genérica de propósito: não conta se o e-mail existe.
-  if (!error) return Astro.redirect(`/admin/2fa?volta=${encodeURIComponent(volta)}`, 303);
+  if (!error) return Astro.redirect(`/painel/2fa?volta=${encodeURIComponent(volta)}`, 303);
   erro = 'E-mail, senha ou código errados.';
 }
 ---

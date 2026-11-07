@@ -18,7 +18,7 @@ if (Astro.request.method === 'POST' && editor) {
   const campo = (n: string) => String(form.get(n) ?? '').trim();
   if (form.get('acao') === 'reenviar') {
     await enviarTraducao(cliente, id);
-    return Astro.redirect(`/admin/peca/${id}/espanhol?ok=1`, 303);
+    return Astro.redirect(`/painel/peca/${id}/espanhol?ok=1`, 303);
   }
   const traducao = { titulo: campo('titulo'), resumo: campo('resumo'), legenda: campo('legenda') || null, aviso: campo('aviso') || null, corpo: campo('corpo') };
   const problemas = problemasDaTraducao({ titulo: peca.titulo, corpo: peca.corpo }, traducao);
@@ -28,7 +28,7 @@ if (Astro.request.method === 'POST' && editor) {
     if (error) erro = 'Não deu para salvar. Tente de novo.';
     else {
       await renovarPaginas(id);
-      return Astro.redirect(`/admin/peca/${id}/espanhol?ok=1`, 303);
+      return Astro.redirect(`/painel/peca/${id}/espanhol?ok=1`, 303);
     }
   }
   peca = await buscarPeca(cliente, id);
@@ -36,7 +36,7 @@ if (Astro.request.method === 'POST' && editor) {
 const t = peca!.traducoes?.[0];
 ---
 <Painel titulo="Espanhol">
-  <p class="maquina"><a href={`/admin/peca/${id}`}>‹ Peça</a></p>
+  <p class="maquina"><a href={`/painel/peca/${id}`}>‹ Peça</a></p>
   <h1>Espanhol</h1>
   {erro && <p class="mensagem" role="alert">{erro}</p>}
   {aviso && !erro && <p class="mensagem" role="status">{aviso}</p>}

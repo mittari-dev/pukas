@@ -1,19 +1,19 @@
 import { describe, expect, test } from 'vitest';
-import { cabecalhosAdmin, decidirAcessoAdmin, voltaSegura } from './acesso';
+import { cabecalhosAdmin, decidirAcessoAdmin, enderecoNovo, voltaSegura } from './acesso';
 
-const sessao = (extra: Partial<Parameters<typeof decidirAcessoAdmin>[0]>) => ({ caminho: '/admin', logado: true, aal: 'aal2' as const, temFator: true, ...extra });
+const sessao = (extra: Partial<Parameters<typeof decidirAcessoAdmin>[0]>) => ({ caminho: '/painel', logado: true, aal: 'aal2' as const, temFator: true, ...extra });
 
 describe('decidirAcessoAdmin', () => {
   test('sem login vai para entrar, guardando a volta', () => {
-    expect(decidirAcessoAdmin(sessao({ logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'redirecionar', para: '/admin/entrar?volta=%2Fadmin' });
+    expect(decidirAcessoAdmin(sessao({ logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'redirecionar', para: '/painel/entrar?volta=%2Fpainel' });
   });
 
   test('logado sem 2FA cadastrado vai cadastrar', () => {
-    expect(decidirAcessoAdmin(sessao({ aal: 'aal1', temFator: false, caminho: '/admin/peca/1' }))).toEqual({ tipo: 'redirecionar', para: '/admin/2fa?volta=%2Fadmin%2Fpeca%2F1' });
+    expect(decidirAcessoAdmin(sessao({ aal: 'aal1', temFator: false, caminho: '/painel/peca/1' }))).toEqual({ tipo: 'redirecionar', para: '/painel/2fa?volta=%2Fpainel%2Fpeca%2F1' });
   });
 
   test('logado com 2FA cadastrado mas sem o código vai digitar o código', () => {
-    expect(decidirAcessoAdmin(sessao({ aal: 'aal1', temFator: true }))).toEqual({ tipo: 'redirecionar', para: '/admin/2fa?volta=%2Fadmin' });
+    expect(decidirAcessoAdmin(sessao({ aal: 'aal1', temFator: true }))).toEqual({ tipo: 'redirecionar', para: '/painel/2fa?volta=%2Fpainel' });
   });
 
   test('com 2FA confirmado segue', () => {
@@ -21,23 +21,23 @@ describe('decidirAcessoAdmin', () => {
   });
 
   test('entrar e 2fa abrem sem aal2', () => {
-    expect(decidirAcessoAdmin(sessao({ caminho: '/admin/entrar', logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'seguir' });
-    expect(decidirAcessoAdmin(sessao({ caminho: '/admin/2fa', aal: 'aal1', temFator: false }))).toEqual({ tipo: 'seguir' });
+    expect(decidirAcessoAdmin(sessao({ caminho: '/painel/entrar', logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'seguir' });
+    expect(decidirAcessoAdmin(sessao({ caminho: '/painel/2fa', aal: 'aal1', temFator: false }))).toEqual({ tipo: 'seguir' });
   });
 
   test('2fa sem login volta para entrar', () => {
-    expect(decidirAcessoAdmin(sessao({ caminho: '/admin/2fa', logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'redirecionar', para: '/admin/entrar?volta=%2Fadmin' });
+    expect(decidirAcessoAdmin(sessao({ caminho: '/painel/2fa', logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'redirecionar', para: '/painel/entrar?volta=%2Fpainel' });
   });
 });
 
 describe('voltaSegura', () => {
   test('só aceita caminho do painel', () => {
-    expect(voltaSegura('/admin/peca/1')).toBe('/admin/peca/1');
-    expect(voltaSegura('https://mal.com')).toBe('/admin');
-    expect(voltaSegura('//mal.com/admin')).toBe('/admin');
-    expect(voltaSegura('/adminx')).toBe('/admin');
-    expect(voltaSegura('/manifesto')).toBe('/admin');
-    expect(voltaSegura(null)).toBe('/admin');
+    expect(voltaSegura('/painel/peca/1')).toBe('/painel/peca/1');
+    expect(voltaSegura('https://mal.com')).toBe('/painel');
+    expect(voltaSegura('//mal.com/painel')).toBe('/painel');
+    expect(voltaSegura('/painelx')).toBe('/painel');
+    expect(voltaSegura('/manifesto')).toBe('/painel');
+    expect(voltaSegura(null)).toBe('/painel');
   });
 });
 
@@ -56,6 +56,15 @@ describe('cabecalhosAdmin', () => {
 
 describe('convite', () => {
   test('a página do convite abre sem login (é ela que cria a sessão)', () => {
-    expect(decidirAcessoAdmin(sessao({ caminho: '/admin/convite', logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'seguir' });
+    expect(decidirAcessoAdmin(sessao({ caminho: '/painel/convite', logado: false, aal: null, temFator: false }))).toEqual({ tipo: 'seguir' });
+  });
+});
+
+describe('enderecoNovo', () => {
+  test('/admin antigo vai para /painel; o resto não muda', () => {
+    expect(enderecoNovo('/admin')).toBe('/painel');
+    expect(enderecoNovo('/admin/peca/1')).toBe('/painel/peca/1');
+    expect(enderecoNovo('/administracao')).toBeNull();
+    expect(enderecoNovo('/manifesto')).toBeNull();
   });
 });

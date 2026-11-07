@@ -15,8 +15,8 @@ describe('cache da borda', () => {
     expect(deveGuardar('GET', '/manifesto', 503)).toBe(false);
     expect(deveGuardar('GET', '/nao-existe', 404)).toBe(false);
     expect(deveGuardar('POST', '/manifesto', 200)).toBe(false);
-    expect(deveGuardar('GET', '/admin', 200)).toBe(false);
-    expect(deveGuardar('GET', '/admin/peca/1', 200)).toBe(false);
+    expect(deveGuardar('GET', '/painel', 200)).toBe(false);
+    expect(deveGuardar('GET', '/painel/peca/1', 200)).toBe(false);
     expect(deveGuardar('GET', '/api/renovar', 200)).toBe(false);
   });
 });

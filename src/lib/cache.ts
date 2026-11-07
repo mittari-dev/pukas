@@ -9,7 +9,7 @@ export function cabecalhosPublicos(): Record<string, string> {
 
 export function deveGuardar(metodo: string, caminho: string, status: number): boolean {
   if (metodo !== 'GET' || status !== 200) return false;
-  return !/^\/(admin|api)(\/|$)/.test(caminho);
+  return !/^\/(admin|painel|api)(\/|$)/.test(caminho);
 }
 
 // Etiquetas: cada peça tem a sua; capa, listas, RSS e /links são "indice"; "tudo" pega o site inteiro.

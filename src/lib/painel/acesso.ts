@@ -1,4 +1,4 @@
-// Quem entra no /admin (spec painel §4 e §5). Sem 2FA confirmado (aal2), só abrem o login e o 2FA.
+// Quem entra no /painel (spec painel §4 e §5). Sem 2FA confirmado (aal2), só abrem o login e o 2FA.
 // O banco confere de novo em cada gravação; isto só decide para onde mandar a pessoa.
 
 export interface Sessao {
@@ -10,21 +10,21 @@ export interface Sessao {
 
 export type Decisao = { tipo: 'seguir' } | { tipo: 'redirecionar'; para: string };
 
-const ENTRAR = '/admin/entrar';
-const DOIS_FATORES = '/admin/2fa';
+const ENTRAR = '/painel/entrar';
+const DOIS_FATORES = '/painel/2fa';
 // O link do e-mail de convite: é ele que cria a sessão, então abre sem login.
-const CONVITE = '/admin/convite';
+const CONVITE = '/painel/convite';
 
 // Volta só para dentro do painel: nada de outro site nem de //host.
 export function voltaSegura(volta: string | null | undefined): string {
-  return volta && /^\/admin(\/|$)/.test(volta) ? volta : '/admin';
+  return volta && /^\/painel(\/|$)/.test(volta) ? volta : '/painel';
 }
 
 const com = (destino: string, volta: string) => `${destino}?volta=${encodeURIComponent(voltaSegura(volta))}`;
 
 export function decidirAcessoAdmin({ caminho, logado, aal }: Sessao): Decisao {
   if (caminho === ENTRAR || caminho === CONVITE) return { tipo: 'seguir' };
-  if (!logado) return { tipo: 'redirecionar', para: com(ENTRAR, caminho === DOIS_FATORES ? '/admin' : caminho) };
+  if (!logado) return { tipo: 'redirecionar', para: com(ENTRAR, caminho === DOIS_FATORES ? '/painel' : caminho) };
   if (caminho === DOIS_FATORES) return { tipo: 'seguir' };
   if (aal !== 'aal2') return { tipo: 'redirecionar', para: com(DOIS_FATORES, caminho) };
   return { tipo: 'seguir' };
@@ -47,4 +47,9 @@ export function cabecalhosAdmin(urlBanco: string): Record<string, string> {
       "form-action 'self'",
     ].join('; '),
   };
+}
+
+// O painel morava em /admin: links antigos (favoritos, a engrenagem em cache) vão para o mesmo lugar em /painel.
+export function enderecoNovo(caminho: string): string | null {
+  return /^\/admin(\/|$)/.test(caminho) ? caminho.replace(/^\/admin/, '/painel') : null;
 }
