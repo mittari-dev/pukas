@@ -71,7 +71,9 @@ describe.skipIf(!base)('painel', () => {
     // Estúdio: criar abre a escolha do tipo, que leva ao editor que já existe.
     expect(html).toContain('+ Criar nova peça');
     expect(html).toContain('action="/painel/peca/nova"');
-    for (const t of ['newsletter', 'noticia', 'cultura', 'pagina']) expect(html).toContain(`name="tipo" value="${t}"`);
+    for (const t of ['newsletter', 'noticia', 'cultura']) expect(html).toContain(`name="tipo" value="${t}"`);
+    // Página não se cria daqui: o site só tem o endereço do manifesto.
+    expect(html).not.toContain('name="tipo" value="pagina"');
   });
 
   test('publicar uma notícia pelo painel põe no site; corrigir mostra a correção', async () => {
