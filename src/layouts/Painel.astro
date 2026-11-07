@@ -234,8 +234,9 @@ const caminho = Astro.url.pathname;
     width: 100%;
   }
   /* Barra das seções: segunda linha do topo, sempre numa linha só (são poucas). */
+  /* Encosta nas duas bordas da tela: a margem negativa só estica para a esquerda se a base não somar as duas. */
   .secoes {
-    flex-basis: 100%;
+    flex: 0 0 calc(100% + 2 * var(--esp-4));
     display: flex;
     gap: var(--esp-2);
     margin: 0 calc(-1 * var(--esp-4)) calc(-1 * var(--esp-3));
@@ -261,6 +262,7 @@ const caminho = Astro.url.pathname;
   }
   @media (max-width: 600px) {
     .secoes {
+      flex-basis: calc(100% + 2 * var(--esp-3));
       margin: 0 calc(-1 * var(--esp-3)) calc(-1 * var(--esp-2));
       padding: 0 var(--esp-3);
     }
