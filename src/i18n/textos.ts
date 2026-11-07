@@ -8,7 +8,7 @@ const pt = {
   'site.leiaManifesto': 'Leia o manifesto',
 
   'nav.inicio': 'Início',
-  'nav.memoria': 'Memória Operária',
+  'nav.memoria': 'Newsletter',
   'nav.cultura': 'Cultura',
   'nav.manifesto': 'Manifesto',
   'nav.links': 'Links',
@@ -23,7 +23,7 @@ const pt = {
   'selo.memoria': 'MEMÓRIA OPERÁRIA*',
   'selo.cultura': 'FRONTEIRA*',
 
-  'capa.manchete': 'Memória | *Operária*',
+  'capa.manchete': 'Direito | nenhum caiu | do céu. | *Foi luta.*',
   'capa.lerEdicao': 'LER A EDIÇÃO',
   'capa.todasEdicoes': 'MEMÓRIA OPERÁRIA · TODAS AS EDIÇÕES',
   'capa.noticias': 'NOTÍCIAS',
@@ -81,7 +81,7 @@ const pt = {
 
   'links.titulo': 'Links',
   'links.descricao': 'Tudo do PUKAS num lugar só: a última edição, o manifesto e o arquivo.',
-  'links.manchete': 'Órgão de mídia | & inteligência | *latino-americana.*',
+  'links.manchete': 'Direito | nenhum caiu | do céu.',
   'links.ultimaEdicao': 'Última Memória Operária,',
   'links.novoCultura': 'Novo na Cultura',
   'links.manifesto': 'Manifesto',
@@ -104,7 +104,7 @@ const es: Record<Chave, string> = {
   'site.leiaManifesto': 'Lee el manifiesto',
 
   'nav.inicio': 'Inicio',
-  'nav.memoria': 'Memoria Obrera',
+  'nav.memoria': 'Newsletter',
   'nav.cultura': 'Cultura',
   'nav.manifesto': 'Manifiesto',
   'nav.links': 'Links',
@@ -119,7 +119,7 @@ const es: Record<Chave, string> = {
   'selo.memoria': 'MEMORIA OBRERA*',
   'selo.cultura': 'FRONTERA*',
 
-  'capa.manchete': 'Memoria | *Obrera*',
+  'capa.manchete': 'Ningún derecho | cayó | del cielo. | *Fue lucha.*',
   'capa.lerEdicao': 'LEER LA EDICIÓN',
   'capa.todasEdicoes': 'MEMORIA OBRERA · TODAS LAS EDICIONES',
   'capa.noticias': 'NOTICIAS',
@@ -177,7 +177,7 @@ const es: Record<Chave, string> = {
 
   'links.titulo': 'Links',
   'links.descricao': 'Todo PUKAS en un solo lugar: la última edición, el manifiesto y el archivo.',
-  'links.manchete': 'Medio de comunicación | e inteligencia | *latinoamericano.*',
+  'links.manchete': 'Ningún derecho | cayó | del cielo.',
   'links.ultimaEdicao': 'Última Memoria Obrera,',
   'links.novoCultura': 'Nuevo en Cultura',
   'links.manifesto': 'Manifiesto',

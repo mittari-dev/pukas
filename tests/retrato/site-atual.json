@@ -2,26 +2,26 @@
   {
     "url": "/",
     "status": 200,
-    "titulo": "Memória Operária",
-    "texto": "Memória Operária A primeira edição ainda não foi publicada. NOTÍCIAS Ainda não há notícias publicadas. Todas as notícias CULTURA Ainda não há obras publicadas. Toda a cultura Erros são corrigidos na própria matéria, com a data da correção. O PUKAS é um órgão de mídia &amp; inteligência latino-americana sobre trabalho, história e política. Leia o manifesto ."
+    "titulo": "Direito nenhum caiu do céu. Foi luta.",
+    "texto": "Direito nenhum caiu do céu. Foi luta. A primeira edição ainda não foi publicada. NOTÍCIAS Ainda não há notícias publicadas. Todas as notícias CULTURA Ainda não há obras publicadas. Toda a cultura Erros são corrigidos na própria matéria, com a data da correção. O PUKAS é um órgão de mídia &amp; inteligência latino-americana sobre trabalho, história e política. Leia o manifesto ."
   },
   {
     "url": "/es/",
     "status": 200,
-    "titulo": "Memoria Obrera",
-    "texto": "Memoria Obrera Todavía no hay ediciones en español. NOTICIAS Todavía no hay noticias publicadas. Todas las noticias CULTURA Todavía no hay obras publicadas. Toda la cultura Los errores se corrigen en la propia nota, con la fecha de la corrección. PUKAS es un medio de comunicación e inteligencia latinoamericano sobre trabajo, historia y política. Lee el manifiesto ."
+    "titulo": "Ningún derecho cayó del cielo. Fue lucha.",
+    "texto": "Ningún derecho cayó del cielo. Fue lucha. Todavía no hay ediciones en español. NOTICIAS Todavía no hay noticias publicadas. Todas las noticias CULTURA Todavía no hay obras publicadas. Toda la cultura Los errores se corrigen en la propia nota, con la fecha de la corrección. PUKAS es un medio de comunicación e inteligencia latinoamericano sobre trabajo, historia y política. Lee el manifiesto ."
   },
   {
     "url": "/links",
     "status": 200,
-    "titulo": "Órgão de mídia &amp; inteligência latino-americana.",
-    "texto": "Órgão de mídia &amp; inteligência latino-americana. 01 Manifesto 02 Memória Operária: todas as edições 03 Cultura: contos, poemas e ensaios"
+    "titulo": "Direito nenhum caiu do céu.",
+    "texto": "Direito nenhum caiu do céu. 01 Manifesto 02 Memória Operária: todas as edições 03 Cultura: contos, poemas e ensaios"
   },
   {
     "url": "/es/links",
     "status": 200,
-    "titulo": "Medio de comunicación e inteligencia latinoamericano.",
-    "texto": "Medio de comunicación e inteligencia latinoamericano. 01 Manifiesto 02 Memoria Obrera: todas las ediciones 03 Cultura: cuentos, poemas y ensayos"
+    "titulo": "Ningún derecho cayó del cielo.",
+    "texto": "Ningún derecho cayó del cielo. 01 Manifiesto 02 Memoria Obrera: todas las ediciones 03 Cultura: cuentos, poemas y ensayos"
   },
   {
     "url": "/manifesto",
