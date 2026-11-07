@@ -16,12 +16,12 @@ const VAZIO: Record<EstadoPeca, { titulo: string; texto: string }> = {
   publicada: { titulo: 'Nada publicado', texto: 'O que estiver no ar aparece aqui. Para corrigir uma peça publicada, abra-a por aqui.' },
   rejeitada: { titulo: 'Nada rejeitado', texto: 'Peças rejeitadas ficam aqui. Dá para abrir, ajustar e retomar.' },
 };
-// Opções do modal: os mesmos tipos que o editor já aceita (/painel/peca/nova?tipo=...).
+// Opções do modal: os tipos que o editor já aceita (/painel/peca/nova?tipo=...). "Página" fica de fora:
+// o site só mostra a página "manifesto" (editável por Publicadas); página nova só com endereço criado junto.
 const OPCOES: { tipo: TipoPeca; nome: string; texto: string }[] = [
   { tipo: 'newsletter', nome: 'Memória Operária', texto: 'Edição da newsletter: foto, fontes primárias e checagem.' },
   { tipo: 'noticia', nome: 'Notícia', texto: 'Fato do presente que pesa sobre a classe trabalhadora, com fontes.' },
   { tipo: 'cultura', nome: 'Cultura', texto: 'Conto, cena, poema ou ensaio.' },
-  { tipo: 'pagina', nome: 'Página', texto: 'Página fixa do site, como o manifesto.' },
 ];
 
 const pedidoEstado = Astro.url.searchParams.get('estado');
