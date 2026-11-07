@@ -2,7 +2,7 @@
 // /newsletter: as séries da newsletter. Cada série tem o seu arquivo em /newsletter/<série>.
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
-import { carregarEdicoes } from '../lib/carregar';
+import { carregarEdicoes, carregarSeries } from '../lib/carregar';
 import { formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
@@ -12,9 +12,9 @@ interface Props {
   idioma: Idioma;
 }
 const { idioma } = Astro.props;
-const edicoes = await carregarEdicoes(idioma);
-// shortcut: uma série só, com nome e descrição dos textos fixos; vira lista do banco quando o painel criar séries.
-const series = [{ href: '/newsletter/memoria-operaria', titulo: t(idioma, 'serie.titulo'), sub: t(idioma, 'serie.sub'), ultima: edicoes[0]?.data.publicadaEm }];
+const [lista, edicoes] = await Promise.all([carregarSeries(idioma), carregarEdicoes(idioma)]);
+// Data da edição mais recente de cada série (a lista de edições vem da mais nova para a mais velha).
+const series = lista.map((s) => ({ href: `/newsletter/${s.slug}`, titulo: s.nome, sub: s.descricao, ultima: edicoes.find((e) => e.data.serie === s.slug)?.data.publicadaEm }));
 ---
 <Base titulo={t(idioma, 'newsletter.titulo')} descricao={t(idioma, 'site.descricao')} receita="leitura" idioma={idioma}>
   <div class="leitura">
@@ -25,7 +25,7 @@ const series = [{ href: '/newsletter/memoria-operaria', titulo: t(idioma, 'serie
           <a href={prefixar(s.href, idioma)}>
             {s.ultima && <span class="maquina lista__meta">{formatarData(s.ultima, idioma)}</span>}
             <span class="lista__titulo">{textoManchete(s.titulo)}</span>
-            <span class="lista__resumo">{s.sub}</span>
+            {s.sub && <span class="lista__resumo">{s.sub}</span>}
           </a>
         </li>
       ))}

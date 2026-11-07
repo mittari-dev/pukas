@@ -2,7 +2,9 @@
 // Estúdio (a fila do painel): criar nova peça (modal com o tipo), abas por estado, filtro por tipo.
 import Painel from '../../layouts/Painel.astro';
 import { listarFila } from '../../lib/banco/painel';
-import { SERIES, formatarNumero, nomeSerie } from '../../lib/formato';
+import { formatarNumero } from '../../lib/formato';
+import { lerSeries } from '../../lib/banco/series';
+import { nomeDaSerie } from '../../lib/series';
 import { textoManchete } from '../../lib/manchete';
 import type { EstadoPeca, TipoPeca } from '../../lib/painel/travas';
 
@@ -30,7 +32,8 @@ const pedidoEstado = Astro.url.searchParams.get('estado');
 const estado = (ABAS.find(([e]) => e === pedidoEstado)?.[0] ?? 'rascunho') as EstadoPeca;
 const pedidoTipo = Astro.url.searchParams.get('tipo');
 const tipo = TIPOS.find(([t]) => t === pedidoTipo)?.[0];
-const pecas = await listarFila(Astro.locals.painel!.cliente, estado, tipo);
+const [pecas, series] = await Promise.all([listarFila(Astro.locals.painel!.cliente, estado, tipo), lerSeries(Astro.locals.painel!.cliente)]);
+const nomeSerie = (slug: string | null) => nomeDaSerie(series, slug);
 const nomeTipo = Object.fromEntries(TIPOS);
 const link = (e: EstadoPeca, t?: TipoPeca) => `/painel?estado=${e}${t ? `&tipo=${t}` : ''}`;
 const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
@@ -94,7 +97,7 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
       <div class="campo nova__serie">
         <label for="nova-serie">Série da newsletter</label>
         <select id="nova-serie" name="serie">
-          {SERIES.map((x) => <option value={x.id}>{x.nome}</option>)}
+          {series.filter((x) => x.ativa).map((x) => <option value={x.slug}>{x.nome}</option>)}
         </select>
       </div>
       <div class="nova__acoes">

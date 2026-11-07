@@ -1,0 +1,176 @@
+---
+// Séries da newsletter: o editor cria e edita. O endereço sai do nome e não muda depois de criado.
+import Painel from '../../../layouts/Painel.astro';
+import { criarSerie, editarSerie, lerSeries, renovarSite } from '../../../lib/banco/series';
+import { slugDaSerie, slugValido, type LinhaSerie } from '../../../lib/series';
+
+const { cliente, usuario } = Astro.locals.painel!;
+if (usuario?.papel !== 'editor') return Astro.rewrite('/404');
+
+let erro = '';
+let series = await lerSeries(cliente);
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const campo = (n: string) => String(f.get(n) ?? '').trim();
+  const dados: Omit<LinhaSerie, 'slug'> = {
+    nome: campo('nome'),
+    nome_es: campo('nome_es'),
+    descricao: campo('descricao'),
+    descricao_es: campo('descricao_es'),
+    // Sem selo escrito, o selo é o nome em maiúsculas com o asterisco da casa.
+    selo: campo('selo') || `${campo('nome').toUpperCase()}*`,
+    selo_es: campo('selo_es') || `${campo('nome_es').toUpperCase()}*`,
+    ativa: f.get('ativa') === 'on',
+  };
+  let r: { ok: boolean; erro?: string };
+  if (!dados.nome || !dados.nome_es) r = { ok: false, erro: 'Escreva o nome em português e em espanhol.' };
+  else if (campo('acao') === 'criar') {
+    const slug = slugDaSerie(campo('slug') || dados.nome);
+    r = slugValido(slug) ? await criarSerie(cliente, { slug, ...dados }) : { ok: false, erro: 'O endereço precisa ter letras ou números.' };
+  } else r = await editarSerie(cliente, campo('slug'), dados);
+  if (r.ok) {
+    const renovado = await renovarSite();
+    return Astro.redirect(`/painel/series${renovado ? '' : '?aviso=cache'}`, 303);
+  }
+  erro = r.erro ?? 'Não deu para salvar. Tente de novo.';
+  series = await lerSeries(cliente);
+}
+const avisoCache = Astro.url.searchParams.get('aviso') === 'cache';
+---
+<Painel titulo="Séries">
+  <h1>Séries</h1>
+  <p class="sub">As séries da newsletter. Cada uma tem a sua página no site, em /newsletter/endereço. Série desligada sai do site e do painel, mas as edições dela continuam guardadas.</p>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+  {avisoCache && <p class="mensagem" role="status">Salvo. O site pode levar alguns minutos para mostrar a mudança.</p>}
+
+  <div class="series">
+    {series.map((s) => (
+      <details class:list={['serie', { 'serie--desligada': !s.ativa }]}>
+        <summary class="serie__titulo">
+          {s.nome} <span class="maquina serie__meta">/newsletter/{s.slug}{!s.ativa && ' · DESLIGADA'}</span>
+        </summary>
+        <form method="post" class="form">
+          <input type="hidden" name="acao" value="editar" />
+          <input type="hidden" name="slug" value={s.slug} />
+          <div class="duas">
+            <div class="campo"><label for={`nome-${s.slug}`}>Nome</label><input id={`nome-${s.slug}`} name="nome" maxlength="60" required value={s.nome} /></div>
+            <div class="campo"><label for={`nome_es-${s.slug}`}>Nome em espanhol</label><input id={`nome_es-${s.slug}`} name="nome_es" maxlength="60" required value={s.nome_es} /></div>
+            <div class="campo"><label for={`descricao-${s.slug}`}>Descrição</label><textarea id={`descricao-${s.slug}`} name="descricao" maxlength="300" rows="3">{s.descricao}</textarea></div>
+            <div class="campo"><label for={`descricao_es-${s.slug}`}>Descrição em espanhol</label><textarea id={`descricao_es-${s.slug}`} name="descricao_es" maxlength="300" rows="3">{s.descricao_es}</textarea></div>
+            <div class="campo"><label for={`selo-${s.slug}`}>Selo</label><input id={`selo-${s.slug}`} name="selo" maxlength="40" value={s.selo} /></div>
+            <div class="campo"><label for={`selo_es-${s.slug}`}>Selo em espanhol</label><input id={`selo_es-${s.slug}`} name="selo_es" maxlength="40" value={s.selo_es} /></div>
+          </div>
+          <label class="marcar"><input type="checkbox" name="ativa" checked={s.ativa} /> Ligada (aparece no site e no painel)</label>
+          <button class="botao botao--marca" type="submit">Salvar série</button>
+        </form>
+      </details>
+    ))}
+  </div>
+
+  <section aria-labelledby="nova-serie">
+    <h2 id="nova-serie" class="secao">Nova série</h2>
+    <form method="post" class="form">
+      <input type="hidden" name="acao" value="criar" />
+      <input type="hidden" name="ativa" value="on" />
+      <div class="duas">
+        <div class="campo"><label for="n-nome">Nome</label><input id="n-nome" name="nome" maxlength="60" required /></div>
+        <div class="campo"><label for="n-nome_es">Nome em espanhol</label><input id="n-nome_es" name="nome_es" maxlength="60" required /></div>
+        <div class="campo"><label for="n-descricao">Descrição</label><textarea id="n-descricao" name="descricao" maxlength="300" rows="3"></textarea></div>
+        <div class="campo"><label for="n-descricao_es">Descrição em espanhol</label><textarea id="n-descricao_es" name="descricao_es" maxlength="300" rows="3"></textarea></div>
+        <div class="campo"><label for="n-selo">Selo (opcional)</label><input id="n-selo" name="selo" maxlength="40" placeholder="NOME DA SÉRIE*" /></div>
+        <div class="campo"><label for="n-selo_es">Selo em espanhol (opcional)</label><input id="n-selo_es" name="selo_es" maxlength="40" /></div>
+        <div class="campo"><label for="n-slug">Endereço (opcional)</label><input id="n-slug" name="slug" maxlength="60" placeholder="sai do nome" /></div>
+      </div>
+      <p class="ajuda">Sem selo, o selo vira o nome em maiúsculas com asterisco. O endereço não muda depois de criado, para não quebrar links.</p>
+      <button class="botao botao--marca" type="submit">Criar série</button>
+    </form>
+  </section>
+</Painel>
+
+<style>
+  .sub {
+    margin: 0 0 var(--esp-5);
+    max-width: 60ch;
+  }
+  .series {
+    border-top: 1px solid var(--tinta);
+    margin-bottom: var(--esp-7);
+  }
+  .serie {
+    border-bottom: 1px solid var(--tinta);
+  }
+  .serie--desligada .serie__titulo {
+    opacity: 0.55;
+  }
+  /* Mesmo padrão dos grupos de fontes da busca: título grande e seta que gira ao abrir. */
+  .serie__titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--esp-1) var(--esp-3);
+    min-height: 48px;
+    padding: var(--esp-3) 0;
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 24px;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+    list-style: none;
+  }
+  .serie__titulo::-webkit-details-marker {
+    display: none;
+  }
+  .serie__titulo::before {
+    content: '▸';
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  .serie[open] > .serie__titulo::before {
+    transform: rotate(90deg);
+  }
+  .serie__meta {
+    font-family: var(--fonte-maquina);
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: none;
+    overflow-wrap: anywhere;
+  }
+  .form {
+    display: grid;
+    gap: var(--esp-3);
+    padding-bottom: var(--esp-4);
+  }
+  .duas {
+    display: grid;
+    gap: var(--esp-3);
+  }
+  @media (min-width: 760px) {
+    .duas {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .marcar {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-2);
+    min-height: 44px;
+  }
+  .marcar input {
+    width: 20px;
+    height: 20px;
+  }
+  .secao {
+    font-family: var(--fonte-maquina);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: var(--esp-2) 0;
+    border-top: 3px solid var(--tinta);
+    border-bottom: 1px solid var(--tinta);
+    margin: 0 0 var(--esp-4);
+  }
+</style>

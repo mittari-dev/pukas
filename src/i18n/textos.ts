@@ -20,7 +20,6 @@ const pt = {
   'nav.voltar': 'Voltar',
   'nav.avancar': 'Avançar',
 
-  'selo.memoria': 'MEMÓRIA OPERÁRIA*',
   'selo.cultura': 'FRONTEIRA*',
 
   'capa.manchete': 'Direito | nenhum caiu | do céu. | *Foi luta.*',
@@ -35,8 +34,6 @@ const pt = {
   'capa.expediente': 'Erros são corrigidos na própria matéria, com a data da correção.',
 
   'newsletter.titulo': 'Newsletter',
-  'serie.titulo': 'Memória | Operária',
-  'serie.sub': 'Direito nenhum caiu do céu. Foi luta. Uma edição toda segunda, com as fontes.',
   'serie.vazio': 'A primeira edição ainda não foi publicada.',
 
   'edicao.foto': 'FOTO',
@@ -117,7 +114,6 @@ const es: Record<Chave, string> = {
   'nav.voltar': 'Volver',
   'nav.avancar': 'Avanzar',
 
-  'selo.memoria': 'MEMORIA OBRERA*',
   'selo.cultura': 'FRONTERA*',
 
   'capa.manchete': 'Ningún derecho | cayó | del cielo. | *Fue lucha.*',
@@ -132,8 +128,6 @@ const es: Record<Chave, string> = {
   'capa.expediente': 'Los errores se corrigen en la propia nota, con la fecha de la corrección.',
 
   'newsletter.titulo': 'Newsletter',
-  'serie.titulo': 'Memoria | Obrera',
-  'serie.sub': 'Ningún derecho cayó del cielo. Fue lucha. Una edición cada lunes, con las fuentes.',
   'serie.vazio': 'Todavía no hay ediciones en español.',
 
   'edicao.foto': 'FOTO',

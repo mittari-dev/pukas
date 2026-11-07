@@ -4,7 +4,8 @@
 import Painel from '../../../layouts/Painel.astro';
 import { atrasado, espacosDoRitmo, gradeDoMes, hojeEmSaoPaulo, semanaDe, situacaoDoItem, type Dia, type Situacao, type SituacaoManual } from '../../../lib/agenda';
 import { apagarItem, ligarPeca, listarAgenda, listarPessoas, listarRitmo, pecasSemItem, salvarItem, type ItemAgenda } from '../../../lib/banco/agenda';
-import { SERIES, nomeSerie } from '../../../lib/formato';
+import { lerSeries } from '../../../lib/banco/series';
+import { nomeDaSerie } from '../../../lib/series';
 
 const { cliente } = Astro.locals.painel!;
 const TIPOS = [['newsletter', 'Newsletter'], ['noticia', 'Notícia'], ['cultura', 'Cultura']] as const;
@@ -47,7 +48,8 @@ if (Astro.request.method === 'POST') {
 const semana = semanaDe(dia);
 const grade = visao === 'mes' ? gradeDoMes(dia) : [];
 const dias = grade.length ? grade.flat() : semana;
-const [itens, ritmo, pessoas, livres] = await Promise.all([listarAgenda(cliente, dias[0], dias.at(-1)!), listarRitmo(cliente), listarPessoas(cliente), pecasSemItem(cliente)]);
+const [itens, ritmo, pessoas, livres, series] = await Promise.all([listarAgenda(cliente, dias[0], dias.at(-1)!), listarRitmo(cliente), listarPessoas(cliente), pecasSemItem(cliente), lerSeries(cliente)]);
+const nomeSerie = (slug: string | null) => nomeDaSerie(series, slug);
 const espacos = espacosDoRitmo(dias, ritmo, itens);
 const doDia = (d: Dia) => itens.filter((i) => i.dia === d);
 const espacosDe = (d: Dia) => espacos.filter((e) => e.dia === d);
@@ -150,7 +152,7 @@ const tituloMes = fmt(dia, { month: 'long', year: 'numeric' });
         </div>
         <div class="campo item__serie">
           <label for="i-serie">Série da newsletter</label>
-          <select id="i-serie" name="serie">{SERIES.map((s) => <option value={s.id} selected={s.id === aberto?.serie}>{s.nome}</option>)}</select>
+          <select id="i-serie" name="serie">{series.filter((s) => s.ativa || s.slug === aberto?.serie).map((s) => <option value={s.slug} selected={s.slug === aberto?.serie}>{s.nome}</option>)}</select>
         </div>
         <div class="campo"><label for="i-titulo">Título provisório</label><input id="i-titulo" name="titulo" required maxlength="120" value={aberto?.titulo} /></div>
         <div class="campo"><label for="i-nota">Nota</label><textarea id="i-nota" name="nota" rows="3">{aberto?.nota}</textarea></div>

@@ -4,7 +4,8 @@ import { carregarEdicoes } from '../lib/carregar';
 import { caminhoEdicao } from '../lib/formato';
 import { numeroDoEndereco } from '../lib/rotas';
 
-const edicao = (await carregarEdicoes('pt')).find((e) => numeroDoEndereco(e.data.numero) === Astro.params.numero);
+// shortcut: o endereço curto (/001) é só da Memória Operária; outra série no carrossel pede endereço curto próprio.
+const edicao = (await carregarEdicoes('pt', 'memoria-operaria')).find((e) => numeroDoEndereco(e.data.numero) === Astro.params.numero);
 if (!edicao) return Astro.rewrite('/404');
 return Astro.redirect(caminhoEdicao(edicao.data.serie, edicao.data.numero, 'pt'), 301);
 ---

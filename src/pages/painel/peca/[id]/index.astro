@@ -10,7 +10,7 @@ import { lerFormularioPeca, linksInvalidos, textoMudou } from '../../../../lib/p
 import { destinoAoSalvar, pode, type Acao } from '../../../../lib/painel/permissoes';
 import { travasDaPeca, type EstadoPeca, type PecaEntrada, type TipoPeca } from '../../../../lib/painel/travas';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
-import { SERIES } from '../../../../lib/formato';
+import { lerSeries } from '../../../../lib/banco/series';
 import { enviarTraducao } from '../../../../lib/traducao/lote';
 import { ligarPeca } from '../../../../lib/banco/agenda';
 
@@ -22,6 +22,7 @@ const DESTINO: Record<Exclude<Acao, 'editar' | 'corrigir'>, EstadoPeca> = { envi
 
 const id = Astro.params.id === 'nova' ? undefined : Astro.params.id;
 let linha = id ? await buscarPeca(cliente, id) : null;
+const series = await lerSeries(cliente);
 if (id && !linha) return Astro.rewrite('/404');
 const tipo = (linha?.tipo ?? TIPOS.find((t) => t === Astro.url.searchParams.get('tipo')) ?? 'newsletter') as TipoPeca;
 const estadoAtual: EstadoPeca = linha?.estado ?? 'rascunho';
@@ -97,7 +98,8 @@ function deLinha(l: LinhaPeca): PecaEntrada {
 }
 // Peça nova: a série vem do modal do Estúdio (?serie=); sem ela, a primeira série.
 function vazia(t: TipoPeca): PecaEntrada {
-  const serie = SERIES.find((s) => s.id === Astro.url.searchParams.get('serie'))?.id ?? SERIES[0].id;
+  const ligadas = series.filter((s) => s.ativa);
+  const serie = ligadas.find((s) => s.slug === Astro.url.searchParams.get('serie'))?.slug ?? ligadas[0]?.slug;
   return { tipo: t, estado: 'rascunho', serie: t === 'newsletter' ? serie : undefined, autoria: 'PUKAS', titulo: '', resumo: '', corpo: '', fontes: [], traduzir: true };
 }
 const travas = travasDaPeca(v);
@@ -119,7 +121,7 @@ const traducao = linha?.traducoes?.[0];
     {!id && Astro.url.searchParams.get('agenda') && <input type="hidden" name="agenda" value={Astro.url.searchParams.get('agenda')} />}
     {tipo === 'newsletter' && (
       <div class="linha">
-        <div class="campo"><label for="serie">Série</label><select id="serie" name="serie">{SERIES.map((x) => <option value={x.id} selected={x.id === v.serie}>{x.nome}</option>)}</select></div>
+        <div class="campo"><label for="serie">Série</label><select id="serie" name="serie">{series.filter((x) => x.ativa || x.slug === v.serie).map((x) => <option value={x.slug} selected={x.slug === v.serie}>{x.nome}</option>)}</select></div>
         <div class="campo"><label for="numero">Número</label><input id="numero" name="numero" type="number" min="1" value={v.numero} required /></div>
       </div>
     )}

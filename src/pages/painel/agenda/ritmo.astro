@@ -2,7 +2,8 @@
 // Ritmo da casa (spec agenda §3): os compromissos fixos por dia da semana. A equipe vê; só o editor muda.
 import Painel from '../../../layouts/Painel.astro';
 import { apagarRitmo, listarRitmo, salvarRitmo, type Compromisso } from '../../../lib/banco/agenda';
-import { SERIES, nomeSerie } from '../../../lib/formato';
+import { lerSeries } from '../../../lib/banco/series';
+import { nomeDaSerie } from '../../../lib/series';
 
 const { cliente, usuario } = Astro.locals.painel!;
 const editor = usuario?.papel === 'editor';
@@ -12,6 +13,8 @@ const nomeTipo = Object.fromEntries(TIPOS) as Record<string, string>;
 
 let erro = '';
 let ritmo = await listarRitmo(cliente);
+const series = await lerSeries(cliente);
+const nomeSerie = (slug: string | null) => nomeDaSerie(series, slug);
 
 if (Astro.request.method === 'POST') {
   const f = await Astro.request.formData();
@@ -85,7 +88,7 @@ if (Astro.request.method === 'POST') {
         </div>
         <div class="campo novo__serie">
           <label for="r-serie">Série da newsletter</label>
-          <select id="r-serie" name="serie">{SERIES.map((s) => <option value={s.id}>{s.nome}</option>)}</select>
+          <select id="r-serie" name="serie">{series.filter((s) => s.ativa).map((s) => <option value={s.slug}>{s.nome}</option>)}</select>
         </div>
         <div class="campo">
           <label for="r-rotulo">Rótulo (opcional)</label>

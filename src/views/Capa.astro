@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import ListaEdicoes from '../components/ListaEdicoes.astro';
-import { carregarEdicoes, carregarNoticias, carregarObras } from '../lib/carregar';
+import { carregarEdicoes, carregarNoticias, carregarObras, carregarSeries } from '../lib/carregar';
 import { caminhoEdicao, formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
@@ -16,14 +16,14 @@ interface Props {
 const { idioma } = Astro.props;
 const [edicoes, noticias, obras] = await Promise.all([carregarEdicoes(idioma), carregarNoticias(idioma), carregarObras(idioma)]);
 const ultima = edicoes[0];
-const chapeuMemoria = t(idioma, 'selo.memoria').replace('*', '');
+const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slug === ultima.data.serie)?.selo.replace('*', '') ?? '') : '';
 ---
 <Base titulo="PUKAS" descricao={t(idioma, 'site.descricao')} receita="leitura" idioma={idioma}>
   <div class="capa">
     <div class="capa__grade">
       {ultima ? (
         <section class="principal" aria-labelledby="ultima">
-          <p class="chapeu">{chapeuMemoria}</p>
+          {chapeuMemoria && <p class="chapeu">{chapeuMemoria}</p>}
           <Carimbo numero={ultima.data.numero} data={ultima.data.publicadaEm} />
           <div class="principal__manchete"><Manchete id="ultima" titulo={ultima.data.titulo} /></div>
           <p class="principal__resumo">{ultima.data.resumo}</p>

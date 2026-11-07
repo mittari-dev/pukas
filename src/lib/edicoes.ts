@@ -1,6 +1,6 @@
 // Regras editoriais puras: verdade (fonte, foto, checagem) e linguagem (manchete curta).
 // A leitura da coleção fica em carregar.ts, para estas funções serem testáveis sem o Astro.
-import { formatarNumero, type Serie } from './formato';
+import { formatarNumero } from './formato';
 import { textoManchete } from './manchete';
 
 export const MAX_PALAVRAS_MANCHETE = 8;
@@ -16,7 +16,7 @@ export interface Fonte {
 export interface Edicao {
   id: string;
   data: {
-    serie: Serie;
+    serie: string;
     numero: number;
     titulo: string;
     publicadaEm: Date;

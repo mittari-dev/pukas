@@ -1,22 +1,24 @@
 ---
+// Arquivo de uma série da newsletter: nome, descrição e as edições dela.
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import ListaEdicoes from '../components/ListaEdicoes.astro';
 import { carregarEdicoes } from '../lib/carregar';
-import { t, type Idioma } from '../lib/idioma';
-import { textoManchete } from '../lib/manchete';
+import type { Idioma } from '../lib/idioma';
+import type { Serie } from '../lib/series';
 import '../styles/leitura.css';
 
 interface Props {
   idioma: Idioma;
+  serie: Serie;
 }
-const { idioma } = Astro.props;
-const edicoes = await carregarEdicoes(idioma);
+const { idioma, serie } = Astro.props;
+const edicoes = await carregarEdicoes(idioma, serie.slug);
 ---
-<Base titulo={textoManchete(t(idioma, 'serie.titulo'))} descricao={t(idioma, 'serie.sub')} receita="leitura" selo={t(idioma, 'selo.memoria')} idioma={idioma}>
+<Base titulo={serie.nome} descricao={serie.descricao} receita="leitura" selo={serie.selo} idioma={idioma}>
   <div class="leitura">
-    <div class="titulo"><Manchete titulo={t(idioma, 'serie.titulo')} tamanho="m" /></div>
-    <p class="sub">{t(idioma, 'serie.sub')}</p>
+    <div class="titulo"><Manchete titulo={serie.nome} tamanho="m" /></div>
+    {serie.descricao && <p class="sub">{serie.descricao}</p>}
     <ListaEdicoes edicoes={edicoes} />
   </div>
 </Base>

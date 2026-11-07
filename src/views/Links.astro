@@ -12,7 +12,8 @@ interface Props {
   idioma: Idioma;
 }
 const { idioma } = Astro.props;
-const [ultima] = await carregarEdicoes(idioma);
+// O botão diz "Última Memória Operária": a última edição dessa série, não de qualquer uma.
+const [ultima] = await carregarEdicoes(idioma, 'memoria-operaria');
 const [obra] = await carregarObras(idioma);
 const botoes: { rotulo: string; href: string; frase?: string }[] = [
   ...(ultima
