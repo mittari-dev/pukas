@@ -162,4 +162,29 @@ describe.skipIf(!base)('painel', () => {
     const { data: depois } = await servico.from('pecas').select('estado, corpo').eq('id', peca!.id).single();
     expect(depois).toEqual({ estado: 'rascunho', corpo: 'Texto retomado.' });
   });
+
+  test('agenda: o espaço do ritmo aparece na segunda; criar e ligar um item', async () => {
+    const { ir, email, senha } = await criarFundador();
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+
+    const antes = await (await ir('/painel/agenda?dia=2026-11-11')).text();
+    expect(antes).toContain('data-ritmo="2026-11-09"');
+    expect(antes).toContain('Memória Operária');
+
+    const criou = await ir('/painel/agenda?dia=2026-11-11', { acao: 'salvar', dia: '2026-11-09', tipo: 'newsletter', serie: 'memoria-operaria', titulo: 'Férias na agenda', situacao: 'ideia' });
+    expect(criou.status).toBe(303);
+    const depois = await (await ir('/painel/agenda?dia=2026-11-11')).text();
+    expect(depois).toContain('Férias na agenda');
+    expect(depois).not.toContain('data-ritmo="2026-11-09"');
+
+    const servico = clienteServico();
+    const { data: item } = await servico.from('agenda').select('id').eq('titulo', 'Férias na agenda').single();
+    const { data: peca } = await servico.from('pecas').insert({ ...pecaValida('noticia'), estado: 'rascunho' }).select('id').single();
+    expect((await ir('/painel/agenda?dia=2026-11-11', { acao: 'ligar', id: item!.id, peca_id: peca!.id })).status).toBe(303);
+    expect(await (await ir('/painel/agenda?dia=2026-11-11')).text()).toContain('ESCREVENDO');
+
+    const mes = await (await ir('/painel/agenda?visao=mes&dia=2026-11-11')).text();
+    expect(mes).toContain('data-mes="2026-11"');
+  });
 });

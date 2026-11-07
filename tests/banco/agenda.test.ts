@@ -60,6 +60,15 @@ describe('agenda', () => {
   });
 });
 
+describe('equipe para o responsável', () => {
+  test('com 2FA a equipe vê os colegas; sem 2FA, só o próprio perfil', async () => {
+    const { data: todos } = await redator.from('perfis').select('id, nome, papel');
+    expect(todos!.map((p) => p.papel)).toEqual(expect.arrayContaining(['editor', 'revisor', 'redator']));
+    const { data: proprio } = await editorSem2fa.from('perfis').select('id');
+    expect(proprio).toHaveLength(1);
+  });
+});
+
 describe('ritmo', () => {
   test('começa com a Memória Operária às segundas', async () => {
     const { data } = await editor.from('ritmo').select('dia_semana, tipo, serie, ativo');

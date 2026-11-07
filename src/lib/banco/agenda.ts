@@ -87,3 +87,10 @@ export async function apagarRitmo(cliente: SupabaseClient, id: string): Promise<
   if (error) return falha(error);
   return data.length ? { ok: true, valor: undefined } : { ok: false, erro: 'Só quem é editor muda o ritmo.' };
 }
+
+// Para o campo "responsável": a equipe toda (a RLS só mostra colegas a quem tem 2FA).
+export async function listarPessoas(cliente: SupabaseClient): Promise<{ id: string; nome: string }[]> {
+  const { data, error } = await cliente.from('perfis').select('id, nome').order('nome');
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}

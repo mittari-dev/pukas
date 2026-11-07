@@ -47,3 +47,6 @@ create policy ritmo_equipe_le on ritmo for select to authenticated using (privad
 create policy ritmo_editor_grava on ritmo for all to authenticated
   using (privado.com_2fa() and privado.papel_atual() = 'editor')
   with check (privado.com_2fa() and privado.papel_atual() = 'editor');
+
+-- Responsável do item: quem é da equipe (com 2FA) vê o nome e o papel dos colegas. Quem não é, segue vendo só o próprio.
+create policy perfis_equipe_le on perfis for select to authenticated using (privado.com_2fa() and privado.papel_atual() is not null);
