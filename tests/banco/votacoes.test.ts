@@ -31,6 +31,11 @@ const voto = (votacao_id: string, extra: Record<string, unknown> = {}) => ({
   comprovante: comp(),
   aparelho_hash: `ap-${Math.random()}`,
   ip_hash: 'rede-1',
+  // Em lote, campo ausente vira null: todos os votos levam as mesmas colunas.
+  relato: null,
+  citar: false,
+  descartado: false,
+  motivo: null,
   ...extra,
 });
 
@@ -76,12 +81,13 @@ describe('votos', () => {
 describe('funções públicas', () => {
   test('resultado conta só os válidos e agrupa os descartes', async () => {
     const v = await votacao();
-    await servico.from('votos').insert([
+    const { error: erroLote } = await servico.from('votos').insert([
       voto(v),
       voto(v),
       voto(v, { opcao: 'contra' }),
       voto(v, { descartado: true, motivo: 'muitos votos da mesma rede' }),
     ]);
+    expect(erroLote).toBeNull();
     const { data, error } = await anon.rpc('resultado_votacao', { v });
     expect(error).toBeNull();
     expect(data[0]).toMatchObject({ a_favor: 2, contra: 1, nao_sei: 0, descartes: { 'muitos votos da mesma rede': 1 } });
@@ -91,10 +97,11 @@ describe('funções públicas', () => {
     const v = await votacao();
     const valido = comp();
     const descartado = comp();
-    await servico.from('votos').insert([
+    const { error: erroLote } = await servico.from('votos').insert([
       voto(v, { comprovante: valido, relato: 'segredo' }),
       voto(v, { comprovante: descartado, descartado: true, motivo: 'campo escondido preenchido' }),
     ]);
+    expect(erroLote).toBeNull();
     const { data } = await anon.rpc('comprovantes_votacao', { v });
     expect(data.map((l: { comprovante: string }) => l.comprovante)).toEqual([valido]);
     expect(Object.keys(data[0]).sort()).toEqual(['comprovante', 'dia', 'opcao']);
