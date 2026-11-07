@@ -89,7 +89,7 @@ const pt = {
   'noticia.vote': 'Vote: o que você acha?',
   'capa.votacao': 'VOTAÇÃO ABERTA',
   'rodape.privacidade': 'Privacidade',
-  // Votações: textos a confirmar com o fundador antes do deploy (fora da tabela do plano).
+  // Votações: textos de fora da tabela, aprovados pelo fundador em 07/11/2026.
   'votacao.erro': 'Não deu para registrar o seu voto. Tente de novo.',
   'votacao.camara': 'Câmara',
   'votacao.senado': 'Senado',
