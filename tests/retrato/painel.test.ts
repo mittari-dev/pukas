@@ -1,6 +1,6 @@
 // Login do painel de ponta a ponta, contra o site rodando (RETRATO_URL) e o banco local.
 import { describe, expect, test } from 'vitest';
-import { clienteServico } from '../banco/ajuda';
+import { clienteServico, pecaValida } from '../banco/ajuda';
 import { codigoTotp } from '../banco/totp';
 
 const base = process.env.RETRATO_URL;
@@ -135,5 +135,21 @@ describe.skipIf(!base)('painel', () => {
     await ir('/painel/entrar', { email, senha });
     await confirmar2fa(ir);
     expect((await ir('/painel/equipe')).status).toBe(404);
+  });
+
+  test('redator salva uma peça rejeitada: ela volta a rascunho, sem erro falso', async () => {
+    const servico = clienteServico();
+    const { data: peca } = await servico.from('pecas').insert({ ...pecaValida('noticia'), estado: 'rejeitada' }).select('*').single();
+    const { ir, email, senha } = await criarFundador('redator');
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+    const salvou = await ir(`/painel/peca/${peca!.id}`, {
+      slug: peca!.slug, titulo: peca!.titulo, resumo: peca!.resumo, corpo: 'Texto retomado.', acao: 'salvar',
+      checagem_por: 'Fundador', checagem_em: '2026-11-01',
+      'fonte[0][titulo]': 'Fonte', 'fonte[0][instituicao]': 'I', 'fonte[0][url]': 'https://exemplo.org', 'fonte[0][tipo]': 'secundaria', 'fonte[0][acessadaEm]': '2026-11-01',
+    });
+    expect(salvou.status).toBe(303);
+    const { data: depois } = await servico.from('pecas').select('estado, corpo').eq('id', peca!.id).single();
+    expect(depois).toEqual({ estado: 'rascunho', corpo: 'Texto retomado.' });
   });
 });

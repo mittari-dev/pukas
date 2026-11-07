@@ -20,3 +20,9 @@ export function pode(papel: Papel, acao: Acao, estado: EstadoPeca): boolean {
       return editor && estado === 'publicada';
   }
 }
+
+// "Salvar" mantém o estado, menos numa peça rejeitada: mexer nela é retomar o trabalho, então volta a rascunho.
+// (A RLS não deixa o redator gravar uma peça como 'rejeitada'.)
+export function destinoAoSalvar(estado: EstadoPeca): EstadoPeca {
+  return estado === 'rejeitada' ? 'rascunho' : estado;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { pode } from './permissoes';
+import { destinoAoSalvar, pode } from './permissoes';
 
 describe('pode (matriz da spec §4)', () => {
   test('todos criam, editam e enviam rascunho para revisão', () => {
@@ -32,5 +32,14 @@ describe('pode (matriz da spec §4)', () => {
 
   test('não se rejeita o que já está no ar', () => {
     expect(pode('editor', 'rejeitar', 'publicada')).toBe(false);
+  });
+});
+
+describe('destinoAoSalvar', () => {
+  test('salvar uma peça rejeitada a devolve para rascunho (o banco não deixa o redator gravar "rejeitada")', () => {
+    expect(destinoAoSalvar('rejeitada')).toBe('rascunho');
+    expect(destinoAoSalvar('rascunho')).toBe('rascunho');
+    expect(destinoAoSalvar('em_revisao')).toBe('em_revisao');
+    expect(destinoAoSalvar('publicada')).toBe('publicada');
   });
 });

@@ -7,7 +7,7 @@ import { buscarPeca, corrigir, enviarFoto, renovarPaginas, salvar } from '../../
 import { urlBanco } from '../../../../lib/banco/cliente';
 import { urlFoto, type LinhaPeca } from '../../../../lib/banco/pecas';
 import { lerFormularioPeca, linksInvalidos, textoMudou } from '../../../../lib/painel/formulario';
-import { pode, type Acao } from '../../../../lib/painel/permissoes';
+import { destinoAoSalvar, pode, type Acao } from '../../../../lib/painel/permissoes';
 import { travasDaPeca, type EstadoPeca, type PecaEntrada, type TipoPeca } from '../../../../lib/painel/travas';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
 import { enviarTraducao } from '../../../../lib/traducao/lote';
@@ -32,7 +32,7 @@ if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const acao = String(form.get('acao') ?? 'salvar');
   const permissao: Acao = acao === 'salvar' ? 'editar' : (acao as Acao);
-  const destino = acao === 'salvar' ? estadoAtual : DESTINO[acao as keyof typeof DESTINO];
+  const destino = acao === 'salvar' ? destinoAoSalvar(estadoAtual) : DESTINO[acao as keyof typeof DESTINO];
   enviado = lerFormularioPeca(form, tipo, destino ?? estadoAtual);
   const correcao = String(form.get('correcao_texto') ?? '').trim();
   const ehCorrecao = form.get('e_correcao') === 'sim';
