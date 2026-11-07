@@ -1,4 +1,4 @@
-// Equipe do painel: convidar, trocar papel, tirar. Única parte do site que usa a chave mestra (service_role),
+// Equipe do painel: convidar (link), trocar papel, tirar. Única parte do site que usa a chave mestra (service_role),
 // porque criar e apagar contas no Auth exige. Só é chamada de /admin/equipe, depois de conferir editor com 2FA.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { urlBanco } from './cliente';
@@ -30,17 +30,20 @@ export async function listarEquipe(): Promise<Membro[]> {
     .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 }
 
-// O link do e-mail leva a /admin/convite (modelo "Invite user" no painel do Supabase), onde a pessoa cria a senha.
-export async function convidar(email: string, nome: string, papel: Papel, site: string): Promise<Resultado> {
+// Gera o link de convite sem mandar e-mail: o e-mail grátis do Supabase só entrega para membros da organização.
+// O editor manda o link pela conversa. Ele leva a /admin/convite, onde a pessoa cria a senha.
+export async function convidar(email: string, nome: string, papel: Papel, site: string): Promise<{ ok: true; link: string } | { ok: false; erro: string }> {
   const db = mestre();
-  const { data, error } = await db.auth.admin.inviteUserByEmail(email, { data: { nome }, redirectTo: new URL('/admin/convite', site).href });
-  if (error) return { ok: false, erro: /already|registered|exists/i.test(error.message) ? 'Já existe uma conta com esse e-mail.' : 'Não deu para mandar o convite. Tente de novo mais tarde.' };
+  const { data, error } = await db.auth.admin.generateLink({ type: 'invite', email, options: { data: { nome } } });
+  if (error) return { ok: false, erro: /already|registered|exists/i.test(error.message) ? 'Já existe uma conta com esse e-mail.' : 'Não deu para gerar o convite. Tente de novo.' };
   const { error: e } = await db.from('perfis').insert({ id: data.user.id, nome, papel });
   if (e) {
     await db.auth.admin.deleteUser(data.user.id);
     return { ok: false, erro: 'Não deu para criar o perfil. Tente de novo.' };
   }
-  return { ok: true };
+  const link = new URL('/admin/convite', site);
+  link.searchParams.set('token_hash', data.properties.hashed_token);
+  return { ok: true, link: link.href };
 }
 
 export async function mudarPapel(id: string, papel: Papel): Promise<Resultado> {

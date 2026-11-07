@@ -11,6 +11,7 @@ if (eu.papel !== 'editor') return Astro.rewrite('/404');
 const PAPEIS: [Papel, string][] = [['editor', 'Editor'], ['revisor', 'Revisor'], ['redator', 'Redator']];
 let erro = '';
 let aviso = '';
+let convite: { email: string; link: string } | undefined;
 
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
@@ -21,7 +22,7 @@ if (Astro.request.method === 'POST') {
     if (!c.ok) erro = c.erro;
     else {
       const r = await convidar(c.valor.email, c.valor.nome, c.valor.papel, Astro.url.origin);
-      if (r.ok) aviso = `Convite mandado para ${c.valor.email}.`;
+      if (r.ok) convite = { email: c.valor.email, link: r.link };
       else erro = r.erro;
     }
   } else if (acao === 'papel' || acao === 'remover') {
@@ -42,6 +43,13 @@ const equipe = await listarEquipe();
   <h1>Equipe</h1>
   {erro && <p class="mensagem" role="alert">{erro}</p>}
   {aviso && <p class="mensagem mensagem--ok" role="status">{aviso}</p>}
+  {convite && (
+    <section class="mensagem mensagem--ok" role="status">
+      <p><strong>Convite criado para {convite.email}.</strong> Mande este link para a pessoa (WhatsApp, Signal…). Ele só funciona uma vez e vence em 24 horas.</p>
+      <label class="sr-only" for="link-convite">Link do convite</label>
+      <input id="link-convite" class="equipe__link maquina" value={convite.link} readonly />
+    </section>
+  )}
 
   <ul class="equipe">
     {equipe.map((m) => (
@@ -75,7 +83,7 @@ const equipe = await listarEquipe();
   </ul>
 
   <h2>Convidar</h2>
-  <p>A pessoa recebe um e-mail com o link, cria a própria senha e cadastra o 2FA no primeiro acesso.</p>
+  <p>O painel gera um link para você mandar à pessoa. Pelo link ela cria a própria senha e cadastra o 2FA no primeiro acesso.</p>
   <form method="post">
     <input type="hidden" name="acao" value="convidar" />
     <div class="campo">
@@ -94,7 +102,7 @@ const equipe = await listarEquipe();
         <option value="editor">Editor: também publica, corrige e mexe na equipe</option>
       </select>
     </div>
-    <button class="botao botao--marca" type="submit">Mandar convite</button>
+    <button class="botao botao--marca" type="submit">Gerar link do convite</button>
   </form>
 </Painel>
 
@@ -125,6 +133,14 @@ const equipe = await listarEquipe();
     flex-wrap: wrap;
     align-items: center;
     gap: var(--esp-2);
+  }
+  .equipe__link {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--esp-3);
+    border: 3px solid var(--tinta);
+    background: var(--cal);
+    font-size: 13px;
   }
   .equipe select,
   .campo select {
