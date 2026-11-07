@@ -192,7 +192,8 @@ const tituloMes = fmt(dia, { month: 'long', year: 'numeric' });
 
 <style>
   /* A agenda precisa de largura para 7 colunas: só esta página sai da coluna de 760px do painel. */
-  :global(.painel) {
+  /* main.painel: mais específico que o .painel do layout, que vem depois na folha e ganharia no empate. */
+  :global(main.painel) {
     max-width: 1120px;
   }
   .agenda__cabeca {
