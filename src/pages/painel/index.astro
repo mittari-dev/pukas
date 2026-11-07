@@ -9,7 +9,7 @@ import { textoManchete } from '../../lib/manchete';
 import type { EstadoPeca, TipoPeca } from '../../lib/painel/travas';
 
 const ABAS: [EstadoPeca, string][] = [['rascunho', 'Rascunhos'], ['em_revisao', 'Em revisão'], ['publicada', 'Publicadas'], ['rejeitada', 'Rejeitadas']];
-const TIPOS: [TipoPeca, string][] = [['newsletter', 'Newsletter'], ['noticia', 'Notícia'], ['cultura', 'Cultura'], ['pagina', 'Página']];
+const TIPOS: [TipoPeca, string][] = [['newsletter', 'Newsletter'], ['noticia', 'Notícia'], ['cultura', 'Cultura'], ['votacao', 'Votação'], ['pagina', 'Página']];
 // Filtro de tipo sem "Página": o manifesto aparece em Todos; página nova não se cria pelo Estúdio.
 const FILTROS = TIPOS.filter(([t]) => t !== 'pagina');
 
@@ -26,6 +26,7 @@ const OPCOES: { tipo: TipoPeca; nome: string; texto: string }[] = [
   { tipo: 'newsletter', nome: 'Newsletter', texto: 'Edição de uma série (escolha abaixo): foto, fontes primárias e checagem.' },
   { tipo: 'noticia', nome: 'Notícia', texto: 'Fato do presente que pesa sobre a classe trabalhadora, com fontes.' },
   { tipo: 'cultura', nome: 'Cultura', texto: 'Conto, cena, poema ou ensaio.' },
+  { tipo: 'votacao', nome: 'Votação', texto: 'Pergunta à base sobre um PL, PLP ou PEC da Câmara ou do Senado.' },
 ];
 
 const pedidoEstado = Astro.url.searchParams.get('estado');

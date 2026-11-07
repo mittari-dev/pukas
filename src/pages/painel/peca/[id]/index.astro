@@ -13,9 +13,13 @@ import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
 import { lerSeries } from '../../../../lib/banco/series';
 import { enviarTraducao } from '../../../../lib/traducao/lote';
 import { ligarPeca } from '../../../../lib/banco/agenda';
+import { buscarProposicao, ErroCongresso, type Casa } from '../../../../lib/votacoes/congresso';
+import { montarRascunho } from '../../../../lib/votacoes/rascunho';
+import { porcentagens, OPCOES, type Opcao } from '../../../../lib/votacoes/voto';
+import { apagarRelato, ligarNoticias, noticiasLigadas, noticiasParaLigar, plenarioMaisRecente, relatos, resultadoNoPainel } from '../../../../lib/banco/votacoesPainel';
 
 const { cliente, usuario } = Astro.locals.painel!;
-const TIPOS: TipoPeca[] = ['newsletter', 'noticia', 'cultura', 'pagina'];
+const TIPOS: TipoPeca[] = ['newsletter', 'noticia', 'cultura', 'pagina', 'votacao'];
 const NOME: Record<TipoPeca, string> = { newsletter: 'Newsletter', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página', votacao: 'Votação' };
 const ESTADO: Record<EstadoPeca, string> = { rascunho: 'Rascunho', em_revisao: 'Em revisão', publicada: 'Publicada', rejeitada: 'Rejeitada' };
 const DESTINO: Record<Exclude<Acao, 'editar' | 'corrigir'>, EstadoPeca> = { enviar_revisao: 'em_revisao', rejeitar: 'rejeitada', publicar: 'publicada' };
@@ -34,6 +38,40 @@ let enviado: PecaEntrada | undefined;
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const acao = String(form.get('acao') ?? 'salvar');
+  // Votação: buscar a proposição (não salva), virar rascunho de notícia e apagar relato não passam pelo fluxo de salvar.
+  if (tipo === 'votacao' && acao === 'buscar_proposicao') {
+    enviado = lerFormularioPeca(form, tipo, estadoAtual);
+    const casa: Casa = form.get('proposicao_casa') === 'senado' ? 'senado' : 'camara';
+    const nomeCasa = casa === 'camara' ? 'A Câmara' : 'O Senado';
+    const sigla = String(form.get('proposicao_sigla') ?? '');
+    const numero = Number(form.get('proposicao_numero'));
+    const ano = Number(form.get('proposicao_ano'));
+    if (!['PL', 'PLP', 'PEC'].includes(sigla) || !(numero > 0) || !(ano > 1900)) erro = 'Escolha o tipo e escreva o número e o ano.';
+    else {
+      try {
+        const achada = await buscarProposicao(casa, sigla, numero, ano);
+        if (achada) enviado.proposicao = achada;
+        else erro = `${nomeCasa} não tem ${sigla} ${numero}/${ano}. Confira o número e o ano.`;
+      } catch (e) {
+        if (!(e instanceof ErroCongresso)) throw e;
+        erro = `${nomeCasa} não respondeu. Tente de novo.`;
+      }
+    }
+    if (!erro) aviso = 'Proposição encontrada. Confira a ementa e salve.';
+  } else if (linha?.tipo === 'votacao' && acao === 'virar_rascunho' && estadoAtual === 'publicada') {
+    const [resultado, plenario] = await Promise.all([resultadoNoPainel(cliente, linha.id), plenarioMaisRecente(cliente, linha.id)]);
+    const fontesVotacao = linha.fontes.map((f) => ({ ...f, acessadaEm: new Date(f.acessadaEm) }));
+    const noticia = { ...montarRascunho({ titulo: linha.titulo, proposicao: linha.proposicao!, resultado, plenario, fontes: fontesVotacao }), slug: `${linha.slug}-resultado-${Date.now().toString(36)}` };
+    const r = await salvar(cliente, noticia, usuario!.id);
+    if (!r.ok) erro = r.erro;
+    else {
+      await ligarNoticias(cliente, linha.id, [...(await noticiasLigadas(cliente, linha.id)), r.valor]);
+      return Astro.redirect(`/painel/peca/${r.valor}?ok=1`, 303);
+    }
+  } else if (linha?.tipo === 'votacao' && acao === 'apagar_relato') {
+    if (await apagarRelato(cliente, String(form.get('comprovante') ?? ''))) aviso = 'Relato apagado.';
+    else erro = 'Comprovante não encontrado.';
+  } else {
   const permissao: Acao = acao === 'salvar' ? 'editar' : (acao as Acao);
   const destino = acao === 'salvar' ? destinoAoSalvar(estadoAtual) : DESTINO[acao as keyof typeof DESTINO];
   enviado = lerFormularioPeca(form, tipo, destino ?? estadoAtual);
@@ -66,6 +104,7 @@ if (Astro.request.method === 'POST') {
       // Publicar traduz; editar o texto de uma peça no ar (correção) pede tradução nova, senão o espanhol fica com a versão velha.
       const traduzirDeNovo = acao === 'publicar' || (estadoAtual === 'publicada' && linha !== null && textoMudou(linha, enviado));
       if (!erro && noAr && enviado.traduzir && traduzirDeNovo) await enviarTraducao(cliente, r.valor);
+      if (!erro && tipo === 'votacao' && !(await ligarNoticias(cliente, r.valor, enviado.noticias ?? []))) erro = 'Salvo, mas não deu para ligar as notícias. Tente de novo.';
       if (!erro && (noAr || estadoAtual === 'publicada')) {
         const renovou = await renovarPaginas(r.valor);
         if (!renovou) aviso = 'Salvo, mas o site pode demorar alguns minutos para mostrar a mudança.';
@@ -79,11 +118,13 @@ if (Astro.request.method === 'POST') {
       if (!erro) return Astro.redirect(`/painel/peca/${r.valor}?ok=1`, 303);
     }
   }
+  }
   if (id) linha = await buscarPeca(cliente, id);
 }
 
 // O que aparece no formulário: o que acabou de ser enviado (se deu erro) ou o que está no banco.
 const base = urlBanco();
+const ligadas = linha?.tipo === 'votacao' ? await noticiasLigadas(cliente, linha.id) : [];
 const v = enviado ?? (linha ? deLinha(linha) : vazia(tipo));
 function deLinha(l: LinhaPeca): PecaEntrada {
   return {
@@ -94,6 +135,7 @@ function deLinha(l: LinhaPeca): PecaEntrada {
     fontes: l.fontes.map((f) => ({ ...f, acessadaEm: new Date(f.acessadaEm) })),
     checagem: l.checagem ? { por: l.checagem.por, em: new Date(l.checagem.em) } : undefined,
     traduzir: l.traduzir,
+    ...(l.tipo === 'votacao' ? { proposicao: l.proposicao ?? undefined, altoImpacto: Boolean(l.alto_impacto), noticias: ligadas } : {}),
   };
 }
 // Peça nova: a série vem do modal do Estúdio (?serie=); sem ela, a primeira série.
@@ -107,7 +149,14 @@ const pronta = travas.every((t) => t.ok);
 const papel = usuario!.papel;
 const dia = (d?: Date) => (d ? d.toISOString().slice(0, 10) : '');
 const fontes = [...v.fontes, { titulo: '', instituicao: '', url: '', tipo: 'primaria' as const, acessadaEm: new Date() }];
-const pedeChecagem = tipo === 'newsletter' || tipo === 'noticia';
+const pedeChecagem = tipo === 'newsletter' || tipo === 'noticia' || tipo === 'votacao';
+// Votação: notícias para ligar no formulário e, já publicada, o resultado e os relatos.
+const paraLigar = tipo === 'votacao' ? await noticiasParaLigar(cliente) : [];
+const publicadaVotacao = linha?.tipo === 'votacao' && estadoAtual === 'publicada';
+const soCitaveis = Astro.url.searchParams.get('citar') === '1';
+const [resultadoVotacao, relatosVotacao] = publicadaVotacao ? await Promise.all([resultadoNoPainel(cliente, linha!.id), papel !== 'redator' ? relatos(cliente, linha!.id, soCitaveis) : []]) : [undefined, []];
+const pctVotacao = resultadoVotacao ? porcentagens(resultadoVotacao) : undefined;
+const NOME_OPCAO: Record<Opcao, string> = { a_favor: 'A favor', contra: 'Contra', nao_sei: 'Não sei' };
 const traducao = linha?.traducoes?.[0];
 ---
 <Painel titulo={linha ? 'Editar peça' : 'Nova peça'}>
@@ -138,8 +187,35 @@ const traducao = linha?.traducoes?.[0];
       <div class="campo">
         <label for="slug">Endereço</label>
         <input id="slug" name="slug" value={v.slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
-        <p class="ajuda">Só letras minúsculas, números e hífen. Vira {tipo === 'cultura' ? '/cultura/' : tipo === 'noticia' ? '/noticias/' : '/'}<strong>endereço</strong>.</p>
+        <p class="ajuda">Só letras minúsculas, números e hífen. Vira {tipo === 'cultura' ? '/cultura/' : tipo === 'noticia' ? '/noticias/' : tipo === 'votacao' ? '/votacoes/' : '/'}<strong>endereço</strong>.</p>
       </div>
+    )}
+
+    {tipo === 'votacao' && (
+      <fieldset class="campo">
+        <legend>Proposição</legend>
+        <div class="linha">
+          <div><label for="p_casa">Casa</label><select id="p_casa" name="proposicao_casa"><option value="camara" selected={v.proposicao?.casa !== 'senado'}>Câmara</option><option value="senado" selected={v.proposicao?.casa === 'senado'}>Senado</option></select></div>
+          <div><label for="p_sigla">Tipo</label><select id="p_sigla" name="proposicao_sigla">{['PL', 'PLP', 'PEC'].map((x) => <option selected={v.proposicao?.sigla === x}>{x}</option>)}</select></div>
+          <div><label for="p_numero">Número</label><input id="p_numero" name="proposicao_numero" type="number" min="1" value={v.proposicao?.numero} /></div>
+          <div><label for="p_ano">Ano</label><input id="p_ano" name="proposicao_ano" type="number" min="1900" value={v.proposicao?.ano} /></div>
+        </div>
+        <button class="botao botao--linha" name="acao" value="buscar_proposicao" formnovalidate>Buscar</button>
+        <input type="hidden" name="proposicao_id" value={v.proposicao?.id} />
+        <input type="hidden" name="proposicao_ementa" value={v.proposicao?.ementa} />
+        <input type="hidden" name="proposicao_url" value={v.proposicao?.url} />
+        {v.proposicao ? (
+          <p class="ajuda"><strong>Ementa oficial:</strong> {v.proposicao.ementa} <a href={v.proposicao.url}>Página oficial</a></p>
+        ) : <p class="ajuda">Escolha a casa, o tipo, o número e o ano e toque em Buscar. A ementa e o link vêm da página oficial.</p>}
+        <label class="marcar"><input type="checkbox" name="alto_impacto" checked={v.altoImpacto} /> Alto impacto: pede login com Google para votar</label>
+      </fieldset>
+    )}
+    {tipo === 'votacao' && (
+      <fieldset class="campo">
+        <legend>Notícias ligadas</legend>
+        {paraLigar.length === 0 && <p class="ajuda">Ainda não há notícias publicadas para ligar.</p>}
+        {paraLigar.map((n) => <label class="marcar"><input type="checkbox" name="noticias" value={n.id} checked={v.noticias?.includes(n.id)} /> {n.titulo.replaceAll('|', ' ').replaceAll('*', '')}</label>)}
+      </fieldset>
     )}
 
     <div class="campo">
@@ -149,7 +225,7 @@ const traducao = linha?.traducoes?.[0];
       {v.titulo && <div class="previa" aria-label="Prévia da manchete"><Manchete titulo={v.titulo} tamanho="m" nivel={2} /></div>}
     </div>
 
-    <div class="campo"><label for="resumo">Resumo</label><textarea id="resumo" name="resumo" maxlength="280" rows="3">{v.resumo}</textarea></div>
+    <div class="campo"><label for="resumo">{tipo === 'votacao' ? 'Explicação neutra: o que muda e para quem' : 'Resumo'}</label><textarea id="resumo" name="resumo" maxlength="280" rows="3">{v.resumo}</textarea></div>
     {tipo === 'newsletter' && <div class="campo"><label for="legenda">Legenda do Instagram</label><textarea id="legenda" name="legenda" maxlength="2200" rows="4">{v.legenda}</textarea></div>}
     {tipo === 'cultura' && (
       <>
@@ -165,7 +241,7 @@ const traducao = linha?.traducoes?.[0];
       <p class="ajuda">## para subtítulo, **negrito**, [texto](link). Linha em branco separa parágrafos.</p>
     </div>
 
-    {tipo !== 'pagina' && (
+    {tipo !== 'pagina' && tipo !== 'votacao' && (
       <fieldset class="campo">
         <legend>{tipo === 'cultura' ? 'Capa (opcional)' : tipo === 'noticia' ? 'Foto (opcional)' : 'Foto'}</legend>
         {v.foto && <img class="foto" src={urlFoto(base, v.foto.caminho)} alt="" width="240" />}
@@ -238,6 +314,41 @@ const traducao = linha?.traducoes?.[0];
       {pode(papel, 'publicar', estadoAtual) && <button class="botao botao--marca" name="acao" value="publicar" disabled={!pronta}>Publicar</button>}
     </div>
   </form>
+
+  {publicadaVotacao && resultadoVotacao && pctVotacao && (
+    <section class="resultado-votacao" aria-labelledby="res">
+      <h2 id="res" class="maquina">Votos registrados</h2>
+      <ul>
+        {OPCOES.map((o) => <li>{NOME_OPCAO[o]}: {resultadoVotacao[o]} ({pctVotacao[o]}%)</li>)}
+      </ul>
+      <p>Votos descartados: {Object.values(resultadoVotacao.descartes).reduce((a, b) => a + b, 0)}{Object.entries(resultadoVotacao.descartes).map(([m, n]) => ` · ${m}: ${n}`)}</p>
+      <form method="post"><button class="botao botao--marca" name="acao" value="virar_rascunho">Virar rascunho de notícia</button></form>
+
+      {papel !== 'redator' && (
+        <>
+          <h3 class="maquina">Relatos</h3>
+          <p class="maquina"><a href={`/painel/peca/${linha!.id}${soCitaveis ? '' : '?citar=1'}`}>{soCitaveis ? 'Ver todos os relatos' : 'Só os que autorizam citar'}</a></p>
+          {relatosVotacao.length === 0 && <p>Nenhum relato.</p>}
+          {OPCOES.map((o) => {
+            const doGrupo = relatosVotacao.filter((x) => x.opcao === o);
+            return doGrupo.length > 0 && (
+              <details open>
+                <summary>{NOME_OPCAO[o]} ({doGrupo.length})</summary>
+                <ul class="relatos">{doGrupo.map((x) => <li><p>{x.relato}</p><span class="maquina">#{x.comprovante}{x.citar ? ' · pode citar' : ' · não citar'}</span></li>)}</ul>
+              </details>
+            );
+          })}
+          {papel === 'editor' && (
+            <form method="post" class="apagar-relato">
+              <label for="comprovante">Apagar relato pelo comprovante</label>
+              <input id="comprovante" name="comprovante" placeholder="PK-XXXXXX" required />
+              <button class="botao botao--linha" name="acao" value="apagar_relato">Apagar relato</button>
+            </form>
+          )}
+        </>
+      )}
+    </section>
+  )}
 
   {linha && linha.traduzir && (
     <section class="espanhol" aria-labelledby="es">
@@ -318,6 +429,24 @@ const traducao = linha?.traducoes?.[0];
   }
   .mensagem--ok {
     border-color: var(--tinta);
+  }
+  .resultado-votacao {
+    margin-top: var(--esp-7);
+    border-top: 3px solid var(--tinta);
+    padding-top: var(--esp-4);
+  }
+  .relatos {
+    list-style: none;
+    padding: 0;
+  }
+  .relatos li {
+    border-bottom: 1px solid var(--tinta);
+    padding: var(--esp-2) 0;
+  }
+  .apagar-relato {
+    display: grid;
+    gap: var(--esp-2);
+    margin-top: var(--esp-4);
   }
   .espanhol {
     margin-top: var(--esp-7);
