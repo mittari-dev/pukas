@@ -1,6 +1,6 @@
 # Consultas populares: perguntas para decidir antes da spec
 
-- **Status:** perguntas para o fundador (08/11/2026). Nada foi construído.
+- **Status:** respondidas pelo fundador em 08/11/2026: opção A em todas. O desenho está em `2026-11-08-consultas-design.md`.
 - **De onde vem:** o pedido do fundador de "alguma coisa interativa no site, desde já, não gamificada, séria, que contribua de verdade: votos sobre leis, PECs, mudanças, discursos". Também a ideia "Votações auditáveis" do roadmap e as exigências de segurança do ADR-0002.
 
 ## O que já está decidido (no ADR-0002 e no roadmap)
