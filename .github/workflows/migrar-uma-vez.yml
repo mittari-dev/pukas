@@ -1,0 +1,23 @@
+name: Migrar conteúdo para o banco (uma vez)
+
+# Uso único: copia scripts/conteudo-inicial para o Supabase de produção. Idempotente. Apagar depois de rodar.
+on:
+  push:
+    branches: [feat/painel]
+    paths: [.github/workflows/migrar-uma-vez.yml]
+
+jobs:
+  migrar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: node scripts/migrar-para-banco.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
