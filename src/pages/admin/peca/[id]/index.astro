@@ -312,11 +312,18 @@ const traducao = linha?.traducoes?.[0];
     color: var(--pau-brasil);
     font-weight: 700;
   }
+  /* Salvar e Publicar sempre à mão: presos no pé da tela enquanto o formulário rola. */
   .acoes {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
     display: flex;
     flex-wrap: wrap;
     gap: var(--esp-3);
     margin-top: var(--esp-5);
+    padding: var(--esp-3) 0;
+    background: var(--fundo);
+    border-top: 3px solid var(--tinta);
   }
   .mensagem--ok {
     border-color: var(--tinta);

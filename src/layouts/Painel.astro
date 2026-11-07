@@ -24,15 +24,31 @@ const usuario = Astro.locals.painel?.usuario;
       <a href="/admin" class="marca"><Tarja variante="cor" rotulo="Painel PUKAS" /></a>
       <span class="maquina topo__rotulo">PAINEL</span>
       <Setas voltar="Voltar" avancar="Avançar" />
-      {usuario?.papel === 'editor' && <a href="/admin/equipe" class="maquina topo__site">Equipe</a>}
-      <a href="/" class="maquina topo__site" target="_blank" rel="noopener">Ver o site ↗</a>
-      {usuario && (
-        <form method="post" action="/admin/sair" class="topo__sair">
-          <span class="maquina">{usuario.nome || usuario.email} · {usuario.papel.toUpperCase()}</span>
-          <button class="maquina botao botao--linha" type="submit">Sair</button>
-        </form>
+      {usuario ? (
+        <details class="conta">
+          <summary class="conta__botao">
+            <span class="sr-only">Menu do painel</span>
+            <svg width="26" height="20" viewBox="0 0 26 20" aria-hidden="true" focusable="false">
+              <rect y="0" width="26" height="4" fill="currentColor"></rect>
+              <rect y="8" width="26" height="4" fill="currentColor"></rect>
+              <rect y="16" width="26" height="4" fill="currentColor"></rect>
+            </svg>
+          </summary>
+          <nav class="conta__menu maquina" aria-label="Painel">
+            <span class="conta__quem">{usuario.nome || usuario.email} · {usuario.papel.toUpperCase()}</span>
+            <a href="/admin">Fila</a>
+            {usuario.papel === 'editor' && <a href="/admin/equipe">Equipe</a>}
+            <a href="/" target="_blank" rel="noopener">Ver o site ↗</a>
+            <form method="post" action="/admin/sair">
+              <button class="maquina botao botao--linha" type="submit">Sair</button>
+            </form>
+          </nav>
+        </details>
+      ) : (
+        <a href="/" class="maquina topo__site">Ver o site</a>
       )}
     </header>
+    <script is:inline src="/painel.js" defer></script>
     <main id="conteudo" class="painel">
       <slot />
     </main>
@@ -144,11 +160,75 @@ const usuario = Astro.locals.painel?.usuario;
     font-size: 13px;
     letter-spacing: 0.1em;
   }
-  .topo__sair {
+  .topo__site,
+  .conta {
     margin-left: auto;
+  }
+  .topo :global(.setas) {
+    margin-left: var(--esp-2);
+  }
+  .conta {
+    position: relative;
+  }
+  .conta__botao {
+    list-style: none;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+  }
+  .conta__botao::-webkit-details-marker {
+    display: none;
+  }
+  .conta[open] .conta__botao {
+    background: var(--tinta);
+    color: var(--cal);
+  }
+  /* Abre embaixo do botão, alinhado à direita; no celular ocupa quase a largura toda. */
+  .conta__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + var(--esp-2));
+    z-index: 30;
+    display: grid;
+    width: min(280px, calc(100vw - 2 * var(--esp-3)));
+    padding: var(--esp-3);
+    background: var(--fundo);
+    border: 3px solid var(--tinta);
+    font-size: 14px;
+  }
+  .conta__menu a {
     display: flex;
     align-items: center;
-    gap: var(--esp-3);
+    min-height: 48px;
+    border-bottom: 1px solid var(--tinta);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .conta__quem {
     font-size: 12px;
+    padding-bottom: var(--esp-2);
+    border-bottom: 3px solid var(--tinta);
+  }
+  .conta__menu form {
+    padding-top: var(--esp-3);
+  }
+  .conta__menu button {
+    width: 100%;
+  }
+  @media (max-width: 600px) {
+    .topo {
+      flex-wrap: nowrap;
+      gap: var(--esp-2);
+      padding: var(--esp-2) var(--esp-3);
+    }
+    .topo__rotulo {
+      display: none;
+    }
+    .marca :global(svg),
+    .marca :global(.tarja) {
+      height: 32px;
+    }
   }
 </style>
