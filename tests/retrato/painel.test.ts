@@ -66,7 +66,12 @@ describe.skipIf(!base)('painel', () => {
 
     const painel = await ir('/painel');
     expect(painel.status).toBe(200);
-    expect(await painel.text()).toContain('Fundador');
+    const html = await painel.text();
+    expect(html).toContain('Fundador');
+    // Estúdio: criar abre a escolha do tipo, que leva ao editor que já existe.
+    expect(html).toContain('+ Criar nova peça');
+    expect(html).toContain('action="/painel/peca/nova"');
+    for (const t of ['newsletter', 'noticia', 'cultura', 'pagina']) expect(html).toContain(`name="tipo" value="${t}"`);
   });
 
   test('publicar uma notícia pelo painel põe no site; corrigir mostra a correção', async () => {

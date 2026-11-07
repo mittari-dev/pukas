@@ -1,5 +1,5 @@
 ---
-// Estúdio (a fila do painel): abas por estado, filtro por tipo, botão de peça nova.
+// Estúdio (a fila do painel): criar nova peça (modal com o tipo), abas por estado, filtro por tipo.
 import Painel from '../../layouts/Painel.astro';
 import { listarFila } from '../../lib/banco/painel';
 import { formatarNumero } from '../../lib/formato';
@@ -8,6 +8,21 @@ import type { EstadoPeca, TipoPeca } from '../../lib/painel/travas';
 
 const ABAS: [EstadoPeca, string][] = [['rascunho', 'Rascunhos'], ['em_revisao', 'Em revisão'], ['publicada', 'Publicadas'], ['rejeitada', 'Rejeitadas']];
 const TIPOS: [TipoPeca, string][] = [['newsletter', 'Memória Operária'], ['noticia', 'Notícia'], ['cultura', 'Cultura'], ['pagina', 'Página']];
+
+// Estado vazio: o que costuma aparecer em cada aba.
+const VAZIO: Record<EstadoPeca, { titulo: string; texto: string }> = {
+  rascunho: { titulo: 'Nenhum rascunho', texto: 'O que você começar e ainda não mandar para revisão fica guardado aqui.' },
+  em_revisao: { titulo: 'Nada em revisão', texto: 'Peças enviadas para revisão esperam aqui até alguém aprovar.' },
+  publicada: { titulo: 'Nada publicado', texto: 'O que estiver no ar aparece aqui. Para corrigir uma peça publicada, abra-a por aqui.' },
+  rejeitada: { titulo: 'Nada rejeitado', texto: 'Peças rejeitadas ficam aqui. Dá para abrir, ajustar e retomar.' },
+};
+// Opções do modal: os mesmos tipos que o editor já aceita (/painel/peca/nova?tipo=...).
+const OPCOES: { tipo: TipoPeca; nome: string; texto: string }[] = [
+  { tipo: 'newsletter', nome: 'Memória Operária', texto: 'Edição da newsletter: foto, fontes primárias e checagem.' },
+  { tipo: 'noticia', nome: 'Notícia', texto: 'Fato do presente que pesa sobre a classe trabalhadora, com fontes.' },
+  { tipo: 'cultura', nome: 'Cultura', texto: 'Conto, cena, poema ou ensaio.' },
+  { tipo: 'pagina', nome: 'Página', texto: 'Página fixa do site, como o manifesto.' },
+];
 
 const pedidoEstado = Astro.url.searchParams.get('estado');
 const estado = (ABAS.find(([e]) => e === pedidoEstado)?.[0] ?? 'rascunho') as EstadoPeca;
@@ -19,26 +34,31 @@ const link = (e: EstadoPeca, t?: TipoPeca) => `/painel?estado=${e}${t ? `&tipo=$
 const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 ---
 <Painel titulo="Estúdio">
-  <h1>Estúdio</h1>
+  <header class="estudio__cabeca">
+    <h1>Estúdio</h1>
+    <a class="botao botao--marca estudio__criar" href="#nova-peca" data-abrir-nova>+ Criar nova peça</a>
+  </header>
 
-  <form method="get" action="/painel/peca/nova" class="nova">
-    <label class="maquina" for="tipo-nova">Nova peça</label>
-    <select id="tipo-nova" name="tipo">
-      {TIPOS.map(([t, nome]) => <option value={t}>{nome}</option>)}
-    </select>
-    <button class="botao botao--marca" type="submit">Criar</button>
-  </form>
-
-  <nav class="abas maquina" aria-label="Estado">
-    {ABAS.map(([e, nome]) => <a href={link(e, tipo)} aria-current={e === estado ? 'page' : undefined}>{nome}</a>)}
+  <nav class="estados maquina" aria-label="Estado das peças">
+    <ul>
+      {ABAS.map(([e, nome]) => <li><a href={link(e, tipo)} aria-current={e === estado ? 'page' : undefined}>{nome}</a></li>)}
+    </ul>
   </nav>
-  <nav class="filtro maquina" aria-label="Tipo">
-    <a href={link(estado)} aria-current={!tipo ? 'page' : undefined}>Todos</a>
-    {TIPOS.map(([t, nome]) => <a href={link(estado, t)} aria-current={t === tipo ? 'page' : undefined}>{nome}</a>)}
+
+  <nav class="tipos maquina" aria-labelledby="tipos-rotulo">
+    <span id="tipos-rotulo" class="tipos__rotulo">Tipo</span>
+    <ul>
+      <li><a href={link(estado)} aria-current={!tipo ? 'page' : undefined}>Todos</a></li>
+      {TIPOS.map(([t, nome]) => <li><a href={link(estado, t)} aria-current={t === tipo ? 'page' : undefined}>{nome}</a></li>)}
+    </ul>
   </nav>
 
   {pecas.length === 0 ? (
-    <p>Nada aqui.</p>
+    <section class="vazio" aria-labelledby="vazio-titulo">
+      <h2 id="vazio-titulo" class="vazio__titulo">{VAZIO[estado].titulo}{tipo ? ` · ${nomeTipo[tipo]}` : ''}</h2>
+      <p>{VAZIO[estado].texto}</p>
+      {estado === 'rascunho' && <a class="botao botao--linha estudio__criar" href="#nova-peca" data-abrir-nova>+ Criar nova peça</a>}
+    </section>
   ) : (
     <ul class="fila">
       {pecas.map((p) => (
@@ -53,75 +73,129 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
       ))}
     </ul>
   )}
+
+  <!-- Escolha do tipo. Com JavaScript abre como modal (public/estudio.js); sem ele, o link #nova-peca mostra o bloco na página. -->
+  <dialog id="nova-peca" class="nova" aria-labelledby="nova-titulo" aria-describedby="nova-sub">
+    <form method="get" action="/painel/peca/nova">
+      <h2 id="nova-titulo" class="nova__titulo">Nova peça</h2>
+      <p id="nova-sub" class="nova__sub">O que você deseja criar?</p>
+      <fieldset class="nova__opcoes">
+        <legend class="sr-only">Tipo de peça</legend>
+        {OPCOES.map((o, i) => (
+          <label class="opcao">
+            <input type="radio" name="tipo" value={o.tipo} required checked={i === 0} />
+            <span class="opcao__nome">{o.nome}</span>
+            <span class="opcao__texto">{o.texto}</span>
+          </label>
+        ))}
+      </fieldset>
+      <div class="nova__acoes">
+        <a class="botao botao--linha" href="#" data-fechar-nova>Cancelar</a>
+        <button class="botao botao--marca" type="submit">Continuar →</button>
+      </div>
+    </form>
+  </dialog>
+  <script is:inline src="/estudio.js" defer></script>
 </Painel>
 
 <style>
-  .nova {
+  /* Grade do Estúdio: a coluna do painel (760px); blocos separados por --esp-4 a --esp-6. */
+  .estudio__cabeca {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--esp-4);
+    margin-bottom: var(--esp-6);
+  }
+  .estudio__cabeca h1 {
+    margin: 0;
+  }
+  .estudio__criar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
+  .botao:focus-visible,
+  .estados a:focus-visible,
+  .tipos a:focus-visible,
+  .fila a:focus-visible,
+  .opcao:has(input:focus-visible) {
+    outline: 3px solid var(--pau-brasil);
+    outline-offset: 2px;
+  }
+
+  /* Estado: navegação em abas numa linha; no celular rola para o lado em vez de quebrar. */
+  .estados {
+    border-bottom: 1px solid var(--tinta);
+    margin-bottom: var(--esp-4);
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .estados ul,
+  .tipos ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .estados ul {
+    gap: var(--esp-5);
+    min-width: max-content;
+  }
+  .estados a {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 4px solid transparent;
+  }
+  .estados [aria-current] {
+    border-bottom-color: var(--pau-brasil);
+    font-weight: 700;
+  }
+
+  /* Tipo: filtro, menor e com rótulo, para não parecer navegação. */
+  .tipos {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--esp-3);
+    gap: var(--esp-2) var(--esp-3);
     margin-bottom: var(--esp-6);
+    font-size: 12px;
   }
-  .nova select {
-    flex: 1 1 180px;
-    font: inherit;
-    min-height: 48px;
-    padding: 0 var(--esp-3);
-    border: 3px solid var(--tinta);
-    background: var(--cal);
-  }
-  /* Estado: abas coladas, como fichário. Tipo: etiquetas soltas, menores. */
-  .abas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    border: 3px solid var(--tinta);
-    font-size: 13px;
+  .tipos__rotulo {
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: var(--esp-4);
   }
-  .abas a {
-    display: grid;
-    place-items: center;
-    min-height: 48px;
-    padding: 0 var(--esp-3);
-    text-decoration: none;
-    color: inherit;
-  }
-  .abas a + a {
-    border-left: 1px solid var(--tinta);
-  }
-  .abas [aria-current] {
-    background: var(--tinta);
-    color: var(--cal);
-  }
-  .filtro {
-    display: flex;
+  .tipos ul {
     flex-wrap: wrap;
     gap: var(--esp-2);
-    font-size: 12px;
-    margin-bottom: var(--esp-6);
   }
-  .filtro a {
-    display: inline-grid;
-    place-items: center;
-    min-height: 44px;
+  .tipos a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
     padding: 0 var(--esp-3);
     border: 1px solid var(--tinta);
     text-decoration: none;
     color: inherit;
   }
-  .filtro [aria-current] {
-    border-color: var(--pau-brasil);
-    background: var(--pau-brasil);
+  .tipos [aria-current] {
+    background: var(--tinta);
     color: var(--cal);
   }
+
   .fila {
     list-style: none;
     padding: 0;
     margin: 0;
-    border-top: 3px solid var(--tinta);
+    border-top: 1px solid var(--tinta);
   }
   .fila a {
     display: grid;
@@ -131,6 +205,9 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
     text-decoration: none;
     color: inherit;
   }
+  .fila a:hover .fila__titulo {
+    color: var(--pau-brasil);
+  }
   .fila__meta {
     font-size: 12px;
     letter-spacing: 0.06em;
@@ -138,6 +215,125 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
   .fila__titulo {
     font-weight: 700;
     font-size: 20px;
+    line-height: 1.25;
     text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .vazio {
+    display: grid;
+    justify-items: start;
+    gap: var(--esp-3);
+    padding: var(--esp-6) var(--esp-5);
+    border: 1px dashed var(--tinta);
+  }
+  .vazio__titulo {
+    font-family: var(--fonte-manchete);
+    font-stretch: var(--largura-manchete);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 24px;
+    line-height: 1;
+    margin: 0;
+  }
+  .vazio p {
+    margin: 0;
+    max-width: 46ch;
+  }
+
+  /* Modal da nova peça. */
+  .nova {
+    width: min(560px, calc(100vw - 2 * var(--esp-4)));
+    max-height: calc(100dvh - 2 * var(--esp-4));
+    padding: var(--esp-5);
+    border: 3px solid var(--tinta);
+    background: var(--fundo);
+    color: var(--texto);
+  }
+  .nova::backdrop {
+    background: color-mix(in srgb, var(--tinta) 60%, transparent);
+  }
+  /* Sem JavaScript: o link #nova-peca mostra o bloco na própria página. */
+  .nova:target:not([open]) {
+    display: block;
+    position: static;
+    margin: var(--esp-6) 0 0;
+  }
+  .nova__titulo {
+    font-family: var(--fonte-manchete);
+    font-stretch: var(--largura-manchete);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 32px;
+    line-height: 1;
+    margin: 0;
+  }
+  .nova__sub {
+    margin: var(--esp-2) 0 var(--esp-5);
+  }
+  .nova__opcoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--esp-3);
+    border: 0;
+    padding: 0;
+    margin: 0 0 var(--esp-5);
+  }
+  .opcao {
+    position: relative;
+    display: grid;
+    gap: var(--esp-1);
+    padding: var(--esp-4);
+    border: 1px solid var(--tinta);
+    cursor: pointer;
+  }
+  .opcao input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .opcao:hover {
+    border-color: var(--pau-brasil);
+  }
+  .opcao:has(input:checked) {
+    border: 3px solid var(--pau-brasil);
+    padding: calc(var(--esp-4) - 2px);
+  }
+  .opcao:has(input:checked) .opcao__nome::before {
+    content: '■ ';
+    color: var(--pau-brasil);
+  }
+  .opcao__nome {
+    font-family: var(--fonte-maquina);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .opcao__texto {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .nova__acoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--esp-3);
+  }
+  .nova__acoes .botao {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  @media (max-width: 600px) {
+    .estudio__criar,
+    .nova__acoes .botao {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+    .nova {
+      padding: var(--esp-4);
+    }
   }
 </style>
