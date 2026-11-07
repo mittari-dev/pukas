@@ -14,14 +14,14 @@
   {
     "url": "/links",
     "status": 200,
-    "titulo": "Direito nenhum caiu do céu.",
-    "texto": "Direito nenhum caiu do céu. 01 Manifesto 02 Memória Operária: todas as edições 03 Cultura: contos, poemas e ensaios"
+    "titulo": "Direito nenhum caiu do céu. Foi luta.",
+    "texto": "Direito nenhum caiu do céu. Foi luta. 01 Manifesto 02 Memória Operária: todas as edições 03 Cultura: contos, poemas e ensaios"
   },
   {
     "url": "/es/links",
     "status": 200,
-    "titulo": "Ningún derecho cayó del cielo.",
-    "texto": "Ningún derecho cayó del cielo. 01 Manifiesto 02 Memoria Obrera: todas las ediciones 03 Cultura: cuentos, poemas y ensayos"
+    "titulo": "Ningún derecho cayó del cielo. Fue lucha.",
+    "texto": "Ningún derecho cayó del cielo. Fue lucha. 01 Manifiesto 02 Memoria Obrera: todas las ediciones 03 Cultura: cuentos, poemas y ensayos"
   },
   {
     "url": "/manifesto",

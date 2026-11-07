@@ -81,6 +81,10 @@ describe('traduzirErroBanco', () => {
     expect(traduzirErroBanco({ code: '23505', message: 'duplicate key', details: 'Key (peca_id)=(0b6f3c1e-1a2b-4c3d-8e9f-001122334455) already exists.' })).toBe('Esta peça já está ligada a outro item.');
   });
 
+  test('série que não existe', () => {
+    expect(traduzirErroBanco({ code: '23503', message: 'violates foreign key', details: 'Key (serie)=(sumiu) is not present in table "series".' })).toBe('Essa série não existe. Escolha outra na lista.');
+  });
+
   test('trava editorial devolve a mensagem do banco', () => {
     expect(traduzirErroBanco({ code: 'P0001', message: 'sem checagem; manchete com 9 palavras (máx. 8)' })).toBe('Não dá para publicar: sem checagem; manchete com 9 palavras (máx. 8)');
   });

@@ -47,7 +47,12 @@ const equipe = await listarEquipe();
     <section class="mensagem mensagem--ok" role="status">
       <p><strong>Convite criado para {convite.email}.</strong> Mande este link para a pessoa (WhatsApp, Signal…). Ele só funciona uma vez e vence em 24 horas.</p>
       <label class="sr-only" for="link-convite">Link do convite</label>
-      <input id="link-convite" class="equipe__link maquina" value={convite.link} readonly />
+      <div class="equipe__copiar">
+        <input id="link-convite" class="equipe__link maquina" value={convite.link} readonly />
+        <button class="botao botao--marca" type="button" data-copiar="link-convite">Copiar link</button>
+      </div>
+      <p id="link-copiado" class="sr-only" role="status"></p>
+      <script is:inline src="/copiar.js" defer></script>
     </section>
   )}
 
@@ -134,8 +139,15 @@ const equipe = await listarEquipe();
     align-items: center;
     gap: var(--esp-2);
   }
+  .equipe__copiar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-2);
+  }
   .equipe__link {
-    width: 100%;
+    flex: 1 1 240px;
+    min-width: 0;
+    cursor: copy;
     min-height: 44px;
     padding: 0 var(--esp-3);
     border: 3px solid var(--tinta);

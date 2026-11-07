@@ -10,12 +10,17 @@ interface Props {
 }
 const { titulo } = Astro.props;
 const usuario = Astro.locals.painel?.usuario;
-// Seções do painel, na barra do topo. Busca (as automações de pesquisa) entra aqui quando existir.
+// Seções do painel, na barra do topo. Séries e Equipe só para o editor.
 const secoes = [
   { rotulo: 'Estúdio', href: '/painel', ativa: /^\/painel(\/peca(\/|$)|\/?$)/ },
   { rotulo: 'Agenda', href: '/painel/agenda', ativa: /^\/painel\/agenda/ },
   { rotulo: 'Busca', href: '/painel/busca', ativa: /^\/painel\/busca/ },
-  ...(usuario?.papel === 'editor' ? [{ rotulo: 'Equipe', href: '/painel/equipe', ativa: /^\/painel\/equipe/ }] : []),
+  ...(usuario?.papel === 'editor'
+    ? [
+        { rotulo: 'Séries', href: '/painel/series', ativa: /^\/painel\/series/ },
+        { rotulo: 'Equipe', href: '/painel/equipe', ativa: /^\/painel\/equipe/ },
+      ]
+    : []),
 ];
 const caminho = Astro.url.pathname;
 ---

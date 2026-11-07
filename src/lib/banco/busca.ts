@@ -44,7 +44,7 @@ export interface FonteBusca {
   id: string;
   nome: string;
   dominio: string;
-  grupo: 'brasil' | 'america-latina' | 'mundo' | 'documento';
+  grupo: 'brasil' | 'america-latina' | 'mundo';
   ativa: boolean;
 }
 

@@ -9,6 +9,7 @@ import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
 import { renderizarMarkdown } from '../lib/markdown';
+import { carregarSeries } from '../lib/carregar';
 import '../styles/leitura.css';
 
 interface Props {
@@ -22,8 +23,10 @@ const { idioma, edicao, seguinte, anterior, alternativa } = Astro.props;
 const d = edicao.data;
 const corpo = await renderizarMarkdown(edicao.body ?? '');
 const foto = d.foto.arquivo as string;
+// A série pode estar desligada: a edição continua no ar, só sem selo.
+const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.selo ?? '';
 ---
-<Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" selo={t(idioma, 'selo.memoria')} imagem={foto || undefined} idioma={idioma} alternativa={alternativa}>
+<Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" selo={selo || undefined} imagem={foto || undefined} idioma={idioma} alternativa={alternativa}>
   <article class="leitura">
     <div class="edicao__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
 
@@ -36,7 +39,7 @@ const foto = d.foto.arquivo as string;
       </figcaption>
     </figure>
 
-    <p class="chapeu edicao__chapeu">{t(idioma, 'selo.memoria').replace('*', '')}</p>
+    {selo && <p class="chapeu edicao__chapeu">{selo.replace('*', '')}</p>}
     <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     <div class="corpo" set:html={corpo} />
@@ -76,7 +79,7 @@ const foto = d.foto.arquivo as string;
 
     <nav class="edicao__nav maquina" aria-label={t(idioma, 'edicao.outras')}>
       {anterior && <a href={caminhoEdicao(anterior.data.serie, anterior.data.numero, idioma)}>‹ {formatarNumero(anterior.data.numero)}</a>}
-      <a href={prefixar('/newsletter/memoria-operaria', idioma)}>{t(idioma, 'edicao.todas')}</a>
+      <a href={prefixar(`/newsletter/${d.serie}`, idioma)}>{t(idioma, 'edicao.todas')}</a>
       {seguinte && <a href={caminhoEdicao(seguinte.data.serie, seguinte.data.numero, idioma)}>{formatarNumero(seguinte.data.numero)} ›</a>}
     </nav>
   </article>

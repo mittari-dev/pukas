@@ -7,7 +7,7 @@ const { cliente, usuario } = Astro.locals.painel!;
 if (usuario?.papel !== 'editor') return Astro.rewrite('/404');
 
 const DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-const GRUPOS: [FonteBusca['grupo'], string][] = [['brasil', 'Brasil'], ['america-latina', 'América Latina'], ['mundo', 'Mundo'], ['documento', 'Documento primário']];
+const GRUPOS: [FonteBusca['grupo'], string][] = [['brasil', 'Brasil'], ['america-latina', 'América Latina'], ['mundo', 'Mundo']];
 const linhas = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 30);
 
 let erro = '';
@@ -44,10 +44,13 @@ if (Astro.request.method === 'POST') {
     if (!campo('nome') || !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(dominio) || !grupo) r = { ok: false, erro: 'Escreva o nome, um domínio como exemplo.com.br e o grupo.' };
     else r = await novaFonte(cliente, { nome: campo('nome'), dominio, grupo });
   }
-  if (r.ok) return Astro.redirect('/painel/busca/config', 303);
+  // Depois de ligar ou desligar uma fonte, o grupo dela continua aberto.
+  const grupoAberto = acao === 'fonte' ? fontes.find((x) => x.id === campo('id'))?.grupo : acao === 'nova_fonte' ? campo('grupo') : '';
+  if (r.ok) return Astro.redirect(`/painel/busca/config${grupoAberto ? `?aberto=${grupoAberto}#fontes-${grupoAberto}` : ''}`, 303);
   erro = r.erro ?? 'Não deu para salvar. Tente de novo.';
   [cfg, fontes] = await Promise.all([lerConfig(cliente), listarFontes(cliente)]);
 }
+const aberto = Astro.url.searchParams.get('aberto');
 ---
 <Painel titulo="Configuração da busca">
   <p class="maquina"><a href="/painel/busca">‹ Busca</a></p>
@@ -72,23 +75,26 @@ if (Astro.request.method === 'POST') {
   </form>
 
   <h2 class="secao">Fontes fixas</h2>
-  {GRUPOS.map(([g, nome]) => (
-    <section class="grupo">
-      <h3 class="maquina grupo__titulo">{nome}</h3>
-      <ul class="fontes">
-        {fontes.filter((x) => x.grupo === g).map((x) => (
-          <li class:list={{ 'fonte--desligada': !x.ativa }}>
-            <span><strong>{x.nome}</strong> <span class="maquina">{x.dominio}</span></span>
-            <form method="post">
-              <input type="hidden" name="acao" value="fonte" />
-              <input type="hidden" name="id" value={x.id} />
-              <button class="botao botao--linha" type="submit" aria-label={`${x.ativa ? 'Desligar' : 'Ligar'} ${x.nome}`}>{x.ativa ? 'Desligar' : 'Ligar'}</button>
-            </form>
-          </li>
-        ))}
-      </ul>
-    </section>
-  ))}
+  {GRUPOS.map(([g, nome]) => {
+    const doGrupo = fontes.filter((x) => x.grupo === g);
+    return (
+      <details class="grupo" id={`fontes-${g}`} open={aberto === g}>
+        <summary class="grupo__titulo">{nome} <span class="maquina grupo__conta">{doGrupo.filter((x) => x.ativa).length} de {doGrupo.length} ligadas</span></summary>
+        <ul class="fontes">
+          {doGrupo.map((x) => (
+            <li class:list={{ 'fonte--desligada': !x.ativa }}>
+              <span><strong>{x.nome}</strong> <span class="maquina">{x.dominio}</span></span>
+              <form method="post">
+                <input type="hidden" name="acao" value="fonte" />
+                <input type="hidden" name="id" value={x.id} />
+                <button class="botao botao--linha" type="submit" aria-label={`${x.ativa ? 'Desligar' : 'Ligar'} ${x.nome}`}>{x.ativa ? 'Desligar' : 'Ligar'}</button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      </details>
+    );
+  })}
 
   <h2 class="secao">Nova fonte</h2>
   <form method="post" class="config">
@@ -139,10 +145,46 @@ if (Astro.request.method === 'POST') {
     border-bottom: 1px solid var(--tinta);
     margin: var(--esp-6) 0 var(--esp-4);
   }
+  .grupo {
+    border-bottom: 1px solid var(--tinta);
+  }
+  /* Título do grupo maior que o nome das fontes; a seta gira quando abre. */
   .grupo__titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--esp-1) var(--esp-3);
+    min-height: 48px;
+    padding: var(--esp-3) 0;
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 24px;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+    list-style: none;
+  }
+  .grupo__titulo::-webkit-details-marker {
+    display: none;
+  }
+  .grupo__titulo::before {
+    content: '▸';
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  .grupo[open] > .grupo__titulo::before {
+    transform: rotate(90deg);
+  }
+  .grupo__conta {
+    font-family: var(--fonte-maquina);
+    font-weight: 400;
     font-size: 12px;
-    letter-spacing: 0.1em;
-    margin: var(--esp-4) 0 var(--esp-2);
+    letter-spacing: 0.06em;
+    text-transform: none;
+  }
+  .grupo .fontes {
+    margin-bottom: var(--esp-3);
   }
   .fontes {
     list-style: none;

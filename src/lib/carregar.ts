@@ -8,6 +8,7 @@ import type { Idioma } from './idioma';
 import { clientePublico, urlBanco } from './banco/cliente';
 import { emEspanhol, paraEdicao, paraObra, type ComCorpo, type LinhaPeca } from './banco/pecas';
 import type { TipoPeca } from './painel/travas';
+import { serieNoIdioma, type LinhaSerie, type Serie } from './series';
 
 export type EdicaoIdioma = Edicao & MarcaTraducao & { body?: string };
 export type ObraIdioma = Obra & MarcaTraducao & { body?: string };
@@ -36,9 +37,18 @@ function noIdioma<T extends { data: { titulo: string; resumo: string } }>(linhas
   return pecas.map(([l, p]) => emEspanhol(p, l)).filter((p): p is ComCorpo<T> => p !== null);
 }
 
-export async function carregarEdicoes(idioma: Idioma = 'pt'): Promise<EdicaoIdioma[]> {
+// Com série: só as edições dela (o arquivo e o "anterior/seguinte" de uma edição ficam dentro da série).
+export async function carregarEdicoes(idioma: Idioma = 'pt', serie?: string): Promise<EdicaoIdioma[]> {
   const base = urlBanco();
-  return noIdioma(await publicadas('newsletter'), idioma, (l) => paraEdicao(l, base));
+  const linhas = (await publicadas('newsletter')).filter((l) => !serie || l.serie === serie);
+  return noIdioma(linhas, idioma, (l) => paraEdicao(l, base));
+}
+
+// Séries ligadas, no idioma da página (a RLS só mostra as ligadas a quem não é da equipe).
+export async function carregarSeries(idioma: Idioma = 'pt'): Promise<Serie[]> {
+  const { data, error } = await clientePublico().from('series').select('*').eq('ativa', true).order('criada_em');
+  if (error) throw new Error(`banco: ${error.message}`);
+  return (data as LinhaSerie[]).map((l) => serieNoIdioma(l, idioma));
 }
 
 export async function carregarObras(idioma: Idioma = 'pt'): Promise<ObraIdioma[]> {

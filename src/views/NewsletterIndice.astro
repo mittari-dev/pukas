@@ -1,0 +1,73 @@
+---
+// /newsletter: as séries da newsletter. Cada série tem o seu arquivo em /newsletter/<série>.
+import Base from '../layouts/Base.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import { carregarEdicoes, carregarSeries } from '../lib/carregar';
+import { formatarData } from '../lib/formato';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import { textoManchete } from '../lib/manchete';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const [lista, edicoes] = await Promise.all([carregarSeries(idioma), carregarEdicoes(idioma)]);
+// Data da edição mais recente de cada série (a lista de edições vem da mais nova para a mais velha).
+const series = lista.map((s) => ({ href: `/newsletter/${s.slug}`, titulo: s.nome, sub: s.descricao, ultima: edicoes.find((e) => e.data.serie === s.slug)?.data.publicadaEm }));
+---
+<Base titulo={t(idioma, 'newsletter.titulo')} descricao={t(idioma, 'site.descricao')} receita="leitura" idioma={idioma}>
+  <div class="leitura">
+    <div class="titulo"><Manchete titulo={t(idioma, 'newsletter.titulo')} tamanho="m" /></div>
+    <ul class="lista">
+      {series.map((s) => (
+        <li>
+          <a href={prefixar(s.href, idioma)}>
+            {s.ultima && <span class="maquina lista__meta">{formatarData(s.ultima, idioma)}</span>}
+            <span class="lista__titulo">{textoManchete(s.titulo)}</span>
+            {s.sub && <span class="lista__resumo">{s.sub}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .titulo {
+    margin: var(--esp-5) 0 var(--esp-6);
+  }
+  .lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 3px solid currentColor;
+  }
+  .lista a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-1);
+    padding: var(--esp-4) 0;
+    border-bottom: 1px solid currentColor;
+    text-decoration: none;
+  }
+  .lista a:hover .lista__titulo,
+  .lista a:focus-visible .lista__titulo {
+    color: var(--acento);
+  }
+  .lista__meta {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .lista__titulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 30px;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .lista__resumo {
+    font-size: 16px;
+  }
+</style>

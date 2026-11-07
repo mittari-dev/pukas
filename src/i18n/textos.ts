@@ -20,7 +20,6 @@ const pt = {
   'nav.voltar': 'Voltar',
   'nav.avancar': 'Avançar',
 
-  'selo.memoria': 'MEMÓRIA OPERÁRIA*',
   'selo.cultura': 'FRONTEIRA*',
 
   'capa.manchete': 'Direito | nenhum caiu | do céu. | *Foi luta.*',
@@ -34,8 +33,7 @@ const pt = {
   'capa.semCultura': 'Ainda não há obras publicadas.',
   'capa.expediente': 'Erros são corrigidos na própria matéria, com a data da correção.',
 
-  'serie.titulo': 'Memória | Operária',
-  'serie.sub': 'Direito nenhum caiu do céu. Foi luta. Uma edição toda segunda, com as fontes.',
+  'newsletter.titulo': 'Newsletter',
   'serie.vazio': 'A primeira edição ainda não foi publicada.',
 
   'edicao.foto': 'FOTO',
@@ -81,7 +79,7 @@ const pt = {
 
   'links.titulo': 'Links',
   'links.descricao': 'Tudo do PUKAS num lugar só: a última edição, o manifesto e o arquivo.',
-  'links.manchete': 'Direito | nenhum caiu | do céu.',
+  'links.manchete': 'Direito | nenhum caiu | do céu. | *Foi luta.*',
   'links.ultimaEdicao': 'Última Memória Operária,',
   'links.novoCultura': 'Novo na Cultura',
   'links.manifesto': 'Manifesto',
@@ -116,7 +114,6 @@ const es: Record<Chave, string> = {
   'nav.voltar': 'Volver',
   'nav.avancar': 'Avanzar',
 
-  'selo.memoria': 'MEMORIA OBRERA*',
   'selo.cultura': 'FRONTERA*',
 
   'capa.manchete': 'Ningún derecho | cayó | del cielo. | *Fue lucha.*',
@@ -130,8 +127,7 @@ const es: Record<Chave, string> = {
   'capa.semCultura': 'Todavía no hay obras publicadas.',
   'capa.expediente': 'Los errores se corrigen en la propia nota, con la fecha de la corrección.',
 
-  'serie.titulo': 'Memoria | Obrera',
-  'serie.sub': 'Ningún derecho cayó del cielo. Fue lucha. Una edición cada lunes, con las fuentes.',
+  'newsletter.titulo': 'Newsletter',
   'serie.vazio': 'Todavía no hay ediciones en español.',
 
   'edicao.foto': 'FOTO',
@@ -177,7 +173,7 @@ const es: Record<Chave, string> = {
 
   'links.titulo': 'Links',
   'links.descricao': 'Todo PUKAS en un solo lugar: la última edición, el manifiesto y el archivo.',
-  'links.manchete': 'Ningún derecho | cayó | del cielo.',
+  'links.manchete': 'Ningún derecho | cayó | del cielo. | *Fue lucha.*',
   'links.ultimaEdicao': 'Última Memoria Obrera,',
   'links.novoCultura': 'Nuevo en Cultura',
   'links.manifesto': 'Manifiesto',
