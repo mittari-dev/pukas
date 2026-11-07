@@ -14,6 +14,7 @@ const usuario = Astro.locals.painel?.usuario;
 const secoes = [
   { rotulo: 'Estúdio', href: '/painel', ativa: /^\/painel(\/peca(\/|$)|\/?$)/ },
   { rotulo: 'Agenda', href: '/painel/agenda', ativa: /^\/painel\/agenda/ },
+  { rotulo: 'Busca', href: '/painel/busca', ativa: /^\/painel\/busca/ },
   ...(usuario?.papel === 'editor' ? [{ rotulo: 'Equipe', href: '/painel/equipe', ativa: /^\/painel\/equipe/ }] : []),
 ];
 const caminho = Astro.url.pathname;

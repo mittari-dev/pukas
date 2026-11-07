@@ -225,4 +225,47 @@ describe.skipIf(!base)('painel', () => {
     expect(depois!.peca_id).toBeTruthy();
     expect(await (await ir('/painel/agenda?dia=2026-11-16')).text()).toContain('ESCREVENDO');
   });
+
+  test('busca: rodar agora, pauta, escolher, descartar e configurar fontes', async () => {
+    const { ir, email, senha } = await criarFundador();
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+    const servico = clienteServico();
+
+    expect((await ir('/painel/busca', { acao: 'rodar' })).status).toBe(303);
+    const { data: fila } = await servico.from('busca_rodadas').select('id').eq('estado', 'na_fila');
+    expect(fila!.length).toBeGreaterThan(0);
+    await servico.from('busca_rodadas').delete().eq('estado', 'na_fila');
+
+    const { data: rodada } = await servico.from('busca_rodadas').insert({ estado: 'pronta', custo_brl: 1.2 }).select('id').single();
+    const fonte = [{ veiculo: 'Agência Brasil', titulo: 'Greve', url: 'https://agenciabrasil.ebc.com.br/x', fixa: true }];
+    const { data: cs } = await servico
+      .from('busca_candidatas')
+      .insert([
+        { rodada_id: rodada!.id, titulo: 'Estivadores param Santos', porque: 'Salário em atraso há 3 meses.', regiao: 'brasil', tema: 'greve', fontes: fonte },
+        { rodada_id: rodada!.id, titulo: 'Jogo da seleção', porque: 'Nada.', regiao: 'brasil', tema: 'esporte', fontes: fonte },
+      ])
+      .select('id, titulo');
+    const pagina = await (await ir('/painel/busca')).text();
+    expect(pagina).toContain('Estivadores param Santos');
+    expect(pagina).toContain('Salário em atraso há 3 meses.');
+
+    const [boa, ruim] = [cs!.find((c) => c.titulo.startsWith('Estivadores'))!, cs!.find((c) => c.titulo.startsWith('Jogo'))!];
+    expect((await ir('/painel/busca', { acao: 'escolher', id: boa.id })).status).toBe(303);
+    expect((await ir('/painel/busca', { acao: 'descartar', id: ruim.id, motivo: 'esporte não é pauta' })).status).toBe(303);
+    const { data: depois } = await servico.from('busca_candidatas').select('titulo, estado, motivo_descarte').in('id', [boa.id, ruim.id]);
+    expect(depois).toEqual(expect.arrayContaining([{ titulo: boa.titulo, estado: 'pedida', motivo_descarte: null }, { titulo: ruim.titulo, estado: 'descartada', motivo_descarte: 'esporte não é pauta' }]));
+
+    const { data: reuters } = await servico.from('busca_fontes').select('id').eq('dominio', 'reuters.com').single();
+    expect((await ir('/painel/busca/config', { acao: 'fonte', id: reuters!.id })).status).toBe(303);
+    expect((await servico.from('busca_fontes').select('ativa').eq('id', reuters!.id).single()).data!.ativa).toBe(false);
+
+    const redator = await criarFundador('redator');
+    await redator.ir('/painel/entrar', { email: redator.email, senha: redator.senha });
+    await confirmar2fa(redator.ir);
+    const vista = await (await redator.ir('/painel/busca')).text();
+    expect(vista).toContain('Estivadores param Santos');
+    expect(vista).not.toContain('value="escolher"');
+    expect(vista).not.toContain('value="rodar"');
+  });
 });
