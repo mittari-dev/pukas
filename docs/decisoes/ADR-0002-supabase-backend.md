@@ -37,4 +37,4 @@ As alternativas eram um painel que grava no Git (Keystatic ou Decap) e um backen
 
 - Cada módulo (admin, votações, e-mail, loja) tem a sua spec, que detalha tabelas, políticas de RLS e ameaças.
 - As regras editoriais de verdade (`src/lib/edicoes.ts`) continuam valendo. O painel aplica as mesmas validações antes de publicar.
-- A migração do conteúdo do MDX para o banco, se acontecer, é decidida na spec do painel.
+- O conteúdo saiu do MDX e foi para o banco. As travas editoriais também valem no gatilho `pecas_travas`, e o site lê o Supabase com cache na borda. Os detalhes estão na [spec do painel](../specs/2026-11-06-painel-design.md).
