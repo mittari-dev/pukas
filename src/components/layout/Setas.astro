@@ -1,0 +1,38 @@
+---
+// Voltar e avançar entre as páginas recém-visitadas, no site e no painel. O comportamento está em public/setas.js.
+interface Props {
+  voltar: string;
+  avancar: string;
+}
+const { voltar, avancar } = Astro.props;
+---
+<div class="setas" hidden>
+  <button type="button" class="setas__botao" data-ir="-1" aria-label={voltar} title={voltar}>
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M12 3 L5 10 L12 17" fill="none" stroke="currentColor" stroke-width="3"></path></svg>
+  </button>
+  <button type="button" class="setas__botao" data-ir="1" aria-label={avancar} title={avancar}>
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M8 3 L15 10 L8 17" fill="none" stroke="currentColor" stroke-width="3"></path></svg>
+  </button>
+</div>
+<script is:inline src="/setas.js" defer></script>
+
+<style>
+  .setas:not([hidden]) {
+    display: flex;
+  }
+  .setas__botao {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  .setas__botao:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+</style>

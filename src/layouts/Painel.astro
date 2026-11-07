@@ -3,6 +3,7 @@
 import '../styles/base.css';
 import '../styles/leitura.css';
 import Tarja from '../components/identidade/Tarja.astro';
+import Setas from '../components/layout/Setas.astro';
 
 interface Props {
   titulo: string;
@@ -22,6 +23,7 @@ const usuario = Astro.locals.painel?.usuario;
     <header class="topo">
       <a href="/admin" class="marca"><Tarja variante="cor" rotulo="Painel PUKAS" /></a>
       <span class="maquina topo__rotulo">PAINEL</span>
+      <Setas voltar="Voltar" avancar="Avançar" />
       <a href="/" class="maquina topo__site" target="_blank" rel="noopener">Ver o site ↗</a>
       {usuario && (
         <form method="post" action="/admin/sair" class="topo__sair">
@@ -122,6 +124,10 @@ const usuario = Astro.locals.painel?.usuario;
 
 <style>
   .topo {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--fundo);
     display: flex;
     flex-wrap: wrap;
     align-items: center;

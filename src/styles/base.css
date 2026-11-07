@@ -11,6 +11,8 @@
 }
 
 html {
+  /* Âncoras não somem atrás do cabeçalho fixo. */
+  scroll-padding-top: 96px;
   -webkit-text-size-adjust: 100%;
 }
 

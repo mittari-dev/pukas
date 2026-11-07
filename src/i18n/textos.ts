@@ -17,6 +17,8 @@ const pt = {
   'nav.marca': 'PUKAS, início',
   'nav.pular': 'Pular para o conteúdo',
   'nav.idioma': 'Idioma',
+  'nav.voltar': 'Voltar',
+  'nav.avancar': 'Avançar',
 
   'selo.memoria': 'MEMÓRIA OPERÁRIA*',
   'selo.cultura': 'FRONTEIRA*',
@@ -107,6 +109,8 @@ const es: Record<Chave, string> = {
   'nav.marca': 'PUKAS, inicio',
   'nav.pular': 'Saltar al contenido',
   'nav.idioma': 'Idioma',
+  'nav.voltar': 'Volver',
+  'nav.avancar': 'Avanzar',
 
   'selo.memoria': 'MEMORIA OBRERA*',
   'selo.cultura': 'FRONTERA*',
