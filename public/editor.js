@@ -31,3 +31,35 @@
   let espera;
   form.addEventListener('input', () => { clearTimeout(espera); espera = setTimeout(gravar, 500); });
 })();
+
+// Foto do celular costuma passar de 4 MB: diminui no próprio aparelho (lado maior de 2400 px, JPEG) antes de enviar.
+(() => {
+  const campo = document.querySelector('[data-foto]');
+  const aviso = document.querySelector('[data-foto-aviso]');
+  if (!campo || !window.DataTransfer || !window.createImageBitmap) return;
+  const MAX = 4 * 1024 * 1024;
+  const LADO = 2400;
+  const dizer = (texto) => { if (aviso) { aviso.textContent = texto; aviso.hidden = !texto; } };
+  campo.addEventListener('change', async () => {
+    const arquivo = campo.files?.[0];
+    dizer('');
+    if (!arquivo || arquivo.size <= MAX * 0.75) return;
+    try {
+      dizer('Diminuindo a foto…');
+      const imagem = await createImageBitmap(arquivo);
+      const escala = Math.min(1, LADO / Math.max(imagem.width, imagem.height));
+      const tela = document.createElement('canvas');
+      tela.width = Math.round(imagem.width * escala);
+      tela.height = Math.round(imagem.height * escala);
+      tela.getContext('2d').drawImage(imagem, 0, 0, tela.width, tela.height);
+      const menor = await new Promise((ok) => tela.toBlob(ok, 'image/jpeg', 0.85));
+      if (!menor || menor.size > MAX) return dizer('A foto continua grande demais. Escolha outra ou diminua antes.');
+      const lista = new DataTransfer();
+      lista.items.add(new File([menor], arquivo.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }));
+      campo.files = lista.files;
+      dizer(`Foto diminuída: ${(arquivo.size / 1048576).toFixed(1)} MB → ${(menor.size / 1048576).toFixed(1)} MB.`);
+    } catch {
+      dizer('Não deu para diminuir a foto aqui. Se passar de 4 MB, diminua antes de enviar.');
+    }
+  });
+})();
