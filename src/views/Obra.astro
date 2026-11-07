@@ -56,7 +56,6 @@ const capa = d.capa?.arquivo as string | undefined;
       </section>
     )}
 
-    <p class="obra__chamada manchete">{t(idioma, 'cultura.chamada')}</p>
     <p class="maquina"><a href={prefixar('/cultura', idioma)}>{t(idioma, 'cultura.todas')}</a></p>
   </article>
 </Base>
@@ -99,10 +98,5 @@ const capa = d.capa?.arquivo as string | undefined;
   .obra__fonte {
     margin-bottom: var(--esp-2);
     overflow-wrap: anywhere;
-  }
-  .obra__chamada {
-    margin: var(--esp-8) 0 var(--esp-4);
-    font-size: clamp(32px, 8vw, 56px);
-    color: var(--acento);
   }
 </style>
