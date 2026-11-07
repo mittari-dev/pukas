@@ -16,3 +16,5 @@ export function deveGuardar(metodo: string, caminho: string, status: number): bo
 export const etiquetaPeca = (id: string) => `peca:${id}`;
 export const ETIQUETA_INDICE = 'indice';
 export const ETIQUETA_TUDO = 'tudo';
+// Página de uma peça: a etiqueta dela (pelo uuid) e "indice", porque ela mostra links para as vizinhas.
+export const etiquetasDaPeca = (p: { id: string; pecaId?: string }) => [etiquetaPeca(p.pecaId ?? p.id), ETIQUETA_INDICE];

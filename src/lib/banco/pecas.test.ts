@@ -40,6 +40,11 @@ describe('paraObra', () => {
     expect(o.data.capa).toBeUndefined();
     expect(validarObra(o)).toEqual([]);
   });
+
+  test('a etiqueta de cache usa o uuid, o mesmo que o painel invalida, não o slug do endereço', () => {
+    expect(paraObra(linha({ tipo: 'cultura', slug: 'a-marmita', subtipo: 'poema' }), 'u').pecaId).toBe('uuid-1');
+    expect(paraEdicao(linha(), 'u').pecaId).toBe('uuid-1');
+  });
 });
 
 describe('emEspanhol', () => {

@@ -3,7 +3,7 @@ import Edicao from '../../../../views/Edicao.astro';
 import { carregarEdicoes, pendente } from '../../../../lib/carregar';
 import { caminhoEdicao } from '../../../../lib/formato';
 import { acharEdicao } from '../../../../lib/rotas';
-import { etiquetaPeca } from '../../../../lib/cache';
+import { etiquetasDaPeca } from '../../../../lib/cache';
 
 const edicoes = await carregarEdicoes('es');
 let i = acharEdicao(edicoes, Astro.params.serie, Astro.params.numero);
@@ -15,7 +15,7 @@ if (i < 0) {
   if (j < 0) return Astro.rewrite('/es/404');
   edicao = pendente(originais[j]);
 }
-Astro.locals.etiquetas = [etiquetaPeca(edicao.id)];
+Astro.locals.etiquetas = etiquetasDaPeca(edicao);
 const alternativa = { href: caminhoEdicao(edicao.data.serie, edicao.data.numero, 'pt'), equivalente: true };
 ---
 <Edicao idioma="es" edicao={edicao} seguinte={i >= 0 ? edicoes[i - 1] : undefined} anterior={i >= 0 ? edicoes[i + 1] : undefined} alternativa={alternativa} />

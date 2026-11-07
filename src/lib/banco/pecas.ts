@@ -45,7 +45,8 @@ export interface LinhaPeca {
   traducoes?: LinhaTraducao[];
 }
 
-export type ComCorpo<T> = T & MarcaTraducao & { body?: string };
+// pecaId: o uuid da peça, que dá a etiqueta de cache; o id pode ser o slug do endereço.
+export type ComCorpo<T> = T & MarcaTraducao & { body?: string; pecaId?: string };
 
 export const urlFoto = (base: string, caminho: string) => `${base}/storage/v1/object/public/fotos/${caminho}`;
 
@@ -59,6 +60,7 @@ const foto = (l: LinhaPeca, base: string) =>
 export function paraEdicao(l: LinhaPeca, base: string): ComCorpo<Edicao> {
   return {
     id: l.id,
+    pecaId: l.id,
     body: l.corpo,
     data: {
       serie: l.serie as Edicao['data']['serie'],
@@ -79,6 +81,7 @@ export function paraEdicao(l: LinhaPeca, base: string): ComCorpo<Edicao> {
 export function paraObra(l: LinhaPeca, base: string): ComCorpo<Obra> {
   return {
     id: l.slug ?? l.id,
+    pecaId: l.id,
     body: l.corpo,
     data: {
       tipo: l.subtipo as TipoObra,

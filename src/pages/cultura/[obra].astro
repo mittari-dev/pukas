@@ -2,11 +2,11 @@
 import Obra from '../../views/Obra.astro';
 import { carregarObras } from '../../lib/carregar';
 import { prefixar } from '../../lib/idioma';
-import { etiquetaPeca } from '../../lib/cache';
+import { etiquetasDaPeca } from '../../lib/cache';
 
 const obra = (await carregarObras('pt')).find((o) => o.id === Astro.params.obra);
 if (!obra) return Astro.rewrite('/404');
-Astro.locals.etiquetas = [etiquetaPeca(obra.id)];
+Astro.locals.etiquetas = etiquetasDaPeca(obra);
 const traduzida = (await carregarObras('es')).some((o) => o.id === obra.id);
 const alternativa = traduzida
   ? { href: prefixar(`/cultura/${obra.id}`, 'es'), equivalente: true }

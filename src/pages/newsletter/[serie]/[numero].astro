@@ -4,13 +4,13 @@ import { carregarEdicoes } from '../../../lib/carregar';
 import { caminhoEdicao } from '../../../lib/formato';
 import { prefixar } from '../../../lib/idioma';
 import { acharEdicao } from '../../../lib/rotas';
-import { etiquetaPeca } from '../../../lib/cache';
+import { etiquetasDaPeca } from '../../../lib/cache';
 
 const edicoes = await carregarEdicoes('pt');
 const i = acharEdicao(edicoes, Astro.params.serie, Astro.params.numero);
 if (i < 0) return Astro.rewrite('/404');
 const edicao = edicoes[i];
-Astro.locals.etiquetas = [etiquetaPeca(edicao.id)];
+Astro.locals.etiquetas = etiquetasDaPeca(edicao);
 const traduzida = (await carregarEdicoes('es')).some((e) => e.id === edicao.id);
 // A lista vem do número maior para o menor: a seguinte é a de índice menor.
 const alternativa = traduzida
