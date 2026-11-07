@@ -20,7 +20,7 @@ Cada subprojeto segue o ciclo **spec → plano → implementação**, com milest
 | 2 | **Seção de cultura** | Rota própria para contos, cenas, poemas e ensaios | ✅ |
 | 3 | **Painel `/painel` (Supabase)** | Publicar, corrigir e revisar o espanhol pelo navegador, com senha e 2FA; seção `/noticias` ([spec](specs/2026-11-06-painel-design.md)) | ✅ código · ⏳ no ar |
 | 3.1 | **Agenda editorial** | Semana e mês, itens ligados às peças, ritmo da casa editável ([spec](specs/2026-11-07-agenda-design.md)) | ✅ código · ⏳ no ar |
-| 3.2 | **Robô de notícias** | Busca nas fontes fixas e na web, lê as matérias e deixa rascunhos na fila do painel; o fundador aprova. Roda dentro da assinatura do Claude, sem custo extra | ⚪ |
+| 3.2 | **Busca: robô de notícias com curadoria** | Pauta três vezes por semana com fontes fixas e busca livre; a redação escolhe e o robô escreve o rascunho em revisão; teto mensal em reais ([spec](specs/2026-11-07-busca-design.md)) | ✅ código · ⏳ no ar |
 | 3.3 | **Radar e pistas** | Acompanhar figuras públicas e guardar pistas privadas (bucket `arquivos`); pista nunca é publicada como acusação | ⚪ |
 | 4 | **Newsletter por e-mail** | Inscrição e envio de cada edição pelo Resend | ⚪ |
 | 5 | **Gerador do carrossel e do vídeo** | Slides PNG 1080×1350 e vídeo de 60 a 90 s gerados a partir da edição | ⚪ |

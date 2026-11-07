@@ -44,6 +44,14 @@ Em `/painel/agenda`, a equipe anota o que sai em cada dia: tipo (e série), tít
 
 O **ritmo da casa** (`/painel/agenda/ritmo`) são os compromissos fixos, como "Newsletter · Memória Operária, toda segunda". Na agenda, cada um aparece como um espaço tracejado no dia dele, até um item ocupar o lugar. Só o editor muda o ritmo. Nada na agenda é automático além de acompanhar o estado da peça: ela organiza, não publica.
 
+## Busca (robô de notícias com curadoria)
+
+Em `/painel/busca`, o robô entrega uma **pauta** de até 10 candidatas na segunda, na quarta e na sexta às 7h, ou quando o editor aperta "Rodar agora". Cada candidata traz por que importa para quem trabalha, as fontes lidas (marcadas "livre" quando vêm de fora das fontes fixas) e o que falta confirmar. Editor e revisor escolhem "Virar rascunho" (o robô escreve a notícia, que entra no Estúdio como **Notícia em revisão**, com a checagem em branco) ou "Descartar" com o motivo, que o robô usa na rodada seguinte. **O robô nunca publica.**
+
+- **Onde roda:** o workflow `busca.yml` (GitHub Actions, a cada 15 min) com `scripts/busca.ts`. Ele usa o Claude Sonnet 5.5 com busca e leitura na web.
+- **Teto:** o gasto do mês aparece em reais no painel. Antes de cada rodada o robô confere se ainda cabe uma; se não couber, registra "teto atingido". O teto, o câmbio, os dias, a hora, os temas, as fontes fixas e a busca livre ficam em `/painel/busca/config`, só para o editor.
+- **Linha editorial do robô:** `src/lib/busca/instrucoes.ts`.
+
 ## Português e espanhol
 
 O site inteiro existe em `/es/...`, em espanhol neutro latino-americano. O idioma é escolhido no servidor, nesta ordem: a escolha da pessoa no seletor PT | ES, o idioma do aparelho e o país.

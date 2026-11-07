@@ -193,6 +193,7 @@ const porcento = teto > 0 ? Math.min(100, Math.round((gasto / teto) * 100)) : 10
   }
   .candidata {
     display: grid;
+    min-width: 0;
     gap: var(--esp-2);
     padding: var(--esp-4);
     border: 1px solid var(--tinta);
@@ -224,17 +225,20 @@ const porcento = teto > 0 ? Math.min(100, Math.round((gasto / teto) * 100)) : 10
   }
   .candidata__acoes {
     display: flex;
+    min-width: 0;
     flex-wrap: wrap;
     gap: var(--esp-3);
     margin-top: var(--esp-2);
   }
   .descartar {
     display: flex;
+    flex-wrap: wrap;
     flex: 1 1 260px;
+    min-width: 0;
     gap: var(--esp-2);
   }
   .descartar input {
-    flex: 1;
+    flex: 1 1 160px;
     min-width: 0;
     min-height: 48px;
     padding: 0 var(--esp-3);
