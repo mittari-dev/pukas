@@ -11,7 +11,7 @@ const { idioma } = Astro.props;
   <span>{t(idioma, 'site.assinatura')}</span>
   <nav aria-label="Rodapé">
     <a href={prefixar('/rss.xml', idioma)}>RSS</a>
-    <a href="/admin" class="rodape__painel" aria-label="Painel" title="Painel">
+    <a href="/painel" class="rodape__painel" aria-label="Painel" title="Painel">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
         <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="5" stroke-dasharray="3.14 3.14" />
         <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2" />
@@ -46,7 +46,7 @@ const { idioma } = Astro.props;
     padding: var(--esp-2) 0;
     text-transform: uppercase;
   }
-  /* Engrenagem discreta no canto, para o painel. O /admin pede senha e 2FA; o link sozinho não abre nada. */
+  /* Engrenagem discreta no canto, para o painel. O /painel pede senha e 2FA; o link sozinho não abre nada. */
   /* .rodape a (inline-block) ganharia de .rodape__painel sozinho: por isso o seletor duplo. */
   .rodape .rodape__painel {
     display: grid;

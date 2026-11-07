@@ -1,5 +1,5 @@
 ---
-// Fila do painel: abas por estado, filtro por tipo, botão de peça nova.
+// Estúdio (a fila do painel): abas por estado, filtro por tipo, botão de peça nova.
 import Painel from '../../layouts/Painel.astro';
 import { listarFila } from '../../lib/banco/painel';
 import { formatarNumero } from '../../lib/formato';
@@ -15,13 +15,13 @@ const pedidoTipo = Astro.url.searchParams.get('tipo');
 const tipo = TIPOS.find(([t]) => t === pedidoTipo)?.[0];
 const pecas = await listarFila(Astro.locals.painel!.cliente, estado, tipo);
 const nomeTipo = Object.fromEntries(TIPOS);
-const link = (e: EstadoPeca, t?: TipoPeca) => `/admin?estado=${e}${t ? `&tipo=${t}` : ''}`;
+const link = (e: EstadoPeca, t?: TipoPeca) => `/painel?estado=${e}${t ? `&tipo=${t}` : ''}`;
 const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 ---
-<Painel titulo="Fila">
-  <h1>Fila</h1>
+<Painel titulo="Estúdio">
+  <h1>Estúdio</h1>
 
-  <form method="get" action="/admin/peca/nova" class="nova">
+  <form method="get" action="/painel/peca/nova" class="nova">
     <label class="maquina" for="tipo-nova">Nova peça</label>
     <select id="tipo-nova" name="tipo">
       {TIPOS.map(([t, nome]) => <option value={t}>{nome}</option>)}
@@ -43,7 +43,7 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
     <ul class="fila">
       {pecas.map((p) => (
         <li>
-          <a href={`/admin/peca/${p.id}`}>
+          <a href={`/painel/peca/${p.id}`}>
             <span class="maquina fila__meta">
               {nomeTipo[p.tipo]}{p.numero !== null && p.tipo !== 'pagina' ? ` · ${formatarNumero(p.numero)}` : ''} · {quando(p.atualizado_em)}
             </span>

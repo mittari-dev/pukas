@@ -3,5 +3,5 @@ import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async ({ locals, redirect }) => {
   await locals.painel?.cliente.auth.signOut();
-  return redirect('/admin/entrar', 303);
+  return redirect('/painel/entrar', 303);
 };

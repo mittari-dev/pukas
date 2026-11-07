@@ -1,5 +1,5 @@
 // Equipe do painel: convidar (link), trocar papel, tirar. Única parte do site que usa a chave mestra (service_role),
-// porque criar e apagar contas no Auth exige. Só é chamada de /admin/equipe, depois de conferir editor com 2FA.
+// porque criar e apagar contas no Auth exige. Só é chamada de /painel/equipe, depois de conferir editor com 2FA.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { urlBanco } from './cliente';
 import type { Papel } from '../painel/travas';
@@ -31,7 +31,7 @@ export async function listarEquipe(): Promise<Membro[]> {
 }
 
 // Gera o link de convite sem mandar e-mail: o e-mail grátis do Supabase só entrega para membros da organização.
-// O editor manda o link pela conversa. Ele leva a /admin/convite, onde a pessoa cria a senha.
+// O editor manda o link pela conversa. Ele leva a /painel/convite, onde a pessoa cria a senha.
 export async function convidar(email: string, nome: string, papel: Papel, site: string): Promise<{ ok: true; link: string } | { ok: false; erro: string }> {
   const db = mestre();
   const { data, error } = await db.auth.admin.generateLink({ type: 'invite', email, options: { data: { nome } } });
@@ -41,7 +41,7 @@ export async function convidar(email: string, nome: string, papel: Papel, site: 
     await db.auth.admin.deleteUser(data.user.id);
     return { ok: false, erro: 'Não deu para criar o perfil. Tente de novo.' };
   }
-  const link = new URL('/admin/convite', site);
+  const link = new URL('/painel/convite', site);
   link.searchParams.set('token_hash', data.properties.hashed_token);
   return { ok: true, link: link.href };
 }

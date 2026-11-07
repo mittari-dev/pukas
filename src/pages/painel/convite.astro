@@ -1,5 +1,5 @@
 ---
-// Link de convite (gerado em /admin/equipe): a pessoa cria a senha aqui. O código do e-mail só é usado no POST,
+// Link de convite (gerado em /painel/equipe): a pessoa cria a senha aqui. O código do e-mail só é usado no POST,
 // porque prévias de link (WhatsApp, antivírus) abrem o endereço sozinhas e queimariam o convite num GET.
 import Painel from '../../layouts/Painel.astro';
 import { lerSenhaNova } from '../../lib/painel/equipe';
@@ -17,7 +17,7 @@ if (Astro.request.method === 'POST') {
     if (error) erro = 'Este convite já foi usado ou venceu. Peça um convite novo.';
     else {
       const { error: e } = await cliente.auth.updateUser({ password: senha.valor });
-      if (!e) return Astro.redirect('/admin/2fa', 303);
+      if (!e) return Astro.redirect('/painel/2fa', 303);
       erro = 'Não deu para guardar a senha. Tente de novo.';
     }
   }

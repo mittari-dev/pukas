@@ -1,12 +1,12 @@
 // Middleware do Astro (roda dentro da função, depois do cache). O idioma é decidido antes, em /middleware.ts.
-// Aqui: a porta do /admin (login + 2FA), o cache da borda nas páginas públicas e o "volte em instantes".
+// Aqui: a porta do /painel (login + 2FA), o cache da borda nas páginas públicas e o "volte em instantes".
 import { defineMiddleware } from 'astro:middleware';
 import type { APIContext, MiddlewareNext } from 'astro';
 import { addCacheTag } from '@vercel/functions';
 import { ETIQUETA_INDICE, ETIQUETA_TUDO, cabecalhosPublicos, deveGuardar } from './lib/cache';
 import { paginaDeErro } from './lib/erro';
 import { clienteDaRequisicao, urlBanco } from './lib/banco/cliente';
-import { cabecalhosAdmin, decidirAcessoAdmin } from './lib/painel/acesso';
+import { cabecalhosAdmin, decidirAcessoAdmin, enderecoNovo } from './lib/painel/acesso';
 
 async function painel(contexto: APIContext, next: MiddlewareNext): Promise<Response> {
   const cabecalhos = cabecalhosAdmin(urlBanco());
@@ -29,7 +29,7 @@ async function painel(contexto: APIContext, next: MiddlewareNext): Promise<Respo
     // Conta sem perfil não é da equipe: sai e volta para o login.
     if (!perfil) {
       await cliente.auth.signOut();
-      return new Response(null, { status: 303, headers: { ...cabecalhos, Location: '/admin/entrar?erro=sem-acesso' } });
+      return new Response(null, { status: 303, headers: { ...cabecalhos, Location: '/painel/entrar?erro=sem-acesso' } });
     }
     contexto.locals.painel.usuario = { id: user.id, email: user.email ?? '', nome: perfil.nome, papel: perfil.papel };
   }
@@ -39,8 +39,16 @@ async function painel(contexto: APIContext, next: MiddlewareNext): Promise<Respo
 }
 
 export const onRequest = defineMiddleware(async (contexto, next) => {
-  const { pathname } = contexto.url;
-  if (/^\/admin(\/|$)/.test(pathname)) return painel(contexto, next);
+  // Decodificado: /p%61inel também é o painel para o roteador, então tem de passar pela mesma porta.
+  let pathname = contexto.url.pathname;
+  try {
+    pathname = decodeURI(pathname);
+  } catch {
+    return new Response('endereço inválido', { status: 400 });
+  }
+  const novo = enderecoNovo(pathname);
+  if (novo) return new Response(null, { status: 301, headers: { Location: novo + contexto.url.search, 'Cache-Control': 'no-store' } });
+  if (/^\/painel(\/|$)/.test(pathname)) return painel(contexto, next);
   let resposta: Response;
   try {
     resposta = await next();

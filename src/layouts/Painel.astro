@@ -10,6 +10,12 @@ interface Props {
 }
 const { titulo } = Astro.props;
 const usuario = Astro.locals.painel?.usuario;
+// Seções do painel, na barra do topo. Busca (as automações de pesquisa) entra aqui quando existir.
+const secoes = [
+  { rotulo: 'Estúdio', href: '/painel', ativa: /^\/painel(\/peca(\/|$)|\/?$)/ },
+  ...(usuario?.papel === 'editor' ? [{ rotulo: 'Equipe', href: '/painel/equipe', ativa: /^\/painel\/equipe/ }] : []),
+];
+const caminho = Astro.url.pathname;
 ---
 <!doctype html>
 <html lang="pt-BR">
@@ -21,7 +27,7 @@ const usuario = Astro.locals.painel?.usuario;
   </head>
   <body class="receita-leitura">
     <header class="topo">
-      <a href="/admin" class="marca"><Tarja variante="cor" rotulo="Painel PUKAS" /></a>
+      <a href="/painel" class="marca"><Tarja variante="cor" rotulo="Painel PUKAS" /></a>
       <span class="maquina topo__rotulo">PAINEL</span>
       <Setas voltar="Voltar" avancar="Avançar" />
       {usuario ? (
@@ -36,16 +42,19 @@ const usuario = Astro.locals.painel?.usuario;
           </summary>
           <nav class="conta__menu maquina" aria-label="Painel">
             <span class="conta__quem">{usuario.nome || usuario.email} · {usuario.papel.toUpperCase()}</span>
-            <a href="/admin">Fila</a>
-            {usuario.papel === 'editor' && <a href="/admin/equipe">Equipe</a>}
             <a href="/" target="_blank" rel="noopener">Ver o site ↗</a>
-            <form method="post" action="/admin/sair">
+            <form method="post" action="/painel/sair">
               <button class="maquina botao botao--linha" type="submit">Sair</button>
             </form>
           </nav>
         </details>
       ) : (
         <a href="/" class="maquina topo__site">Ver o site</a>
+      )}
+      {usuario && (
+        <nav class="secoes maquina" aria-label="Seções do painel">
+          {secoes.map((s) => <a href={s.href} aria-current={s.ativa.test(caminho) ? 'page' : undefined}>{s.rotulo}</a>)}
+        </nav>
       )}
     </header>
     <script is:inline src="/painel.js" defer></script>
@@ -217,9 +226,38 @@ const usuario = Astro.locals.painel?.usuario;
   .conta__menu button {
     width: 100%;
   }
+  /* Barra das seções: segunda linha do topo, sempre numa linha só (são poucas). */
+  .secoes {
+    flex-basis: 100%;
+    display: flex;
+    gap: var(--esp-2);
+    margin: 0 calc(-1 * var(--esp-4)) calc(-1 * var(--esp-3));
+    padding: 0 var(--esp-4);
+    border-top: 1px solid var(--tinta);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    overflow-x: auto;
+  }
+  .secoes a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--esp-3);
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 4px solid transparent;
+  }
+  .secoes [aria-current] {
+    border-bottom-color: var(--pau-brasil);
+    color: var(--pau-brasil);
+  }
   @media (max-width: 600px) {
+    .secoes {
+      margin: 0 calc(-1 * var(--esp-3)) calc(-1 * var(--esp-2));
+      padding: 0 var(--esp-3);
+    }
     .topo {
-      flex-wrap: nowrap;
       gap: var(--esp-2);
       padding: var(--esp-2) var(--esp-3);
     }

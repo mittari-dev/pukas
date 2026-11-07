@@ -1,4 +1,4 @@
-// Regras da página da equipe (/admin/equipe): convite, troca de papel e saída. Só o editor mexe.
+// Regras da página da equipe (/painel/equipe): convite, troca de papel e saída. Só o editor mexe.
 import type { Papel } from './travas';
 
 type Leitura<T> = { ok: true; valor: T } | { ok: false; erro: string };
