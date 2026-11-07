@@ -1,14 +1,12 @@
 ---
-// Capa de jornal: cabeçalho com data entre fios, manchete principal (última Memória Operária) e,
-// ao lado, as colunas de Notícias e Cultura. No celular tudo vira uma coluna, nessa ordem.
+// Capa de jornal: manchete principal (última Memória Operária) e, ao lado, as colunas de Notícias e Cultura. No celular tudo vira uma coluna, nessa ordem.
 import Base from '../layouts/Base.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import ListaEdicoes from '../components/ListaEdicoes.astro';
-import { carregarEdicoes, carregarNoticias, carregarObras } from '../lib/carregar';
+import { carregarEdicoes, carregarNoticias, carregarObras, carregarSeries } from '../lib/carregar';
 import { caminhoEdicao, formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
-import { linhaDoCabecalho, ultimaPublicacao } from '../lib/jornal';
 import { textoManchete } from '../lib/manchete';
 import '../styles/leitura.css';
 
@@ -18,19 +16,14 @@ interface Props {
 const { idioma } = Astro.props;
 const [edicoes, noticias, obras] = await Promise.all([carregarEdicoes(idioma), carregarNoticias(idioma), carregarObras(idioma)]);
 const ultima = edicoes[0];
-const cabecalho = linhaDoCabecalho(ultimaPublicacao(edicoes, noticias, obras), idioma);
-const chapeuMemoria = t(idioma, 'selo.memoria').replace('*', '');
+const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slug === ultima.data.serie)?.selo.replace('*', '') ?? '') : '';
 ---
 <Base titulo="PUKAS" descricao={t(idioma, 'site.descricao')} receita="leitura" idioma={idioma}>
   <div class="capa">
-    <p class="cabecalho maquina">
-      {cabecalho.map((parte, i) => <>{i > 0 && <span aria-hidden="true"> · </span>}<span>{parte}</span></>)}
-    </p>
-
     <div class="capa__grade">
       {ultima ? (
         <section class="principal" aria-labelledby="ultima">
-          <p class="chapeu">{chapeuMemoria}</p>
+          {chapeuMemoria && <p class="chapeu">{chapeuMemoria}</p>}
           <Carimbo numero={ultima.data.numero} data={ultima.data.publicadaEm} />
           <div class="principal__manchete"><Manchete id="ultima" titulo={ultima.data.titulo} /></div>
           <p class="principal__resumo">{ultima.data.resumo}</p>
@@ -38,7 +31,6 @@ const chapeuMemoria = t(idioma, 'selo.memoria').replace('*', '');
         </section>
       ) : (
         <section class="principal">
-          <p class="chapeu">{chapeuMemoria}</p>
           <div class="principal__manchete"><Manchete titulo={t(idioma, 'capa.manchete')} /></div>
           <p class="principal__resumo">{t(idioma, 'serie.vazio')}</p>
         </section>
@@ -99,22 +91,7 @@ const chapeuMemoria = t(idioma, 'selo.memoria').replace('*', '');
   .capa {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 0 var(--esp-4);
-  }
-
-  /* Linha do cabeçalho entre fios: grosso em cima, fino embaixo, como num jornal impresso. */
-  .cabecalho {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0 var(--esp-1);
-    margin: var(--esp-4) 0 var(--esp-6);
-    padding: var(--esp-2) 0;
-    border-top: 3px solid currentColor;
-    border-bottom: 1px solid currentColor;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-align: center;
+    padding: var(--esp-6) var(--esp-4) 0;
   }
 
   .capa__grade {

@@ -24,7 +24,7 @@
 | Capa e RSS | ✅ |
 | Deploy | ✅ `pukas.vercel.app` · ⏳ domínio `pukas.lat` |
 | **Notícias** (`/noticias`) | ✅ código · ⏳ primeira notícia |
-| Painel `/painel` (Supabase, senha + 2FA) | ✅ código · ⏳ no ar |
+| Painel `/painel` (Supabase, senha + 2FA): Estúdio, Agenda e Equipe | ✅ código · ⏳ no ar |
 | Robô de notícias, gerador do carrossel, Raio-X, dossiês, documentários, loja | ⚪ ver o [roadmap](docs/roadmap.md) |
 
 ## Como uma peça vai ao ar
@@ -37,6 +37,20 @@ Todo o conteúdo mora no **Supabase**. Edição, obra de Cultura, notícia e man
 4. Para corrigir uma peça já publicada, use "corrigir" no painel. A correção aparece em público na peça, e o histórico guarda a versão anterior.
 
 Ficção (Cultura) não precisa de fonte. No poema, as quebras de linha ficam como você escreveu.
+
+## Agenda editorial
+
+Em `/painel/agenda`, a equipe anota o que sai em cada dia: tipo (e série), título provisório, nota, responsável e situação. No celular aparece só a semana; no computador, semana e mês. Um item pode ser ligado a uma peça do Estúdio, e aí a situação acompanha a peça (escrevendo, em revisão, publicada). "Começar a escrever" abre o editor já ligado ao item.
+
+O **ritmo da casa** (`/painel/agenda/ritmo`) são os compromissos fixos, como "Newsletter · Memória Operária, toda segunda". Na agenda, cada um aparece como um espaço tracejado no dia dele, até um item ocupar o lugar. Só o editor muda o ritmo. Nada na agenda é automático além de acompanhar o estado da peça: ela organiza, não publica.
+
+## Busca (robô de notícias com curadoria)
+
+Em `/painel/busca`, o robô entrega uma **pauta** de até 10 candidatas na segunda, na quarta e na sexta às 7h, ou quando o editor aperta "Rodar agora". Cada candidata traz por que importa para quem trabalha, as fontes lidas (marcadas "livre" quando vêm de fora das fontes fixas) e o que falta confirmar. Editor e revisor escolhem "Virar rascunho" (o robô escreve a notícia, que entra no Estúdio como **Notícia em revisão**, com a checagem em branco) ou "Descartar" com o motivo, que o robô usa na rodada seguinte. **O robô nunca publica.**
+
+- **Onde roda:** o workflow `busca.yml` (GitHub Actions, a cada 15 min) com `scripts/busca.ts`. Ele usa o Claude Sonnet 5.5 com busca e leitura na web.
+- **Teto:** o gasto do mês aparece em reais no painel. Antes de cada rodada o robô confere se ainda cabe uma; se não couber, registra "teto atingido". O teto, o câmbio, os dias, a hora, os temas, as fontes fixas e a busca livre ficam em `/painel/busca/config`, só para o editor.
+- **Linha editorial do robô:** `src/lib/busca/instrucoes.ts`.
 
 ## Português e espanhol
 
@@ -90,7 +104,7 @@ A marca é a **Tarja**. A tipografia usa **Archivo** (manchete comprimida), **Sp
 
 ```
 src/
-├─ pages/painel/                            painel (fila, edição, espanhol, login com 2FA)
+├─ pages/painel/                            painel (estúdio, agenda, equipe, edição, espanhol, login com 2FA)
 ├─ lib/                                    regras puras + testes (edicoes, formato, banco, painel, traducao, cache)
 ├─ components/identidade/                  Tarja, Carimbo, Selo, Grão
 ├─ layouts/ · pages/ · styles/ · data/ (links.ts, navegacao.ts)

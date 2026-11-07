@@ -5,7 +5,6 @@ const MESES: Record<Idioma, string[]> = {
   es: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'],
 };
 
-export type Serie = 'memoria-operaria';
 
 const tresDigitos = (n: number) => String(n).padStart(3, '0');
 
@@ -13,7 +12,7 @@ export function formatarNumero(n: number): string {
   return `Nº ${tresDigitos(n)}`;
 }
 
-export function caminhoEdicao(serie: Serie, n: number, idioma: Idioma = 'pt'): string {
+export function caminhoEdicao(serie: string, n: number, idioma: Idioma = 'pt'): string {
   return prefixar(`/newsletter/${serie}/${tresDigitos(n)}`, idioma);
 }
 

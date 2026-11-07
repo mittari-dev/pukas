@@ -53,6 +53,10 @@ export function travasDaPeca(p: PecaEntrada): Trava[] {
 
   const prefixo = p.tipo === 'cultura' ? 'capa' : 'foto';
   const olhaFoto = p.tipo === 'newsletter' || ((p.tipo === 'noticia' || p.tipo === 'cultura') && p.foto);
+  if (p.tipo === 'newsletter') {
+    trava('foto', Boolean(p.foto?.caminho), 'Foto', 'sem foto');
+    if (p.foto?.caminho) trava('foto_descricao', !vazio(p.foto.descricao), 'Descrição da foto', 'foto sem descrição');
+  }
   if (olhaFoto) {
     trava(`${prefixo}_licenca`, !vazio(p.foto?.licenca), `Licença da ${prefixo}`, `${prefixo} sem licença`);
     trava(`${prefixo}_credito`, !vazio(p.foto?.credito), `Crédito da ${prefixo}`, `${prefixo} sem crédito`);

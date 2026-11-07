@@ -1,0 +1,210 @@
+---
+// Configuração do robô de notícias (spec busca §4). Só o editor.
+import Painel from '../../../layouts/Painel.astro';
+import { alternarFonte, lerConfig, listarFontes, novaFonte, salvarConfig, type FonteBusca } from '../../../lib/banco/busca';
+
+const { cliente, usuario } = Astro.locals.painel!;
+if (usuario?.papel !== 'editor') return Astro.rewrite('/404');
+
+const DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+const GRUPOS: [FonteBusca['grupo'], string][] = [['brasil', 'Brasil'], ['america-latina', 'América Latina'], ['mundo', 'Mundo']];
+const linhas = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 30);
+
+let erro = '';
+let [cfg, fontes] = await Promise.all([lerConfig(cliente), listarFontes(cliente)]);
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const campo = (n: string) => String(f.get(n) ?? '').trim();
+  const acao = campo('acao');
+  let r: { ok: boolean; erro?: string } = { ok: false, erro: 'Ação desconhecida.' };
+  if (acao === 'config') {
+    const num = (n: string) => Number(campo(n).replace(',', '.'));
+    const novo = {
+      ativo: f.get('ativo') === 'on',
+      dias: f.getAll('dias').map(Number).filter((d) => d >= 1 && d <= 7),
+      hora: num('hora'),
+      busca_livre: f.get('busca_livre') === 'on',
+      temas_interessa: linhas(campo('temas_interessa')),
+      temas_evita: linhas(campo('temas_evita')),
+      max_candidatas: num('max_candidatas'),
+      teto_brl: num('teto_brl'),
+      cambio: num('cambio'),
+    };
+    if (!(novo.hora >= 0 && novo.hora <= 23)) r = { ok: false, erro: 'A hora vai de 0 a 23.' };
+    else if (!(novo.max_candidatas >= 1 && novo.max_candidatas <= 20)) r = { ok: false, erro: 'O máximo de candidatas vai de 1 a 20.' };
+    else if (!(novo.teto_brl >= 0) || !(novo.cambio > 0)) r = { ok: false, erro: 'Confira o teto e o câmbio.' };
+    else r = await salvarConfig(cliente, novo);
+  } else if (acao === 'fonte') {
+    const fonte = fontes.find((x) => x.id === campo('id'));
+    r = fonte ? await alternarFonte(cliente, fonte) : { ok: false, erro: 'Fonte não encontrada.' };
+  } else if (acao === 'nova_fonte') {
+    const dominio = campo('dominio').toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
+    const grupo = GRUPOS.find(([g]) => g === campo('grupo'))?.[0];
+    if (!campo('nome') || !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(dominio) || !grupo) r = { ok: false, erro: 'Escreva o nome, um domínio como exemplo.com.br e o grupo.' };
+    else r = await novaFonte(cliente, { nome: campo('nome'), dominio, grupo });
+  }
+  // Depois de ligar ou desligar uma fonte, o grupo dela continua aberto.
+  const grupoAberto = acao === 'fonte' ? fontes.find((x) => x.id === campo('id'))?.grupo : acao === 'nova_fonte' ? campo('grupo') : '';
+  if (r.ok) return Astro.redirect(`/painel/busca/config${grupoAberto ? `?aberto=${grupoAberto}#fontes-${grupoAberto}` : ''}`, 303);
+  erro = r.erro ?? 'Não deu para salvar. Tente de novo.';
+  [cfg, fontes] = await Promise.all([lerConfig(cliente), listarFontes(cliente)]);
+}
+const aberto = Astro.url.searchParams.get('aberto');
+---
+<Painel titulo="Configuração da busca">
+  <p class="maquina"><a href="/painel/busca">‹ Busca</a></p>
+  <h1>Configuração</h1>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+
+  <form method="post" class="config">
+    <input type="hidden" name="acao" value="config" />
+    <label class="marcar"><input type="checkbox" name="ativo" checked={cfg.ativo} /> Robô ligado (roda sozinho nos dias marcados)</label>
+    <fieldset class="campo">
+      <legend>Dias</legend>
+      <div class="dias">{DIAS.map((d, i) => <label class="marcar"><input type="checkbox" name="dias" value={i + 1} checked={cfg.dias.includes(i + 1)} /> {d}</label>)}</div>
+    </fieldset>
+    <div class="campo"><label for="c-hora">Hora (Brasília)</label><input id="c-hora" name="hora" type="number" min="0" max="23" value={cfg.hora} /></div>
+    <label class="marcar"><input type="checkbox" name="busca_livre" checked={cfg.busca_livre} /> Busca livre na web (só quando as fontes fixas não bastam)</label>
+    <div class="campo"><label for="c-interessa">Temas que interessam (um por linha)</label><textarea id="c-interessa" name="temas_interessa" rows="4">{cfg.temas_interessa.join('\n')}</textarea></div>
+    <div class="campo"><label for="c-evita">Temas que não interessam (um por linha)</label><textarea id="c-evita" name="temas_evita" rows="4">{cfg.temas_evita.join('\n')}</textarea></div>
+    <div class="campo"><label for="c-max">Máximo de candidatas por rodada</label><input id="c-max" name="max_candidatas" type="number" min="1" max="20" value={cfg.max_candidatas} /></div>
+    <div class="campo"><label for="c-teto">Teto mensal (R$)</label><input id="c-teto" name="teto_brl" inputmode="decimal" value={String(cfg.teto_brl)} /></div>
+    <div class="campo"><label for="c-cambio">Câmbio usado na conta (R$ por US$)</label><input id="c-cambio" name="cambio" inputmode="decimal" value={String(cfg.cambio)} /></div>
+    <button class="botao botao--marca" type="submit">Salvar configuração</button>
+  </form>
+
+  <h2 class="secao">Fontes fixas</h2>
+  {GRUPOS.map(([g, nome]) => {
+    const doGrupo = fontes.filter((x) => x.grupo === g);
+    return (
+      <details class="grupo" id={`fontes-${g}`} open={aberto === g}>
+        <summary class="grupo__titulo">{nome} <span class="maquina grupo__conta">{doGrupo.filter((x) => x.ativa).length} de {doGrupo.length} ligadas</span></summary>
+        <ul class="fontes">
+          {doGrupo.map((x) => (
+            <li class:list={{ 'fonte--desligada': !x.ativa }}>
+              <span><strong>{x.nome}</strong> <span class="maquina">{x.dominio}</span></span>
+              <form method="post">
+                <input type="hidden" name="acao" value="fonte" />
+                <input type="hidden" name="id" value={x.id} />
+                <button class="botao botao--linha" type="submit" aria-label={`${x.ativa ? 'Desligar' : 'Ligar'} ${x.nome}`}>{x.ativa ? 'Desligar' : 'Ligar'}</button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      </details>
+    );
+  })}
+
+  <h2 class="secao">Nova fonte</h2>
+  <form method="post" class="config">
+    <input type="hidden" name="acao" value="nova_fonte" />
+    <div class="campo"><label for="f-nome">Nome</label><input id="f-nome" name="nome" maxlength="80" /></div>
+    <div class="campo"><label for="f-dominio">Domínio</label><input id="f-dominio" name="dominio" placeholder="exemplo.com.br" /></div>
+    <div class="campo">
+      <label for="f-grupo">Grupo</label>
+      <select id="f-grupo" name="grupo">{GRUPOS.map(([g, n]) => <option value={g}>{n}</option>)}</select>
+    </div>
+    <button class="botao" type="submit">Adicionar fonte</button>
+  </form>
+</Painel>
+
+<style>
+  .config {
+    display: grid;
+    gap: var(--esp-3);
+    margin-bottom: var(--esp-6);
+  }
+  .marcar {
+    display: flex;
+    align-items: center;
+    gap: var(--esp-2);
+    min-height: 44px;
+  }
+  .marcar input {
+    width: 20px;
+    height: 20px;
+  }
+  .dias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--esp-4);
+  }
+  fieldset.campo {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .secao {
+    font-family: var(--fonte-maquina);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: var(--esp-2) 0;
+    border-top: 3px solid var(--tinta);
+    border-bottom: 1px solid var(--tinta);
+    margin: var(--esp-6) 0 var(--esp-4);
+  }
+  .grupo {
+    border-bottom: 1px solid var(--tinta);
+  }
+  /* Título do grupo maior que o nome das fontes; a seta gira quando abre. */
+  .grupo__titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--esp-1) var(--esp-3);
+    min-height: 48px;
+    padding: var(--esp-3) 0;
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 24px;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+    list-style: none;
+  }
+  .grupo__titulo::-webkit-details-marker {
+    display: none;
+  }
+  .grupo__titulo::before {
+    content: '▸';
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  .grupo[open] > .grupo__titulo::before {
+    transform: rotate(90deg);
+  }
+  .grupo__conta {
+    font-family: var(--fonte-maquina);
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: none;
+  }
+  .grupo .fontes {
+    margin-bottom: var(--esp-3);
+  }
+  .fontes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--tinta);
+  }
+  .fontes li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--esp-2);
+    padding: var(--esp-2) 0;
+    border-bottom: 1px solid var(--tinta);
+  }
+  .fontes .maquina {
+    font-size: 12px;
+  }
+  .fonte--desligada {
+    opacity: 0.5;
+  }
+</style>

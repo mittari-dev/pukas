@@ -5,12 +5,12 @@ import { caminhoEdicao } from '../../../../lib/formato';
 import { acharEdicao } from '../../../../lib/rotas';
 import { etiquetasDaPeca } from '../../../../lib/cache';
 
-const edicoes = await carregarEdicoes('es');
+const edicoes = await carregarEdicoes('es', Astro.params.serie);
 let i = acharEdicao(edicoes, Astro.params.serie, Astro.params.numero);
 let edicao = edicoes[i];
 if (i < 0) {
   // Sem tradução pronta: o original, com o aviso de tradução a caminho.
-  const originais = await carregarEdicoes('pt');
+  const originais = await carregarEdicoes('pt', Astro.params.serie);
   const j = acharEdicao(originais, Astro.params.serie, Astro.params.numero);
   if (j < 0) return Astro.rewrite('/es/404');
   edicao = pendente(originais[j]);

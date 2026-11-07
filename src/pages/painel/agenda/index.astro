@@ -1,0 +1,459 @@
+---
+// Agenda editorial (spec agenda §4): semana (celular e computador) e mês (só computador), item num modal,
+// espaços do ritmo da casa. O modal abre por endereço (#item-agenda); public/agenda.js transforma em <dialog>.
+import Painel from '../../../layouts/Painel.astro';
+import { atrasado, espacosDoRitmo, gradeDoMes, hojeEmSaoPaulo, semanaDe, situacaoDoItem, type Dia, type Situacao, type SituacaoManual } from '../../../lib/agenda';
+import { apagarItem, ligarPeca, listarAgenda, listarPessoas, listarRitmo, pecasSemItem, salvarItem, type ItemAgenda } from '../../../lib/banco/agenda';
+import { lerSeries } from '../../../lib/banco/series';
+import { nomeDaSerie } from '../../../lib/series';
+
+const { cliente } = Astro.locals.painel!;
+const TIPOS = [['newsletter', 'Newsletter'], ['noticia', 'Notícia'], ['cultura', 'Cultura']] as const;
+type TipoAgenda = (typeof TIPOS)[number][0];
+const nomeTipo = Object.fromEntries(TIPOS) as Record<TipoAgenda, string>;
+const MANUAIS: [SituacaoManual, string][] = [['ideia', 'Ideia'], ['escrevendo', 'Escrevendo'], ['pronta', 'Pronta']];
+const ROTULO: Record<Situacao, string> = { ideia: 'IDEIA', escrevendo: 'ESCREVENDO', em_revisao: 'EM REVISÃO', pronta: 'PRONTA', publicada: 'PUBLICADA' };
+const SEMANA = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
+const ehDia = (s: string | null): s is Dia => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s));
+
+const hoje = hojeEmSaoPaulo(new Date());
+const visao = Astro.url.searchParams.get('visao') === 'mes' ? 'mes' : 'semana';
+const dia = ehDia(Astro.url.searchParams.get('dia')) ? Astro.url.searchParams.get('dia')! : hoje;
+const aqui = (extra: Record<string, string> = {}) => `/painel/agenda?${new URLSearchParams({ visao, dia, ...extra })}`;
+
+let erro = '';
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const campo = (n: string) => String(f.get(n) ?? '').trim();
+  const acao = campo('acao');
+  const id = campo('id') || undefined;
+  let r: { ok: boolean; erro?: string } = { ok: false, erro: 'Ação desconhecida.' };
+  if (acao === 'salvar') {
+    const tipo = campo('tipo') as TipoAgenda;
+    if (!ehDia(campo('dia'))) r = { ok: false, erro: 'Escolha o dia.' };
+    else if (!(tipo in nomeTipo)) r = { ok: false, erro: 'Escolha o tipo.' };
+    else if (!campo('titulo')) r = { ok: false, erro: 'Escreva um título provisório.' };
+    else
+      r = await salvarItem(cliente, {
+        dia: campo('dia'), tipo, serie: campo('serie') || null, titulo: campo('titulo'), nota: campo('nota') || null,
+        situacao: (MANUAIS.find(([s]) => s === campo('situacao'))?.[0] ?? 'ideia'), responsavel: campo('responsavel') || null,
+        ...(f.has('peca_id') ? { peca_id: campo('peca_id') || null } : {}),
+      }, id);
+  } else if (acao === 'ligar' && id) r = await ligarPeca(cliente, id, campo('peca_id') || null);
+  else if (acao === 'apagar' && id) r = await apagarItem(cliente, id);
+  if (r.ok) return Astro.redirect(aqui(), 303);
+  erro = r.erro ?? 'Não deu para salvar. Tente de novo.';
+}
+
+const semana = semanaDe(dia);
+const grade = visao === 'mes' ? gradeDoMes(dia) : [];
+const dias = grade.length ? grade.flat() : semana;
+const [itens, ritmo, pessoas, livres, series] = await Promise.all([listarAgenda(cliente, dias[0], dias.at(-1)!), listarRitmo(cliente), listarPessoas(cliente), pecasSemItem(cliente), lerSeries(cliente)]);
+const nomeSerie = (slug: string | null) => nomeDaSerie(series, slug);
+const espacos = espacosDoRitmo(dias, ritmo, itens);
+const doDia = (d: Dia) => itens.filter((i) => i.dia === d);
+const espacosDe = (d: Dia) => espacos.filter((e) => e.dia === d);
+const situacao = (i: ItemAgenda) => situacaoDoItem(i, i.peca?.estado);
+const chapeu = (tipo: string, serie: string | null) => `${nomeTipo[tipo as TipoAgenda] ?? tipo}${nomeSerie(serie) ? ` · ${nomeSerie(serie)}` : ''}`;
+const numero = (d: Dia) => d.slice(8);
+
+// Item aberto no modal: ?item=<id> edita, ?novo=<dia> cria.
+const aberto = itens.find((i) => i.id === Astro.url.searchParams.get('item'));
+const novoDia = ehDia(Astro.url.searchParams.get('novo')) ? Astro.url.searchParams.get('novo')! : undefined;
+const pecasParaLigar = aberto?.peca_id ? [{ id: aberto.peca_id, tipo: aberto.tipo, titulo: aberto.peca?.titulo ?? '(peça)' }, ...livres] : livres;
+
+const mover = (dias: number) => {
+  const d = new Date(`${dia}T12:00:00Z`);
+  if (visao === 'mes') d.setUTCMonth(d.getUTCMonth() + Math.sign(dias), 1);
+  else d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+};
+const fmt = (d: Dia, o: Intl.DateTimeFormatOptions) => new Date(`${d}T12:00:00Z`).toLocaleDateString('pt-BR', { timeZone: 'UTC', ...o });
+const tituloSemana = `Semana de ${fmt(semana[0], { day: 'numeric' })} a ${fmt(semana[6], { day: 'numeric', month: 'short' })}`;
+const tituloMes = fmt(dia, { month: 'long', year: 'numeric' });
+---
+<Painel titulo="Agenda">
+  <header class="agenda__cabeca">
+    <h1>Agenda</h1>
+    <a class="maquina agenda__ritmo" href="/painel/agenda/ritmo">Ritmo da casa</a>
+  </header>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+
+  <nav class="controles maquina" aria-label="Período">
+    <a href={`/painel/agenda?${new URLSearchParams({ visao, dia: mover(-7) })}`} aria-label={visao === 'mes' ? 'Mês anterior' : 'Semana anterior'}>‹</a>
+    <a href={`/painel/agenda?${new URLSearchParams({ visao, dia: hoje })}`}>Hoje</a>
+    <a href={`/painel/agenda?${new URLSearchParams({ visao, dia: mover(7) })}`} aria-label={visao === 'mes' ? 'Próximo mês' : 'Próxima semana'}>›</a>
+    <span class="controles__titulo">{visao === 'mes' ? tituloMes : tituloSemana}</span>
+    <span class="visoes" role="group" aria-label="Visão">
+      <a href={`/painel/agenda?${new URLSearchParams({ visao: 'semana', dia })}`} aria-current={visao === 'semana' ? 'page' : undefined}>Semana</a>
+      <a href={`/painel/agenda?${new URLSearchParams({ visao: 'mes', dia })}`} aria-current={visao === 'mes' ? 'page' : undefined}>Mês</a>
+    </span>
+  </nav>
+
+  <!-- Semana: sempre no celular; no computador, só na visão de semana. -->
+  <ol class:list={['semana', { 'semana--so-celular': visao === 'mes' }]}>
+    {semana.map((d, i) => (
+      <li class:list={['dia', { 'dia--hoje': d === hoje }]} data-dia={d}>
+        <h2 class="dia__cabeca maquina">
+          <span aria-current={d === hoje ? 'date' : undefined}>{SEMANA[i]} {numero(d)}</span>
+          <a class="dia__novo" href={`${aqui({ novo: d })}#item-agenda`} aria-label={`Novo item em ${fmt(d, { day: 'numeric', month: 'long' })}`} data-abrir-item>+</a>
+        </h2>
+        {espacosDe(d).map((e) => (
+          <p class="espaco" data-ritmo={d}><span class="chapeu">{chapeu(e.tipo, e.serie)}</span>{e.rotulo && <span> · {e.rotulo}</span>}</p>
+        ))}
+        <ul class="itens">
+          {doDia(d).map((it) => (
+            <li>
+              <a class:list={['item', { 'item--atrasado': atrasado(d, situacao(it), hoje) }]} href={`${aqui({ item: it.id })}#item-agenda`} data-abrir-item>
+                <span class="chapeu">{chapeu(it.tipo, it.serie)}</span>
+                <span class="item__titulo">{it.titulo}</span>
+                <span class="maquina item__situacao">{ROTULO[situacao(it)]}{atrasado(d, situacao(it), hoje) && ' · ATRASADO'}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </li>
+    ))}
+  </ol>
+
+  {grade.length > 0 && (
+    <div class="mes" data-mes={dia.slice(0, 7)}>
+      <div class="mes__semana maquina" aria-hidden="true">{SEMANA.map((s) => <span>{s}</span>)}</div>
+      {grade.map((s) => (
+        <div class="mes__semana">
+          {s.map((d) => {
+            const lista = doDia(d);
+            return (
+              <div class:list={['mes__dia', { 'mes__dia--fora': d.slice(0, 7) !== dia.slice(0, 7), 'dia--hoje': d === hoje }]} data-dia={d}>
+                <a class="maquina mes__numero" href={`/painel/agenda?${new URLSearchParams({ visao: 'semana', dia: d })}`} aria-current={d === hoje ? 'date' : undefined}>{numero(d)}</a>
+                {espacosDe(d).map((e) => <span class="espaco espaco--mini" data-ritmo={d}>{chapeu(e.tipo, e.serie)}</span>)}
+                {lista.slice(0, 3).map((it) => (
+                  <a class:list={['mes__item', { 'item--atrasado': atrasado(d, situacao(it), hoje) }]} href={`${aqui({ item: it.id })}#item-agenda`} data-abrir-item>{it.titulo}</a>
+                ))}
+                {lista.length > 3 && <a class="maquina mes__mais" href={`/painel/agenda?${new URLSearchParams({ visao: 'semana', dia: d })}`}>+ {lista.length - 3}</a>}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  )}
+
+  {(aberto || novoDia) && (
+    <dialog id="item-agenda" class="nova" aria-labelledby="item-titulo">
+      <form method="post" action={aqui()}>
+        <h2 id="item-titulo" class="nova__titulo">{aberto ? 'Item da agenda' : 'Novo item'}</h2>
+        <input type="hidden" name="acao" value="salvar" />
+        {aberto && <input type="hidden" name="id" value={aberto.id} />}
+        <div class="campo"><label for="i-dia">Dia</label><input id="i-dia" name="dia" type="date" required value={aberto?.dia ?? novoDia} /></div>
+        <div class="campo">
+          <label for="i-tipo">Tipo</label>
+          <select id="i-tipo" name="tipo">{TIPOS.map(([t, n]) => <option value={t} selected={t === (aberto?.tipo ?? 'newsletter')}>{n}</option>)}</select>
+        </div>
+        <div class="campo item__serie">
+          <label for="i-serie">Série da newsletter</label>
+          <select id="i-serie" name="serie">{series.filter((s) => s.ativa || s.slug === aberto?.serie).map((s) => <option value={s.slug} selected={s.slug === aberto?.serie}>{s.nome}</option>)}</select>
+        </div>
+        <div class="campo"><label for="i-titulo">Título provisório</label><input id="i-titulo" name="titulo" required maxlength="120" value={aberto?.titulo} /></div>
+        <div class="campo"><label for="i-nota">Nota</label><textarea id="i-nota" name="nota" rows="3">{aberto?.nota}</textarea></div>
+        {aberto?.peca_id && aberto.peca ? (
+          <p class="ajuda item__acompanha">Situação: <strong>{ROTULO[situacao(aberto)]}</strong>, acompanha a peça <a href={`/painel/peca/${aberto.peca_id}`}>{aberto.peca.titulo}</a>.</p>
+        ) : (
+          <div class="campo">
+            <label for="i-situacao">Situação</label>
+            <select id="i-situacao" name="situacao">{MANUAIS.map(([s, n]) => <option value={s} selected={s === aberto?.situacao}>{n}</option>)}</select>
+          </div>
+        )}
+        <div class="campo">
+          <label for="i-resp">Responsável</label>
+          <select id="i-resp" name="responsavel"><option value="">Ninguém ainda</option>{pessoas.map((p) => <option value={p.id} selected={p.id === aberto?.responsavel}>{p.nome}</option>)}</select>
+        </div>
+        <div class="campo">
+          <label for="i-peca">Peça ligada</label>
+          <select id="i-peca" name="peca_id"><option value="">Nenhuma</option>{pecasParaLigar.map((p) => <option value={p.id} selected={p.id === aberto?.peca_id}>{p.titulo || '(sem título)'}</option>)}</select>
+        </div>
+        <div class="nova__acoes">
+          {aberto && !aberto.peca_id && (
+            <a class="botao botao--linha" href={`/painel/peca/nova?${new URLSearchParams({ tipo: aberto.tipo, ...(aberto.serie ? { serie: aberto.serie } : {}), agenda: aberto.id })}`}>Começar a escrever</a>
+          )}
+          <a class="botao botao--linha" href={aqui()} data-fechar-item>Fechar</a>
+          <button class="botao botao--marca" type="submit">Salvar</button>
+        </div>
+      </form>
+      {aberto && (
+        <form method="post" action={aqui()} class="item__apagar">
+          <input type="hidden" name="acao" value="apagar" />
+          <input type="hidden" name="id" value={aberto.id} />
+          <button class="botao botao--linha" type="submit">Apagar item</button>
+        </form>
+      )}
+    </dialog>
+  )}
+  <script is:inline src="/agenda.js" defer></script>
+</Painel>
+
+<style>
+  /* A agenda precisa de largura para 7 colunas: só esta página sai da coluna de 760px do painel. */
+  /* main.painel: mais específico que o .painel do layout, que vem depois na folha e ganharia no empate. */
+  :global(main.painel) {
+    max-width: 1120px;
+  }
+  .agenda__cabeca {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--esp-3);
+    margin-bottom: var(--esp-5);
+  }
+  .agenda__cabeca h1 {
+    margin: 0;
+  }
+  .agenda__ritmo {
+    font-size: 13px;
+    padding: var(--esp-2) 0;
+  }
+
+  .controles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--esp-2) var(--esp-3);
+    margin-bottom: var(--esp-4);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .controles > a {
+    display: inline-grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 var(--esp-2);
+    border: 1px solid var(--tinta);
+    text-decoration: none;
+    color: inherit;
+  }
+  .controles__titulo {
+    font-weight: 700;
+  }
+  .visoes {
+    display: none;
+    margin-left: auto;
+    gap: var(--esp-2);
+  }
+  .visoes a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 var(--esp-3);
+    border: 1px solid var(--tinta);
+    text-decoration: none;
+    color: inherit;
+  }
+  .visoes [aria-current] {
+    background: var(--tinta);
+    color: var(--cal);
+  }
+
+  /* Semana: no celular, uma lista de dias; no computador, 7 colunas. */
+  .semana {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--esp-3);
+  }
+  .dia {
+    border-top: 1px solid var(--tinta);
+    padding-top: var(--esp-2);
+  }
+  .dia--hoje {
+    border-top: 4px solid var(--pau-brasil);
+  }
+  .dia__cabeca {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 var(--esp-2);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .dia__novo {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .itens {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--esp-2);
+  }
+  .item {
+    display: grid;
+    gap: 2px;
+    padding: var(--esp-2) var(--esp-3);
+    border: 1px solid var(--tinta);
+    text-decoration: none;
+    color: inherit;
+  }
+  .item:hover .item__titulo {
+    color: var(--pau-brasil);
+  }
+  .item__titulo {
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .item__situacao {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .item--atrasado {
+    border-color: var(--pau-brasil);
+    border-left-width: 4px;
+  }
+  .espaco {
+    margin: 0 0 var(--esp-2);
+    padding: var(--esp-2) var(--esp-3);
+    border: 1px dashed var(--tinta);
+    font-size: 13px;
+  }
+
+  /* Mês: só no computador. */
+  .mes {
+    display: none;
+  }
+
+  @media (min-width: 901px) {
+    .visoes {
+      display: inline-flex;
+    }
+    .semana {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+    .semana--so-celular {
+      display: none;
+    }
+    .mes {
+      display: grid;
+      gap: 0;
+      border-left: 1px solid var(--tinta);
+    }
+    .mes__semana {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+    .mes__semana[aria-hidden] span {
+      padding: var(--esp-1) var(--esp-2);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      border-top: 1px solid var(--tinta);
+      border-right: 1px solid var(--tinta);
+    }
+    .mes__dia {
+      display: grid;
+      align-content: start;
+      gap: 2px;
+      min-height: 112px;
+      padding: var(--esp-1) var(--esp-2) var(--esp-2);
+      border-top: 1px solid var(--tinta);
+      border-right: 1px solid var(--tinta);
+      font-size: 13px;
+    }
+    .mes__semana:last-child .mes__dia {
+      border-bottom: 1px solid var(--tinta);
+    }
+    .mes__dia--fora {
+      opacity: 0.45;
+    }
+    .mes__dia.dia--hoje {
+      box-shadow: inset 0 4px 0 var(--pau-brasil);
+    }
+    .mes__numero {
+      font-size: 12px;
+      text-decoration: none;
+    }
+    .mes__item {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .mes__mais {
+      font-size: 11px;
+    }
+    .espaco--mini {
+      display: block;
+      padding: 0 var(--esp-1);
+      margin: 0;
+      font-size: 10px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  /* Modal do item: mesmo jeito do "Nova peça" do Estúdio. */
+  .nova {
+    width: min(560px, calc(100vw - 2 * var(--esp-4)));
+    max-height: calc(100dvh - 2 * var(--esp-4));
+    padding: var(--esp-5);
+    border: 3px solid var(--tinta);
+    background: var(--fundo);
+    color: var(--texto);
+  }
+  .nova::backdrop {
+    background: color-mix(in srgb, var(--tinta) 60%, transparent);
+  }
+  .nova:target:not([open]) {
+    display: block;
+    position: static;
+    margin: var(--esp-6) 0 0;
+  }
+  .nova__titulo {
+    font-family: var(--fonte-manchete);
+    font-stretch: var(--largura-manchete);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 28px;
+    line-height: 1;
+    margin: 0 0 var(--esp-4);
+  }
+  .nova:has(select[name='tipo'] option[value='newsletter']:not(:checked)) .item__serie {
+    display: none;
+  }
+  .nova__acoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--esp-3);
+  }
+  .nova__acoes .botao {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .item__acompanha {
+    margin-bottom: var(--esp-4);
+  }
+  .item__apagar {
+    margin-top: var(--esp-4);
+    padding-top: var(--esp-3);
+    border-top: 1px solid var(--tinta);
+  }
+  .botao:focus-visible,
+  .controles a:focus-visible,
+  .item:focus-visible,
+  .dia__novo:focus-visible {
+    outline: 3px solid var(--pau-brasil);
+    outline-offset: 2px;
+  }
+</style>

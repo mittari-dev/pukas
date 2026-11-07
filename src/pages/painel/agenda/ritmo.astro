@@ -1,0 +1,147 @@
+---
+// Ritmo da casa (spec agenda §3): os compromissos fixos por dia da semana. A equipe vê; só o editor muda.
+import Painel from '../../../layouts/Painel.astro';
+import { apagarRitmo, listarRitmo, salvarRitmo, type Compromisso } from '../../../lib/banco/agenda';
+import { lerSeries } from '../../../lib/banco/series';
+import { nomeDaSerie } from '../../../lib/series';
+
+const { cliente, usuario } = Astro.locals.painel!;
+const editor = usuario?.papel === 'editor';
+const DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+const TIPOS = [['newsletter', 'Newsletter'], ['noticia', 'Notícia'], ['cultura', 'Cultura']] as const;
+const nomeTipo = Object.fromEntries(TIPOS) as Record<string, string>;
+
+let erro = '';
+let ritmo = await listarRitmo(cliente);
+const series = await lerSeries(cliente);
+const nomeSerie = (slug: string | null) => nomeDaSerie(series, slug);
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const campo = (n: string) => String(f.get(n) ?? '').trim();
+  const acao = campo('acao');
+  const atual = ritmo.find((r) => r.id === campo('id'));
+  let r: { ok: boolean; erro?: string } = { ok: false, erro: 'Ação desconhecida.' };
+  if (!editor) r = { ok: false, erro: 'Só quem é editor muda o ritmo.' };
+  else if (acao === 'salvar') {
+    const dia = Number(campo('dia_semana'));
+    const tipo = campo('tipo') as Compromisso['tipo'];
+    if (!(dia >= 1 && dia <= 7)) r = { ok: false, erro: 'Escolha o dia da semana.' };
+    else if (!(tipo in nomeTipo)) r = { ok: false, erro: 'Escolha o tipo.' };
+    else r = await salvarRitmo(cliente, { dia_semana: dia, tipo, serie: campo('serie') || null, rotulo: campo('rotulo') || null, ativo: true });
+  } else if ((acao === 'pausar' || acao === 'retomar') && atual) {
+    const { id, ...resto } = atual;
+    r = await salvarRitmo(cliente, { ...resto, ativo: acao === 'retomar' }, id);
+  } else if (acao === 'apagar' && atual) r = await apagarRitmo(cliente, atual.id);
+  if (r.ok) return Astro.redirect('/painel/agenda/ritmo', 303);
+  erro = r.erro ?? 'Não deu para salvar. Tente de novo.';
+  ritmo = await listarRitmo(cliente);
+}
+---
+<Painel titulo="Ritmo da casa">
+  <p class="maquina"><a href="/painel/agenda">‹ Agenda</a></p>
+  <h1>Ritmo da casa</h1>
+  <p class="sub">Os compromissos fixos de publicação. Na agenda, cada um aparece como um espaço tracejado no dia dele, até um item ocupar o lugar.</p>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+
+  {ritmo.length === 0 ? (
+    <p class="vazio">Nenhum compromisso fixo.</p>
+  ) : (
+    <ul class="ritmo">
+      {ritmo.map((r) => (
+        <li class:list={{ 'ritmo--pausado': !r.ativo }}>
+          <div>
+            <strong>{DIAS[r.dia_semana - 1]}</strong>
+            <span class="chapeu">{nomeTipo[r.tipo]}{nomeSerie(r.serie) ? ` · ${nomeSerie(r.serie)}` : ''}</span>
+            {r.rotulo && <span>{r.rotulo}</span>}
+            {!r.ativo && <span class="maquina">PAUSADO</span>}
+          </div>
+          {editor && (
+            <div class="ritmo__acoes">
+              <form method="post">
+                <input type="hidden" name="id" value={r.id} />
+                <button class="botao botao--linha" name="acao" value={r.ativo ? 'pausar' : 'retomar'}>{r.ativo ? 'Pausar' : 'Retomar'}</button>
+              </form>
+              <form method="post">
+                <input type="hidden" name="id" value={r.id} />
+                <button class="botao botao--linha" name="acao" value="apagar">Apagar</button>
+              </form>
+            </div>
+          )}
+        </li>
+      ))}
+    </ul>
+  )}
+
+  {editor && (
+    <section aria-labelledby="novo-compromisso">
+      <h2 id="novo-compromisso" class="secao">Novo compromisso</h2>
+      <form method="post" class="novo">
+        <input type="hidden" name="acao" value="salvar" />
+        <div class="campo">
+          <label for="r-dia">Dia da semana</label>
+          <select id="r-dia" name="dia_semana">{DIAS.map((d, i) => <option value={i + 1}>{d}</option>)}</select>
+        </div>
+        <div class="campo">
+          <label for="r-tipo">Tipo</label>
+          <select id="r-tipo" name="tipo">{TIPOS.map(([t, n]) => <option value={t}>{n}</option>)}</select>
+        </div>
+        <div class="campo novo__serie">
+          <label for="r-serie">Série da newsletter</label>
+          <select id="r-serie" name="serie">{series.filter((s) => s.ativa).map((s) => <option value={s.slug}>{s.nome}</option>)}</select>
+        </div>
+        <div class="campo">
+          <label for="r-rotulo">Rótulo (opcional)</label>
+          <input id="r-rotulo" name="rotulo" maxlength="60" placeholder="Investigação" />
+        </div>
+        <button class="botao botao--marca" type="submit">Adicionar</button>
+      </form>
+    </section>
+  )}
+</Painel>
+
+<style>
+  .sub {
+    margin: 0 0 var(--esp-5);
+    max-width: 56ch;
+  }
+  .ritmo {
+    list-style: none;
+    margin: 0 0 var(--esp-7);
+    padding: 0;
+    border-top: 1px solid var(--tinta);
+  }
+  .ritmo li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--esp-3);
+    padding: var(--esp-4) 0;
+    border-bottom: 1px solid var(--tinta);
+  }
+  .ritmo li > div:first-child {
+    display: grid;
+    gap: var(--esp-1);
+  }
+  .ritmo--pausado {
+    opacity: 0.55;
+  }
+  .ritmo__acoes {
+    display: flex;
+    gap: var(--esp-2);
+  }
+  .secao {
+    font-family: var(--fonte-maquina);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: var(--esp-2) 0;
+    border-top: 3px solid var(--tinta);
+    border-bottom: 1px solid var(--tinta);
+    margin: 0 0 var(--esp-4);
+  }
+  .novo:has(select[name='tipo'] option[value='newsletter']:not(:checked)) .novo__serie {
+    display: none;
+  }
+</style>

@@ -12,7 +12,8 @@ interface Props {
   idioma: Idioma;
 }
 const { idioma } = Astro.props;
-const [ultima] = await carregarEdicoes(idioma);
+// O botão diz "Última Memória Operária": a última edição dessa série, não de qualquer uma.
+const [ultima] = await carregarEdicoes(idioma, 'memoria-operaria');
 const [obra] = await carregarObras(idioma);
 const botoes: { rotulo: string; href: string; frase?: string }[] = [
   ...(ultima
@@ -34,12 +35,10 @@ const botoes: { rotulo: string; href: string; frase?: string }[] = [
               <span class="botao__rotulo">{b.rotulo}</span>
               {b.frase && <span class="botao__frase">{b.frase}</span>}
             </span>
-            <span class="maquina botao__seta" aria-hidden="true">›››</span>
           </a>
         </li>
       ))}
     </ul>
-    <p class="maquina links__nota">{t(idioma, 'links.nota')}</p>
   </div>
 </Base>
 
@@ -106,13 +105,5 @@ const botoes: { rotulo: string; href: string; frase?: string }[] = [
   }
   .botao__frase {
     font-size: 16px;
-  }
-  .botao__seta {
-    font-size: 18px;
-  }
-  .links__nota {
-    margin: var(--esp-6) 0 0;
-    font-size: 12px;
-    letter-spacing: 0.1em;
   }
 </style>

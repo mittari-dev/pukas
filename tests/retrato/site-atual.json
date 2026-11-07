@@ -3,25 +3,25 @@
     "url": "/",
     "status": 200,
     "titulo": "Direito nenhum caiu do céu. Foi luta.",
-    "texto": "CABO FRIO — AMÉRICA LATINA · GRÁTIS, PASSE ADIANTE MEMÓRIA OPERÁRIA Direito nenhum caiu do céu. Foi luta. A primeira edição sai numa segunda-feira. Volte logo. NOTÍCIAS A primeira notícia sai quando tiver começo, meio, fim e fonte. Todas as notícias ››› CULTURA A primeira obra ainda está sendo escrita. Toda a cultura ››› O fato ganha da tese. Se a gente errar, corrige em público. O PUKAS é um órgão de mídia &amp; inteligência latino-americana. Toda informação aqui tem fonte. Leia o manifesto ."
+    "texto": "Direito nenhum caiu do céu. Foi luta. A primeira edição ainda não foi publicada. NOTÍCIAS Ainda não há notícias publicadas. Todas as notícias CULTURA Ainda não há obras publicadas. Toda a cultura Erros são corrigidos na própria matéria, com a data da correção. O PUKAS é um órgão de mídia &amp; inteligência latino-americana sobre trabalho, história e política. Leia o manifesto ."
   },
   {
     "url": "/es/",
     "status": 200,
     "titulo": "Ningún derecho cayó del cielo. Fue lucha.",
-    "texto": "CABO FRIO — AMÉRICA LATINA · GRATIS, PÁSALO MEMORIA OBRERA Ningún derecho cayó del cielo. Fue lucha. Todavía no hay ediciones en español. Vuelve pronto. NOTICIAS La primera noticia sale cuando tenga principio, medio, final y fuente. Todas las noticias ››› CULTURA La primera obra todavía se está escribiendo. Toda la cultura ››› El hecho le gana a la tesis. Si nos equivocamos, corregimos en público. PUKAS es un medio de comunicación e inteligencia latinoamericana. Toda la información aquí tiene fuente. Lee el manifiesto ."
+    "texto": "Ningún derecho cayó del cielo. Fue lucha. Todavía no hay ediciones en español. NOTICIAS Todavía no hay noticias publicadas. Todas las noticias CULTURA Todavía no hay obras publicadas. Toda la cultura Los errores se corrigen en la propia nota, con la fecha de la corrección. PUKAS es un medio de comunicación e inteligencia latinoamericano sobre trabajo, historia y política. Lee el manifiesto ."
   },
   {
     "url": "/links",
     "status": 200,
-    "titulo": "Direito nenhum caiu do céu.",
-    "texto": "Direito nenhum caiu do céu. 01 Manifesto ››› 02 Memória Operária: todas as edições ››› 03 Cultura: contos, poemas e ensaios ››› TODA INFORMAÇÃO AQUI TEM FONTE. LEU? PASSE ADIANTE."
+    "titulo": "Direito nenhum caiu do céu. Foi luta.",
+    "texto": "Direito nenhum caiu do céu. Foi luta. 01 Manifesto 02 Memória Operária: todas as edições 03 Cultura: contos, poemas e ensaios"
   },
   {
     "url": "/es/links",
     "status": 200,
-    "titulo": "Ningún derecho cayó del cielo.",
-    "texto": "Ningún derecho cayó del cielo. 01 Manifiesto ››› 02 Memoria Obrera: todas las ediciones ››› 03 Cultura: cuentos, poemas y ensayos ››› TODA LA INFORMACIÓN AQUÍ TIENE FUENTE. ¿LO LEÍSTE? PÁSALO."
+    "titulo": "Ningún derecho cayó del cielo. Fue lucha.",
+    "texto": "Ningún derecho cayó del cielo. Fue lucha. 01 Manifiesto 02 Memoria Obrera: todas las ediciones 03 Cultura: cuentos, poemas y ensayos"
   },
   {
     "url": "/manifesto",
@@ -39,25 +39,25 @@
     "url": "/cultura",
     "status": 200,
     "titulo": "Cultura",
-    "texto": "Cultura Contos, cenas, poemas e ensaios. Saem quando ficam prontos. A primeira obra ainda está sendo escrita."
+    "texto": "Cultura Contos, cenas, poemas e ensaios. Saem quando ficam prontos. Ainda não há obras publicadas."
   },
   {
     "url": "/es/cultura",
     "status": 200,
     "titulo": "Cultura",
-    "texto": "Cultura Cuentos, escenas, poemas y ensayos. Salen cuando están listos. Todavía no hay obras en español. Vuelve pronto."
+    "texto": "Cultura Cuentos, escenas, poemas y ensayos. Salen cuando están listos. Todavía no hay obras en español."
   },
   {
     "url": "/newsletter/memoria-operaria",
     "status": 200,
     "titulo": "Memória Operária",
-    "texto": "Memória Operária Direitos que existem porque alguém lutou. Uma edição toda segunda, sempre com as fontes. A primeira edição sai numa segunda-feira. Volte logo."
+    "texto": "Memória Operária Direito nenhum caiu do céu. Foi luta. Uma edição toda segunda, com as fontes. A primeira edição ainda não foi publicada."
   },
   {
     "url": "/es/newsletter/memoria-operaria",
     "status": 200,
     "titulo": "Memoria Obrera",
-    "texto": "Memoria Obrera Derechos que existen porque alguien luchó. Una edición cada lunes, siempre con las fuentes. Todavía no hay ediciones en español. Vuelve pronto."
+    "texto": "Memoria Obrera Ningún derecho cayó del cielo. Fue lucha. Una edición cada lunes, con las fuentes. Todavía no hay ediciones en español."
   },
   {
     "url": "/rss.xml",

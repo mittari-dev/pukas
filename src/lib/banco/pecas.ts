@@ -64,7 +64,7 @@ export function paraEdicao(l: LinhaPeca, base: string): ComCorpo<Edicao> {
     pecaId: l.id,
     body: l.corpo,
     data: {
-      serie: l.serie as Edicao['data']['serie'],
+      serie: l.serie ?? '',
       numero: l.numero ?? 0,
       titulo: l.titulo,
       publicadaEm: new Date(l.publicada_em ?? Date.now()),

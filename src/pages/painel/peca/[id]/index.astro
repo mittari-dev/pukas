@@ -10,22 +10,25 @@ import { lerFormularioPeca, linksInvalidos, textoMudou } from '../../../../lib/p
 import { destinoAoSalvar, pode, type Acao } from '../../../../lib/painel/permissoes';
 import { travasDaPeca, type EstadoPeca, type PecaEntrada, type TipoPeca } from '../../../../lib/painel/travas';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
+import { lerSeries } from '../../../../lib/banco/series';
 import { enviarTraducao } from '../../../../lib/traducao/lote';
+import { ligarPeca } from '../../../../lib/banco/agenda';
 
 const { cliente, usuario } = Astro.locals.painel!;
 const TIPOS: TipoPeca[] = ['newsletter', 'noticia', 'cultura', 'pagina'];
-const NOME: Record<TipoPeca, string> = { newsletter: 'Memória Operária', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página' };
+const NOME: Record<TipoPeca, string> = { newsletter: 'Newsletter', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página' };
 const ESTADO: Record<EstadoPeca, string> = { rascunho: 'Rascunho', em_revisao: 'Em revisão', publicada: 'Publicada', rejeitada: 'Rejeitada' };
 const DESTINO: Record<Exclude<Acao, 'editar' | 'corrigir'>, EstadoPeca> = { enviar_revisao: 'em_revisao', rejeitar: 'rejeitada', publicar: 'publicada' };
 
 const id = Astro.params.id === 'nova' ? undefined : Astro.params.id;
 let linha = id ? await buscarPeca(cliente, id) : null;
+const series = await lerSeries(cliente);
 if (id && !linha) return Astro.rewrite('/404');
 const tipo = (linha?.tipo ?? TIPOS.find((t) => t === Astro.url.searchParams.get('tipo')) ?? 'newsletter') as TipoPeca;
 const estadoAtual: EstadoPeca = linha?.estado ?? 'rascunho';
 
 let erro = '';
-let aviso = Astro.url.searchParams.get('ok') ? 'Salvo.' : '';
+let aviso = Astro.url.searchParams.get('ok') ? `Salvo.${Astro.url.searchParams.get('aviso') ? ` ${Astro.url.searchParams.get('aviso')}` : ''}` : '';
 let enviado: PecaEntrada | undefined;
 
 if (Astro.request.method === 'POST') {
@@ -43,6 +46,8 @@ if (Astro.request.method === 'POST') {
   else if (linksInvalidos(enviado).length) erro = `Link precisa começar com https:// (${linksInvalidos(enviado).join(', ')}).`;
 
   const arquivo = form.get('foto_arquivo');
+  // O Storage só aceita foto do editor: avisa antes, sem perder o texto.
+  if (!erro && arquivo instanceof File && arquivo.size > 0 && usuario!.papel !== 'editor') erro = 'Só quem é editor envia foto. Salve sem a foto e peça para um editor colocar.';
   if (!erro && arquivo instanceof File && arquivo.size > 0) {
     const r = await enviarFoto(cliente, arquivo);
     if (r.ok) enviado.foto = { caminho: r.valor, descricao: enviado.foto?.descricao ?? '', credito: enviado.foto?.credito, licenca: enviado.foto?.licenca, origem: enviado.foto?.origem };
@@ -63,7 +68,13 @@ if (Astro.request.method === 'POST') {
       if (!erro && noAr && enviado.traduzir && traduzirDeNovo) await enviarTraducao(cliente, r.valor);
       if (!erro && (noAr || estadoAtual === 'publicada')) {
         const renovou = await renovarPaginas(r.valor);
-        if (!renovou) aviso = 'Salvo, mas o site pode demorar a mostrar a mudança. Use "Renovar páginas".';
+        if (!renovou) aviso = 'Salvo, mas o site pode demorar alguns minutos para mostrar a mudança.';
+      }
+      // Veio de "Começar a escrever" na agenda: a peça nova já fica ligada ao item.
+      const agenda = String(form.get('agenda') ?? '');
+      if (!erro && !id && /^[0-9a-f-]{36}$/.test(agenda)) {
+        const l = await ligarPeca(cliente, agenda, r.valor);
+        if (!l.ok) return Astro.redirect(`/painel/peca/${r.valor}?ok=1&aviso=${encodeURIComponent(l.erro)}`, 303);
       }
       if (!erro) return Astro.redirect(`/painel/peca/${r.valor}?ok=1`, 303);
     }
@@ -85,8 +96,11 @@ function deLinha(l: LinhaPeca): PecaEntrada {
     traduzir: l.traduzir,
   };
 }
+// Peça nova: a série vem do modal do Estúdio (?serie=); sem ela, a primeira série.
 function vazia(t: TipoPeca): PecaEntrada {
-  return { tipo: t, estado: 'rascunho', serie: t === 'newsletter' ? 'memoria-operaria' : undefined, autoria: 'PUKAS', titulo: '', resumo: '', corpo: '', fontes: [], traduzir: true };
+  const ligadas = series.filter((s) => s.ativa);
+  const serie = ligadas.find((s) => s.slug === Astro.url.searchParams.get('serie'))?.slug ?? ligadas[0]?.slug;
+  return { tipo: t, estado: 'rascunho', serie: t === 'newsletter' ? serie : undefined, autoria: 'PUKAS', titulo: '', resumo: '', corpo: '', fontes: [], traduzir: true };
 }
 const travas = travasDaPeca(v);
 const pronta = travas.every((t) => t.ok);
@@ -104,9 +118,10 @@ const traducao = linha?.traducoes?.[0];
   <p class="restaurar" hidden><button type="button" class="botao botao--linha" data-restaurar>Restaurar o texto que ficou guardado neste aparelho</button></p>
 
   <form method="post" enctype="multipart/form-data" class="editor" data-chave={`pukas:peca:${id ?? `nova-${tipo}`}`} data-atualizado={linha?.atualizado_em ?? ''} data-limpar={Astro.url.searchParams.get('ok') ? '1' : undefined}>
+    {!id && Astro.url.searchParams.get('agenda') && <input type="hidden" name="agenda" value={Astro.url.searchParams.get('agenda')} />}
     {tipo === 'newsletter' && (
       <div class="linha">
-        <div class="campo"><label for="serie">Série</label><select id="serie" name="serie"><option value="memoria-operaria" selected>Memória Operária</option></select></div>
+        <div class="campo"><label for="serie">Série</label><select id="serie" name="serie">{series.filter((x) => x.ativa || x.slug === v.serie).map((x) => <option value={x.slug} selected={x.slug === v.serie}>{x.nome}</option>)}</select></div>
         <div class="campo"><label for="numero">Número</label><input id="numero" name="numero" type="number" min="1" value={v.numero} required /></div>
       </div>
     )}
@@ -155,8 +170,12 @@ const traducao = linha?.traducoes?.[0];
         <legend>{tipo === 'cultura' ? 'Capa (opcional)' : tipo === 'noticia' ? 'Foto (opcional)' : 'Foto'}</legend>
         {v.foto && <img class="foto" src={urlFoto(base, v.foto.caminho)} alt="" width="240" />}
         <input type="hidden" name="foto_caminho" value={v.foto?.caminho} />
-        <label for="foto_arquivo">{v.foto ? 'Trocar foto' : 'Enviar foto'} (JPG, PNG ou WebP, até 4 MB; foto grande do celular é diminuída sozinha)</label>
-        <input id="foto_arquivo" name="foto_arquivo" type="file" accept="image/jpeg,image/png,image/webp" data-foto />
+        {usuario!.papel === 'editor' ? (
+          <>
+            <label for="foto_arquivo">{v.foto ? 'Trocar foto' : 'Enviar foto'} (JPG, PNG ou WebP, até 4 MB; foto grande do celular é diminuída sozinha)</label>
+            <input id="foto_arquivo" name="foto_arquivo" type="file" accept="image/jpeg,image/png,image/webp" data-foto />
+          </>
+        ) : <p class="ajuda">Só quem é editor envia foto. Descreva aqui embaixo a foto que você imagina, e um editor coloca.</p>}
         <p class="ajuda" data-foto-aviso hidden></p>
         <label for="foto_descricao">Descrição para quem não enxerga</label><input id="foto_descricao" name="foto_descricao" value={v.foto?.descricao} />
         <label for="foto_credito">Crédito</label><input id="foto_credito" name="foto_credito" value={v.foto?.credito} />

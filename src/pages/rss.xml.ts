@@ -9,7 +9,8 @@ export async function GET(context: APIContext) {
     title: t('pt', 'rss.titulo'),
     description: t('pt', 'rss.descricao'),
     site: context.site ?? 'https://pukas.vercel.app',
-    items: itensRss(await carregarEdicoes('pt'), 'pt'),
+    // O feed se chama Memória Operária: só as edições dela.
+    items: itensRss(await carregarEdicoes('pt', 'memoria-operaria'), 'pt'),
     customData: '<language>pt-BR</language>',
   });
 }

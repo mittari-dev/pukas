@@ -1,0 +1,8 @@
+---
+import ArquivoSerie from '../../../views/ArquivoSerie.astro';
+import { carregarSeries } from '../../../lib/carregar';
+
+const serie = (await carregarSeries('pt')).find((s) => s.slug === Astro.params.serie);
+if (!serie) return Astro.rewrite('/404');
+---
+<ArquivoSerie idioma="pt" serie={serie} />
