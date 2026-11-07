@@ -49,7 +49,7 @@ const fontePrimaria = {
 };
 
 // Uma peça completa e válida para publicar, por tipo. Números e slugs únicos a cada chamada.
-export function pecaValida(tipo: 'newsletter' | 'cultura' | 'noticia' | 'pagina'): Record<string, unknown> {
+export function pecaValida(tipo: 'newsletter' | 'cultura' | 'noticia' | 'pagina' | 'votacao'): Record<string, unknown> {
   const u = unico();
   const base = { tipo, titulo: 'Direito | nenhum caiu | do céu.', resumo: 'Resumo.', corpo: 'Texto.', estado: 'publicada' };
   const foto = { foto_caminho: 'teste.jpg', foto_descricao: 'Operários', foto_credito: 'Arquivo', foto_licenca: 'Domínio público' };
@@ -63,5 +63,13 @@ export function pecaValida(tipo: 'newsletter' | 'cultura' | 'noticia' | 'pagina'
       return { ...base, subtipo: 'conto', numero: Number(u.slice(-6)), slug: `obra-${u}`, fontes: [] };
     case 'pagina':
       return { ...base, slug: `pagina-${u}`, fontes: [] };
+    case 'votacao':
+      return {
+        ...base,
+        slug: `votacao-${u}`,
+        proposicao: { casa: 'camara', sigla: 'PEC', numero: 45, ano: 2019, id: '2196833', ementa: 'Altera o Sistema Tributário Nacional.', url: 'https://www.camara.leg.br/propostas-legislativas/2196833' },
+        fontes: [{ ...fontePrimaria, tipo: 'secundaria' }],
+        checagem,
+      };
   }
 }
