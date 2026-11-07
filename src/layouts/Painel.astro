@@ -13,6 +13,7 @@ const usuario = Astro.locals.painel?.usuario;
 // Seções do painel, na barra do topo. Busca (as automações de pesquisa) entra aqui quando existir.
 const secoes = [
   { rotulo: 'Estúdio', href: '/painel', ativa: /^\/painel(\/peca(\/|$)|\/?$)/ },
+  { rotulo: 'Agenda', href: '/painel/agenda', ativa: /^\/painel\/agenda/ },
   ...(usuario?.papel === 'editor' ? [{ rotulo: 'Equipe', href: '/painel/equipe', ativa: /^\/painel\/equipe/ }] : []),
 ];
 const caminho = Astro.url.pathname;
@@ -42,7 +43,7 @@ const caminho = Astro.url.pathname;
           </summary>
           <nav class="conta__menu maquina" aria-label="Painel">
             <span class="conta__quem">{usuario.nome || usuario.email} · {usuario.papel.toUpperCase()}</span>
-            <a href="/" target="_blank" rel="noopener">Ver o site ↗</a>
+            <a href="/">Ver o site</a>
             <form method="post" action="/painel/sair">
               <button class="maquina botao botao--linha" type="submit">Sair</button>
             </form>

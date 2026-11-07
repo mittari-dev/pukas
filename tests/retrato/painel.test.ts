@@ -74,6 +74,9 @@ describe.skipIf(!base)('painel', () => {
     for (const t of ['newsletter', 'noticia', 'cultura']) expect(html).toContain(`name="tipo" value="${t}"`);
     // Página não se cria daqui: o site só tem o endereço do manifesto.
     expect(html).not.toContain('name="tipo" value="pagina"');
+    // No painel o tipo se chama Newsletter; a série (Memória Operária) é escolhida no modal.
+    expect(html).toContain('name="serie"');
+    expect(html).not.toContain('tipo=pagina"');
   });
 
   test('publicar uma notícia pelo painel põe no site; corrigir mostra a correção', async () => {
@@ -158,5 +161,68 @@ describe.skipIf(!base)('painel', () => {
     expect(salvou.status).toBe(303);
     const { data: depois } = await servico.from('pecas').select('estado, corpo').eq('id', peca!.id).single();
     expect(depois).toEqual({ estado: 'rascunho', corpo: 'Texto retomado.' });
+  });
+
+  test('agenda: o espaço do ritmo aparece na segunda; criar e ligar um item', async () => {
+    const { ir, email, senha } = await criarFundador();
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+
+    const antes = await (await ir('/painel/agenda?dia=2026-11-11')).text();
+    expect(antes).toContain('data-ritmo="2026-11-09"');
+    expect(antes).toContain('Memória Operária');
+
+    const criou = await ir('/painel/agenda?dia=2026-11-11', { acao: 'salvar', dia: '2026-11-09', tipo: 'newsletter', serie: 'memoria-operaria', titulo: 'Férias na agenda', situacao: 'ideia' });
+    expect(criou.status).toBe(303);
+    const depois = await (await ir('/painel/agenda?dia=2026-11-11')).text();
+    expect(depois).toContain('Férias na agenda');
+    expect(depois).not.toContain('data-ritmo="2026-11-09"');
+
+    const servico = clienteServico();
+    const { data: item } = await servico.from('agenda').select('id').eq('titulo', 'Férias na agenda').single();
+    const { data: peca } = await servico.from('pecas').insert({ ...pecaValida('noticia'), estado: 'rascunho' }).select('id').single();
+    expect((await ir('/painel/agenda?dia=2026-11-11', { acao: 'ligar', id: item!.id, peca_id: peca!.id })).status).toBe(303);
+    expect(await (await ir('/painel/agenda?dia=2026-11-11')).text()).toContain('ESCREVENDO');
+
+    const mes = await (await ir('/painel/agenda?visao=mes&dia=2026-11-11')).text();
+    expect(mes).toContain('data-mes="2026-11"');
+  });
+
+  test('ritmo: o editor cria e pausa um compromisso; o redator só vê', async () => {
+    const { ir, email, senha } = await criarFundador();
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+    expect((await ir('/painel/agenda/ritmo', { acao: 'salvar', dia_semana: '4', tipo: 'noticia', rotulo: 'Investigação' })).status).toBe(303);
+    expect(await (await ir('/painel/agenda?dia=2026-11-11')).text()).toContain('data-ritmo="2026-11-12"');
+
+    const { data: c } = await clienteServico().from('ritmo').select('id').eq('rotulo', 'Investigação').single();
+    expect((await ir('/painel/agenda/ritmo', { acao: 'pausar', id: c!.id })).status).toBe(303);
+    expect(await (await ir('/painel/agenda?dia=2026-11-11')).text()).not.toContain('data-ritmo="2026-11-12"');
+
+    const redator = await criarFundador('redator');
+    await redator.ir('/painel/entrar', { email: redator.email, senha: redator.senha });
+    await confirmar2fa(redator.ir);
+    const pagina = await (await redator.ir('/painel/agenda/ritmo')).text();
+    expect(pagina).toContain('Memória Operária');
+    expect(pagina).not.toContain('name="dia_semana"');
+    expect(await (await redator.ir('/painel/agenda/ritmo', { acao: 'salvar', dia_semana: '5', tipo: 'noticia' })).text()).toContain('Só quem é editor muda o ritmo.');
+  });
+
+  test('começar a escrever: o item abre o editor e a peça já sai ligada', async () => {
+    const { ir, email, senha } = await criarFundador();
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+    const servico = clienteServico();
+    const { data: item } = await servico.from('agenda').insert({ dia: '2026-11-16', tipo: 'newsletter', serie: 'memoria-operaria', titulo: 'Item para escrever' }).select('id').single();
+
+    const pagina = await (await ir(`/painel/agenda?dia=2026-11-16&item=${item!.id}`)).text();
+    const alvo = `/painel/peca/nova?tipo=newsletter&amp;serie=memoria-operaria&amp;agenda=${item!.id}`;
+    expect(pagina).toContain(alvo);
+
+    const salvou = await ir(alvo.replaceAll('&amp;', '&'), { serie: 'memoria-operaria', numero: '777', titulo: 'Item para escrever', resumo: 'r', corpo: 'Texto.', agenda: item!.id, acao: 'salvar' });
+    expect(salvou.status).toBe(303);
+    const { data: depois } = await servico.from('agenda').select('peca_id').eq('id', item!.id).single();
+    expect(depois!.peca_id).toBeTruthy();
+    expect(await (await ir('/painel/agenda?dia=2026-11-16')).text()).toContain('ESCREVENDO');
   });
 });

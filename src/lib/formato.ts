@@ -6,6 +6,9 @@ const MESES: Record<Idioma, string[]> = {
 };
 
 export type Serie = 'memoria-operaria';
+// Séries da newsletter. Uma série nova entra aqui (e ganha a página dela no site).
+export const SERIES: { id: Serie; nome: string }[] = [{ id: 'memoria-operaria', nome: 'Memória Operária' }];
+export const nomeSerie = (id: string | null | undefined) => SERIES.find((s) => s.id === id)?.nome;
 
 const tresDigitos = (n: number) => String(n).padStart(3, '0');
 

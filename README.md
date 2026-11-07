@@ -24,7 +24,7 @@
 | Capa e RSS | ✅ |
 | Deploy | ✅ `pukas.vercel.app` · ⏳ domínio `pukas.lat` |
 | **Notícias** (`/noticias`) | ✅ código · ⏳ primeira notícia |
-| Painel `/painel` (Supabase, senha + 2FA) | ✅ código · ⏳ no ar |
+| Painel `/painel` (Supabase, senha + 2FA): Estúdio, Agenda e Equipe | ✅ código · ⏳ no ar |
 | Robô de notícias, gerador do carrossel, Raio-X, dossiês, documentários, loja | ⚪ ver o [roadmap](docs/roadmap.md) |
 
 ## Como uma peça vai ao ar
@@ -37,6 +37,12 @@ Todo o conteúdo mora no **Supabase**. Edição, obra de Cultura, notícia e man
 4. Para corrigir uma peça já publicada, use "corrigir" no painel. A correção aparece em público na peça, e o histórico guarda a versão anterior.
 
 Ficção (Cultura) não precisa de fonte. No poema, as quebras de linha ficam como você escreveu.
+
+## Agenda editorial
+
+Em `/painel/agenda`, a equipe anota o que sai em cada dia: tipo (e série), título provisório, nota, responsável e situação. No celular aparece só a semana; no computador, semana e mês. Um item pode ser ligado a uma peça do Estúdio, e aí a situação acompanha a peça (escrevendo, em revisão, publicada). "Começar a escrever" abre o editor já ligado ao item.
+
+O **ritmo da casa** (`/painel/agenda/ritmo`) são os compromissos fixos, como "Newsletter · Memória Operária, toda segunda". Na agenda, cada um aparece como um espaço tracejado no dia dele, até um item ocupar o lugar. Só o editor muda o ritmo. Nada na agenda é automático além de acompanhar o estado da peça: ela organiza, não publica.
 
 ## Português e espanhol
 
@@ -90,7 +96,7 @@ A marca é a **Tarja**. A tipografia usa **Archivo** (manchete comprimida), **Sp
 
 ```
 src/
-├─ pages/painel/                            painel (fila, edição, espanhol, login com 2FA)
+├─ pages/painel/                            painel (estúdio, agenda, equipe, edição, espanhol, login com 2FA)
 ├─ lib/                                    regras puras + testes (edicoes, formato, banco, painel, traducao, cache)
 ├─ components/identidade/                  Tarja, Carimbo, Selo, Grão
 ├─ layouts/ · pages/ · styles/ · data/ (links.ts, navegacao.ts)
