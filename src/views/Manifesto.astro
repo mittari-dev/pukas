@@ -6,16 +6,19 @@ import { carregarPagina } from '../lib/carregar';
 import { renderizarMarkdown } from '../lib/markdown';
 import '../styles/leitura.css';
 
+// Também serve outras páginas fixas (/privacidade): sem slug, é o manifesto.
 interface Props {
   idioma: Idioma;
+  slug?: string;
 }
-const { idioma } = Astro.props;
-const pagina = await carregarPagina('manifesto', idioma);
+const { idioma, slug = 'manifesto' } = Astro.props;
+const pagina = await carregarPagina(slug, idioma);
+const titulo = slug === 'manifesto' ? t(idioma, 'manifesto.titulo') : (pagina?.titulo ?? '');
 const corpo = pagina ? await renderizarMarkdown(pagina.body) : '';
 ---
-<Base titulo={pagina?.titulo ?? t(idioma, 'manifesto.titulo')} descricao={pagina?.resumo ?? ''} receita="leitura" idioma={idioma}>
+<Base titulo={pagina?.titulo ?? titulo} descricao={pagina?.resumo ?? ''} receita="leitura" idioma={idioma}>
   <article class="leitura">
-    <div class="titulo"><Manchete titulo={t(idioma, 'manifesto.titulo')} tamanho="m" /></div>
+    <div class="titulo"><Manchete titulo={titulo} tamanho="m" /></div>
     {pagina ? <div class="corpo" set:html={corpo} /> : <p class="maquina">{t(idioma, 'manifesto.emBreve')}</p>}
   </article>
 </Base>

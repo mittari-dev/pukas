@@ -1,0 +1,7 @@
+---
+import Manifesto from '../../views/Manifesto.astro';
+import { carregarPagina } from '../../lib/carregar';
+
+if (!(await carregarPagina('privacidade', 'es'))) return Astro.rewrite('/es/404');
+---
+<Manifesto idioma="es" slug="privacidade" />
