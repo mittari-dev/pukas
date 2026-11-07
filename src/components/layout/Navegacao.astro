@@ -3,6 +3,7 @@
 // <details>/<summary>: abre e fecha sem JavaScript, e o leitor de tela anuncia aberto/fechado.
 // O script no fim só acrescenta fechar ao clicar fora e com Esc.
 import Tarja from '../identidade/Tarja.astro';
+import Setas from './Setas.astro';
 import { navegacao } from '../../data/navegacao';
 import { secaoAtiva } from '../../lib/navegacao';
 import { prefixar, semPrefixo, t, type Idioma } from '../../lib/idioma';
@@ -43,6 +44,7 @@ const seletor = { pt: idioma === 'pt' ? undefined : `${alternativa}?idioma=pt`, 
     </nav>
   </details>
   <a href={prefixar('/', idioma)} class="marca"><Tarja variante={tarja} rotulo={t(idioma, 'nav.marca')} /></a>
+  <Setas voltar={t(idioma, 'nav.voltar')} avancar={t(idioma, 'nav.avancar')} />
   <nav class="idiomas maquina" aria-label={t(idioma, 'nav.idioma')}>
     {seletor.pt ? <a href={seletor.pt} hreflang="pt-BR" lang="pt-BR">PT</a> : <span aria-current="true">PT</span>}
     <span aria-hidden="true">|</span>
@@ -67,8 +69,12 @@ const seletor = { pt: idioma === 'pt' ? undefined : `${alternativa}?idioma=pt`, 
 </script>
 
 <style>
+  /* Fica presa no topo enquanto a pessoa lê. */
   .barra {
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--fundo);
     display: flex;
     align-items: center;
     gap: var(--esp-4);
@@ -83,8 +89,10 @@ const seletor = { pt: idioma === 'pt' ? undefined : `${alternativa}?idioma=pt`, 
     font-size: clamp(44px, 9vw, 64px);
   }
 
-  .idiomas {
+  .barra :global(.setas) {
     margin-left: auto;
+  }
+  .idiomas {
     display: flex;
     align-items: center;
     gap: var(--esp-2);
