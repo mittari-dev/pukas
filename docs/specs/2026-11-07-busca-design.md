@@ -1,6 +1,6 @@
 # Busca: robô de notícias com curadoria
 
-- **Status:** rascunho para o fundador revisar (07/11/2026).
+- **Status:** aprovado pelo fundador (07/11/2026), com as quatro decisões do §8 aprovadas.
 - **Parte de:** `docs/specs/2026-11-07-robo-noticias-decisoes.md`, onde estão as decisões já tomadas.
 - **Fora daqui:** radar e pistas (etapa 3), e portais pagos (JusBrasil).
 
