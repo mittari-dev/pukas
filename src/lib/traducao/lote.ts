@@ -66,3 +66,28 @@ export async function enviarTraducao(cliente: SupabaseClient, pecaId: string): P
     await marcar({ estado: 'erro', erro: erro instanceof Error ? erro.message : String(erro) });
   }
 }
+
+export interface Pendente {
+  peca_id: string;
+  lote_id: string;
+  original: Original;
+}
+
+type ApiLotes = Pick<Anthropic.Messages.Batches, 'retrieve' | 'results'>;
+
+// Chamado pelo workflow recolher-traducoes. Devolve o que gravar em traducoes; lote ainda rodando fica de fora.
+export async function recolherPendentes(pendentes: Pendente[], api: ApiLotes): Promise<{ peca_id: string; campos: Record<string, unknown> }[]> {
+  const saida = [];
+  for (const p of pendentes) {
+    if ((await api.retrieve(p.lote_id)).processing_status !== 'ended') continue;
+    let leitura: Leitura = { ok: false, erro: 'o lote terminou sem resultado para esta peça' };
+    for await (const r of await api.results(p.lote_id)) if (r.custom_id === p.peca_id) leitura = lerResultado(p.original, r.result);
+    if (!leitura.ok) {
+      saida.push({ peca_id: p.peca_id, campos: { estado: 'erro', erro: leitura.erro } });
+      continue;
+    }
+    const t = leitura.traducao;
+    saida.push({ peca_id: p.peca_id, campos: { estado: 'pronta', revisado: false, erro: null, titulo: t.titulo, resumo: t.resumo, corpo: t.corpo, legenda: t.legenda ?? null, aviso: t.aviso ?? null } });
+  }
+  return saida;
+}

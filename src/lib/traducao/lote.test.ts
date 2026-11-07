@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { MODELO_TRADUCAO, lerResultado, pedidoDeLote } from './lote';
+import { MODELO_TRADUCAO, lerResultado, pedidoDeLote, recolherPendentes } from './lote';
 
 const original = { id: '0b6f3c1e-1a2b-4c3d-8e9f-001122334455', titulo: 'Em *1925*, a lei', resumo: 'Quinze dias.', corpo: 'Em 1925, 15 dias de férias.' };
 
@@ -38,5 +38,26 @@ describe('lerResultado', () => {
   test('pedido com erro ou expirado não passa', () => {
     expect(lerResultado(original, { type: 'errored', error: { type: 'error', error: { type: 'api_error', message: 'x' } } } as never)).toEqual({ ok: false, erro: 'a API devolveu erro (api_error)' });
     expect(lerResultado(original, { type: 'expired' } as never)).toEqual({ ok: false, erro: 'o lote expirou antes de traduzir' });
+  });
+});
+
+describe('recolherPendentes', () => {
+  const pendente = { peca_id: original.id, lote_id: 'lote_1', original };
+  const api = (status: string, resultados: { custom_id: string; result: unknown }[]) => ({
+    retrieve: async () => ({ processing_status: status }),
+    results: async () => (async function* () { yield* resultados; })(),
+  }) as never;
+
+  test('lote ainda rodando fica para a próxima vez', async () => {
+    expect(await recolherPendentes([pendente], api('in_progress', []))).toEqual([]);
+  });
+
+  test('lote encerrado com sucesso vira pronta, não revisada', async () => {
+    const r = await recolherPendentes([pendente], api('ended', [{ custom_id: original.id, result: sucesso({ titulo: 'En *1925*, la ley', resumo: 'Quince días.', corpo: 'En 1925, 15 días de vacaciones.' }) }]));
+    expect(r).toEqual([{ peca_id: original.id, campos: { estado: 'pronta', revisado: false, erro: null, titulo: 'En *1925*, la ley', resumo: 'Quince días.', corpo: 'En 1925, 15 días de vacaciones.', legenda: null, aviso: null } }]);
+  });
+
+  test('lote encerrado sem o resultado da peça vira erro', async () => {
+    expect(await recolherPendentes([pendente], api('ended', []))).toEqual([{ peca_id: original.id, campos: { estado: 'erro', erro: 'o lote terminou sem resultado para esta peça' } }]);
   });
 });
