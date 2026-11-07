@@ -1,6 +1,6 @@
 # Agenda editorial no painel
 
-- **Status:** rascunho para o fundador revisar (07/11/2026)
+- **Status:** aprovado pelo fundador (07/11/2026). Ritmo editável pelo painel; redator cria e edita itens; "Começar a escrever" entra já.
 - **Depende de:** painel (spec de 06/11/2026) e Estúdio
 - **Fica de fora:** qualquer automação. A agenda organiza; ela não publica, não lembra por e-mail e não sugere pauta. O robô de notícias é outra spec.
 
@@ -29,9 +29,15 @@ Um item é próprio da agenda (decisão do fundador: opção A). Ele não é uma
 
 ## 3. Ritmo da casa
 
-O ritmo fixo aparece como um **espaço reservado** no dia em que deveria haver algo, por exemplo "Newsletter · Memória Operária, toda segunda". Ele não é um item: é um lembrete que some quando um item daquele tipo ocupa o dia.
+O ritmo são os compromissos fixos de publicação, por exemplo "Newsletter · Memória Operária, toda segunda". Na agenda ele aparece como um **espaço reservado** (tracejado) no dia em que deveria sair algo. Ele não é um item: é um lembrete, e some quando um item do mesmo tipo (e da mesma série, se for newsletter) ocupa o dia.
 
-Na primeira versão o ritmo fica no código (`RITMO` em `src/lib/agenda.ts`), começando só com a Memória Operária às segundas. *Para revisar:* se o fundador quiser editar o ritmo pelo painel, ele vira uma tabela depois.
+O ritmo é **editável pelo painel** (decisão do fundador), em `/painel/agenda/ritmo`. Cada compromisso tem:
+- dia da semana (segunda a domingo);
+- tipo e série;
+- um rótulo opcional;
+- ativo ou pausado.
+
+Só o editor mexe no ritmo; a equipe toda vê. A tabela começa com um compromisso: Memória Operária às segundas.
 
 ## 4. Telas
 
@@ -57,6 +63,7 @@ O visual segue o do Estúdio: fios finos, chapéu vermelho, sem sombra e sem can
 | Ver a agenda | sim | sim | sim |
 | Criar e editar item | sim | sim | sim |
 | Apagar item | sim | sim | só os que criou |
+| Editar o ritmo | sim | não | não |
 
 Tudo isso exige 2FA confirmado (aal2), como o resto do painel, e a RLS repete a regra no banco.
 
@@ -76,6 +83,8 @@ Uma tabela nova, `agenda`:
 - `criado_por`
 - `criado_em`
 
+Mais uma tabela, `ritmo`: `id`, `dia_semana` (1 = segunda … 7 = domingo), `tipo`, `serie`, `rotulo`, `ativo`, `criado_em`. Ela começa com uma linha: (1, newsletter, memoria-operaria).
+
 A situação mostrada vem de uma função pura, `situacaoDoItem(item, estadoDaPeca)`. Ela não é gravada em coluna nenhuma, para nunca sair de sincronia com a peça.
 
 ## 7. Testes
@@ -83,14 +92,14 @@ A situação mostrada vem de uma função pura, `situacaoDoItem(item, estadoDaPe
 - **Unitários:**
   - `situacaoDoItem`;
   - a semana e a grade do mês: começo na segunda, virada de mês e de ano, fuso America/Sao_Paulo;
-  - o espaço do ritmo some quando um item ocupa o dia;
+  - o espaço do ritmo some quando um item do mesmo tipo e da mesma série ocupa o dia; um compromisso pausado não aparece;
   - atrasado.
-- **Banco (CI):** RLS da tabela `agenda`, cobrindo a tabela de papéis e o aal2, e `peca_id` único.
-- **Ponta a ponta (CI):** criar um item, editar, ligar a uma peça e ver a situação acompanhar a publicação; e o "Começar a escrever" ligando a peça.
+- **Banco (CI):** RLS das tabelas `agenda` e `ritmo`, cobrindo a tabela de papéis e o aal2, e `peca_id` único.
+- **Ponta a ponta (CI):** o editor cria um compromisso de ritmo e o espaço aparece no dia certo; criar um item, editar, ligar a uma peça e ver a situação acompanhar a publicação; e o "Começar a escrever" ligando a peça.
 - **Visual:** capturas em 360, 390 e 1280 px.
 
-## 8. Decisões pedidas ao fundador nesta revisão
+## 8. Decisões do fundador nesta revisão
 
-1. Ritmo no código por enquanto (§3). Tudo bem?
-2. Redator pode criar e editar item (§5). Tudo bem?
-3. "Começar a escrever" já entra nesta versão (§4). Tudo bem?
+1. Ritmo editável pelo painel (§3).
+2. O redator pode criar e editar item (§5).
+3. "Começar a escrever" entra já nesta versão (§4).
