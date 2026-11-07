@@ -25,6 +25,7 @@ const { idioma } = Astro.props;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    align-items: center;
     gap: var(--esp-3);
     max-width: 960px;
     margin: var(--esp-8) auto 0;
@@ -33,9 +34,11 @@ const { idioma } = Astro.props;
     font-size: 13px;
     letter-spacing: 0.08em;
   }
+  /* Mesmo quebrando linha no celular, RSS e a engrenagem ficam no canto direito. */
   .rodape nav {
+    margin-left: auto;
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: var(--esp-4);
   }
   .rodape a {
@@ -43,12 +46,17 @@ const { idioma } = Astro.props;
     padding: var(--esp-2) 0;
     text-transform: uppercase;
   }
-  /* Engrenagem discreta para o painel; o /admin é protegido por senha e 2FA, o link não abre nada. */
-  .rodape__painel {
-    display: inline-grid;
+  /* Engrenagem discreta no canto, para o painel. O /admin pede senha e 2FA; o link sozinho não abre nada. */
+  /* .rodape a (inline-block) ganharia de .rodape__painel sozinho: por isso o seletor duplo. */
+  .rodape .rodape__painel {
+    display: grid;
     place-items: center;
-    min-width: 44px;
-    min-height: 44px;
-    margin: calc(-1 * var(--esp-2)) calc(-1 * var(--esp-3));
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin-right: calc(-1 * var(--esp-3));
+  }
+  .rodape .rodape__painel svg {
+    display: block;
   }
 </style>
