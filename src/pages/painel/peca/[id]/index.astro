@@ -228,39 +228,7 @@ const traducao = linha?.traducoes?.[0];
   )}
 </Painel>
 
-<script>
-  // Rascunho guardado no aparelho: se a conexão cair ou a sessão expirar, o texto não se perde.
-  const form = document.querySelector<HTMLFormElement>('form.editor');
-  const contador = document.querySelector('[data-contador]');
-  const titulo = document.querySelector<HTMLInputElement>('[data-contar]');
-  titulo?.addEventListener('input', () => {
-    if (contador) contador.textContent = String(titulo.value.replace(/[|*]/g, ' ').split(/\s+/).filter(Boolean).length);
-  });
-  if (form) {
-    const chave = form.dataset.chave!;
-    const ler = () => { try { return JSON.parse(localStorage.getItem(chave) ?? 'null'); } catch { return null; } };
-    const gravar = () => {
-      const campos: Record<string, string> = {};
-      for (const el of form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name]:not([type=file]):not([type=hidden]):not([type=radio]):not([type=checkbox]), textarea[name]')) campos[el.name] = el.value;
-      try { localStorage.setItem(chave, JSON.stringify({ em: new Date().toISOString(), campos })); } catch {}
-    };
-    if (form.dataset.limpar) { try { localStorage.removeItem(chave); } catch {} }
-    const guardado = ler();
-    if (guardado && !form.dataset.limpar && (!form.dataset.atualizado || guardado.em > form.dataset.atualizado)) {
-      const aviso = document.querySelector<HTMLElement>('.restaurar');
-      if (aviso) aviso.hidden = false;
-      document.querySelector('[data-restaurar]')?.addEventListener('click', () => {
-        for (const [nome, valor] of Object.entries(guardado.campos as Record<string, string>)) {
-          const el = form.querySelector<HTMLInputElement>(`[name="${CSS.escape(nome)}"]`);
-          if (el) el.value = valor;
-        }
-        if (aviso) aviso.hidden = true;
-      });
-    }
-    let espera: number | undefined;
-    form.addEventListener('input', () => { clearTimeout(espera); espera = window.setTimeout(gravar, 500); });
-  }
-</script>
+<script is:inline src="/editor.js" defer></script>
 
 <style>
   .linha {
