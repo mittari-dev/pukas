@@ -35,6 +35,23 @@ img {
 
 a {
   color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+/* Efeito leve, sem animação pesada: o sublinhado fica vermelho e mais grosso ao apontar. */
+a:hover {
+  text-decoration-color: var(--pau-brasil);
+  text-decoration-thickness: 2px;
+}
+
+/* Chapéu de jornal: a linha curta em vermelho acima do título, dizendo a seção. */
+.chapeu {
+  font-family: var(--fonte-maquina);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--acento);
 }
 
 :focus-visible {

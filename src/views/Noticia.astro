@@ -35,6 +35,7 @@ const foto = d.foto.arquivo as string;
     </figure>
     )}
 
+    <p class="chapeu edicao__chapeu">{t(idioma, 'capa.noticias')}</p>
     <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     <div class="corpo" set:html={corpo} />

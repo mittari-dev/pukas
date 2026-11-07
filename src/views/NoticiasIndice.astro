@@ -37,8 +37,12 @@ const noticias = await carregarNoticias(idioma);
 </Base>
 
 <style>
+  /* Título de seção de jornal: entre um fio grosso e um fino. */
   .titulo {
     margin-top: var(--esp-5);
+    padding: var(--esp-3) 0;
+    border-top: 3px solid currentColor;
+    border-bottom: 1px solid currentColor;
   }
   .sub {
     margin: var(--esp-4) 0 var(--esp-6);
@@ -47,7 +51,7 @@ const noticias = await carregarNoticias(idioma);
     list-style: none;
     padding: 0;
     margin: 0;
-    border-top: 3px solid currentColor;
+    border-top: 1px solid currentColor;
   }
   .lista a {
     display: flex;

@@ -25,7 +25,7 @@ const capa = d.capa?.arquivo as string | undefined;
   <article class="leitura">
     <div class="obra__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
     <AvisoTraducao idioma={idioma} traducao={obra.traducao} original={`/cultura/${obra.id}`} />
-    <p class="maquina obra__tipo">{t(idioma, `tipo.${d.tipo}`)} · {d.autoria.toUpperCase()}</p>
+    <p class="chapeu obra__tipo">{t(idioma, `tipo.${d.tipo}`)} · {d.autoria.toUpperCase()}</p>
     <div class="obra__titulo"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     {d.aviso && (
