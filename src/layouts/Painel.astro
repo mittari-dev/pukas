@@ -22,6 +22,7 @@ const usuario = Astro.locals.painel?.usuario;
     <header class="topo">
       <a href="/admin" class="marca"><Tarja variante="cor" rotulo="Painel PUKAS" /></a>
       <span class="maquina topo__rotulo">PAINEL</span>
+      <a href="/" class="maquina topo__site" target="_blank" rel="noopener">Ver o site ↗</a>
       {usuario && (
         <form method="post" action="/admin/sair" class="topo__sair">
           <span class="maquina">{usuario.nome || usuario.email} · {usuario.papel.toUpperCase()}</span>

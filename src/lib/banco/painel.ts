@@ -20,15 +20,14 @@ export interface LinhaFila {
   numero: number | null;
   slug: string | null;
   atualizado_em: string;
-  autor: string | null;
 }
 
 export async function listarFila(cliente: SupabaseClient, estado: EstadoPeca, tipo?: TipoPeca): Promise<LinhaFila[]> {
-  let q = cliente.from('pecas').select('id, tipo, titulo, estado, numero, slug, atualizado_em, criado_por').eq('estado', estado).order('atualizado_em', { ascending: false }).limit(200);
+  let q = cliente.from('pecas').select('id, tipo, titulo, estado, numero, slug, atualizado_em').eq('estado', estado).order('atualizado_em', { ascending: false }).limit(200);
   if (tipo) q = q.eq('tipo', tipo);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
-  return (data ?? []).map((l) => ({ ...l, autor: l.criado_por ? 'equipe' : 'robô' })) as LinhaFila[];
+  return (data ?? []) as LinhaFila[];
 }
 
 export async function buscarPeca(cliente: SupabaseClient, id: string): Promise<(LinhaPeca & { atualizado_em: string }) | null> {
