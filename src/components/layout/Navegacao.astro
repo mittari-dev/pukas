@@ -86,7 +86,37 @@ const seletor = { pt: idioma === 'pt' ? undefined : `${alternativa}?idioma=pt`, 
     line-height: 0;
   }
   .marca :global(.tarja) {
-    font-size: clamp(44px, 9vw, 64px);
+    font-size: clamp(32px, 9vw, 64px);
+  }
+
+  /* Celular: menu, Tarja, setas e PT | ES precisam caber numa linha de 360px. */
+  @media (max-width: 600px) {
+    .barra {
+      gap: var(--esp-2);
+      padding: var(--esp-3);
+    }
+    .menu__botao {
+      width: 44px;
+    }
+    .barra :global(.setas__botao) {
+      width: 32px;
+    }
+    .idiomas {
+      gap: 0;
+    }
+    .idiomas > [aria-hidden] {
+      display: none;
+    }
+    .idiomas a,
+    .idiomas [aria-current] {
+      min-width: 32px;
+    }
+  }
+  /* Tela muito estreita: o voltar do próprio celular basta. */
+  @media (max-width: 350px) {
+    .barra :global(.setas) {
+      display: none;
+    }
   }
 
   .barra :global(.setas) {
