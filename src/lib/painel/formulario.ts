@@ -2,6 +2,7 @@
 import type { Fonte } from '../edicoes';
 import type { EstadoPeca, PecaEntrada, TipoPeca } from './travas';
 import { ehLinkWeb } from '../link';
+import type { Proposicao } from '../votacoes/congresso';
 
 const texto = (f: FormData, nome: string) => {
   const v = f.get(nome);
@@ -23,6 +24,22 @@ function fontes(f: FormData): Fonte[] {
       acessadaEm: data(texto(f, `fonte[${i}][acessadaEm]`)) ?? new Date(),
     }))
     .filter((x) => x.titulo || x.url);
+}
+
+// A proposição só vale com o id oficial, que o "Buscar" do painel preenche a partir da API da casa.
+function proposicao(f: FormData): Proposicao | undefined {
+  const id = texto(f, 'proposicao_id');
+  const casa = texto(f, 'proposicao_casa');
+  if (!id || (casa !== 'camara' && casa !== 'senado')) return undefined;
+  return {
+    casa,
+    sigla: texto(f, 'proposicao_sigla') ?? '',
+    numero: Number(texto(f, 'proposicao_numero')),
+    ano: Number(texto(f, 'proposicao_ano')),
+    id,
+    ementa: texto(f, 'proposicao_ementa') ?? '',
+    url: texto(f, 'proposicao_url') ?? '',
+  };
 }
 
 export function lerFormularioPeca(f: FormData, tipo: TipoPeca, estado: EstadoPeca): PecaEntrada {
@@ -49,6 +66,9 @@ export function lerFormularioPeca(f: FormData, tipo: TipoPeca, estado: EstadoPec
     fontes: fontes(f),
     checagem: porQuem ? { por: porQuem, em: data(texto(f, 'checagem_em')) ?? new Date() } : undefined,
     traduzir: f.get('traduzir') === 'on',
+    ...(tipo === 'votacao'
+      ? { proposicao: proposicao(f), altoImpacto: f.get('alto_impacto') === 'on', noticias: f.getAll('noticias').map(String).filter(Boolean) }
+      : {}),
   };
 }
 
@@ -75,6 +95,7 @@ export function paraLinha(p: PecaEntrada): Record<string, unknown> {
     fontes: p.fontes.map((f) => ({ ...f, acessadaEm: dia(f.acessadaEm) })),
     checagem: p.checagem ? { por: p.checagem.por, em: dia(p.checagem.em) } : null,
     traduzir: p.traduzir,
+    ...(p.tipo === 'votacao' ? { proposicao: p.proposicao ?? null, alto_impacto: Boolean(p.altoImpacto) } : {}),
   };
 }
 

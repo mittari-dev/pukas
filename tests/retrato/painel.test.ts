@@ -71,12 +71,45 @@ describe.skipIf(!base)('painel', () => {
     // Estúdio: criar abre a escolha do tipo, que leva ao editor que já existe.
     expect(html).toContain('+ Criar nova peça');
     expect(html).toContain('action="/painel/peca/nova"');
-    for (const t of ['newsletter', 'noticia', 'cultura']) expect(html).toContain(`name="tipo" value="${t}"`);
+    for (const t of ['newsletter', 'noticia', 'cultura', 'votacao']) expect(html).toContain(`name="tipo" value="${t}"`);
     // Página não se cria daqui: o site só tem o endereço do manifesto.
     expect(html).not.toContain('name="tipo" value="pagina"');
     // No painel o tipo se chama Newsletter; a série (Memória Operária) é escolhida no modal.
     expect(html).toContain('name="serie"');
     expect(html).not.toContain('tipo=pagina"');
+  });
+
+  test('votação: criar e publicar pelo painel põe no site; "Virar rascunho" cria a notícia ligada', async () => {
+    const { ir, email, senha } = await criarFundador();
+    await ir('/painel/entrar', { email, senha });
+    await confirmar2fa(ir);
+
+    const slug = `pec-teste-${Date.now()}`;
+    const campos = {
+      slug, titulo: 'Reforma | tributária', resumo: 'O que muda nos impostos.', corpo: '',
+      proposicao_casa: 'camara', proposicao_sigla: 'PEC', proposicao_numero: '45', proposicao_ano: '2019',
+      proposicao_id: '2196833', proposicao_ementa: 'Altera o Sistema Tributário Nacional.', proposicao_url: 'https://www.camara.leg.br/propostas-legislativas/2196833',
+      checagem_por: 'Fundador', checagem_em: '2026-11-08',
+      'fonte[0][titulo]': 'Agência Câmara', 'fonte[0][instituicao]': 'Câmara', 'fonte[0][url]': 'https://www.camara.leg.br/noticias', 'fonte[0][tipo]': 'secundaria', 'fonte[0][acessadaEm]': '2026-11-08',
+    };
+    const publicou = await ir('/painel/peca/nova?tipo=votacao', { ...campos, acao: 'publicar' });
+    expect(publicou.status).toBe(303);
+    const id = publicou.headers.get('location')!.match(/\/painel\/peca\/([^?]+)/)![1];
+    expect((await fetch(new URL(`/votacoes/${slug}`, base))).status).toBe(200);
+
+    const pagina = await (await ir(`/painel/peca/${id}`)).text();
+    expect(pagina).toContain('Virar rascunho de notícia');
+    expect(pagina).toContain('Votos registrados');
+
+    const virou = await ir(`/painel/peca/${id}`, { acao: 'virar_rascunho' });
+    expect(virou.status).toBe(303);
+    const novaId = virou.headers.get('location')!.match(/\/painel\/peca\/([^?]+)/)![1];
+    const servico = clienteServico();
+    const { data: noticia } = await servico.from('pecas').select('tipo, estado, corpo').eq('id', novaId).single();
+    expect(noticia).toMatchObject({ tipo: 'noticia', estado: 'rascunho' });
+    expect(noticia!.corpo).toContain('de quem votou no PUKAS');
+    const { data: ligacao } = await servico.from('votacao_noticias').select('noticia_id').eq('votacao_id', id);
+    expect(ligacao).toEqual([{ noticia_id: novaId }]);
   });
 
   test('publicar uma notícia pelo painel põe no site; corrigir mostra a correção', async () => {

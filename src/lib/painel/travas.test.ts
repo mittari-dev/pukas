@@ -15,6 +15,16 @@ function newsletter(extra: Partial<PecaEntrada> = {}): PecaEntrada {
 
 const falhas = (p: PecaEntrada) => travasDaPeca(p).filter((t) => !t.ok).map((t) => t.mensagem);
 
+const proposicao = { casa: 'camara' as const, sigla: 'PEC', numero: 45, ano: 2019, id: '2196833', ementa: 'Altera o Sistema Tributário Nacional.', url: 'https://www.camara.leg.br/propostas-legislativas/2196833' };
+
+describe('travas da votação', () => {
+  const votacao = (extra: Partial<PecaEntrada> = {}) => newsletter({ tipo: 'votacao', serie: undefined, numero: undefined, slug: 'pec-45', foto: undefined, proposicao, ...extra });
+  test('completa passa', () => expect(falhas(votacao())).toEqual([]));
+  test('sem proposição, sem fonte e sem checagem', () => {
+    expect(falhas(votacao({ proposicao: undefined, fontes: [], checagem: undefined }))).toEqual(['sem fonte', 'sem proposição', 'sem checagem']);
+  });
+});
+
 describe('travasDaPeca', () => {
   test('newsletter completa passa em tudo', () => {
     expect(falhas(newsletter())).toEqual([]);

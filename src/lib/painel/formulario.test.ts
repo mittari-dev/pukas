@@ -45,6 +45,34 @@ describe('lerFormularioPeca', () => {
   });
 });
 
+describe('votação no formulário', () => {
+  const campos = {
+    titulo: 'Reforma | tributária', resumo: 'O que muda.', slug: 'pec-45-2019',
+    proposicao_casa: 'camara', proposicao_sigla: 'PEC', proposicao_numero: '45', proposicao_ano: '2019',
+    proposicao_id: '2196833', proposicao_ementa: 'Altera o Sistema Tributário Nacional.', proposicao_url: 'https://www.camara.leg.br/propostas-legislativas/2196833',
+    alto_impacto: 'on', noticias: 'a1',
+  };
+  test('lê proposição, alto impacto e notícias ligadas', () => {
+    const f = form(campos);
+    f.append('noticias', 'b2');
+    const p = lerFormularioPeca(f, 'votacao', 'rascunho');
+    expect(p.proposicao).toEqual({ casa: 'camara', sigla: 'PEC', numero: 45, ano: 2019, id: '2196833', ementa: 'Altera o Sistema Tributário Nacional.', url: 'https://www.camara.leg.br/propostas-legislativas/2196833' });
+    expect(p.altoImpacto).toBe(true);
+    expect(p.noticias).toEqual(['a1', 'b2']);
+    expect(paraLinha(p)).toMatchObject({ proposicao: p.proposicao, alto_impacto: true });
+  });
+  test('sem id oficial, não há proposição', () => {
+    const p = lerFormularioPeca(form({ ...campos, proposicao_id: '' }), 'votacao', 'rascunho');
+    expect(p.proposicao).toBeUndefined();
+    expect(paraLinha(p).proposicao).toBeNull();
+  });
+  test('outras peças não levam colunas da votação', () => {
+    const linha = paraLinha(lerFormularioPeca(form(newsletter), 'newsletter', 'rascunho'));
+    expect(linha).not.toHaveProperty('proposicao');
+    expect(linha).not.toHaveProperty('alto_impacto');
+  });
+});
+
 describe('linksInvalidos', () => {
   test('aponta link de fonte, origem da foto ou vídeo que não é http(s)', () => {
     const p = lerFormularioPeca(form({ ...newsletter, 'fonte[1][url]': 'javascript:alert(1)', foto_caminho: 'a.jpg', foto_origem: 'ftp://x', video: 'https://youtu.be/x' }), 'newsletter', 'rascunho');
