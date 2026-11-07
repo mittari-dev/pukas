@@ -74,6 +74,9 @@ describe.skipIf(!base)('painel', () => {
     for (const t of ['newsletter', 'noticia', 'cultura']) expect(html).toContain(`name="tipo" value="${t}"`);
     // Página não se cria daqui: o site só tem o endereço do manifesto.
     expect(html).not.toContain('name="tipo" value="pagina"');
+    // No painel o tipo se chama Newsletter; a série (Memória Operária) é escolhida no modal.
+    expect(html).toContain('name="serie"');
+    expect(html).not.toContain('tipo=pagina"');
   });
 
   test('publicar uma notícia pelo painel põe no site; corrigir mostra a correção', async () => {

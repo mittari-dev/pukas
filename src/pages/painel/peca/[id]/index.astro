@@ -10,11 +10,12 @@ import { lerFormularioPeca, linksInvalidos, textoMudou } from '../../../../lib/p
 import { destinoAoSalvar, pode, type Acao } from '../../../../lib/painel/permissoes';
 import { travasDaPeca, type EstadoPeca, type PecaEntrada, type TipoPeca } from '../../../../lib/painel/travas';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../../../../lib/edicoes';
+import { SERIES } from '../../../../lib/formato';
 import { enviarTraducao } from '../../../../lib/traducao/lote';
 
 const { cliente, usuario } = Astro.locals.painel!;
 const TIPOS: TipoPeca[] = ['newsletter', 'noticia', 'cultura', 'pagina'];
-const NOME: Record<TipoPeca, string> = { newsletter: 'Memória Operária', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página' };
+const NOME: Record<TipoPeca, string> = { newsletter: 'Newsletter', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página' };
 const ESTADO: Record<EstadoPeca, string> = { rascunho: 'Rascunho', em_revisao: 'Em revisão', publicada: 'Publicada', rejeitada: 'Rejeitada' };
 const DESTINO: Record<Exclude<Acao, 'editar' | 'corrigir'>, EstadoPeca> = { enviar_revisao: 'em_revisao', rejeitar: 'rejeitada', publicar: 'publicada' };
 
@@ -85,8 +86,10 @@ function deLinha(l: LinhaPeca): PecaEntrada {
     traduzir: l.traduzir,
   };
 }
+// Peça nova: a série vem do modal do Estúdio (?serie=); sem ela, a primeira série.
 function vazia(t: TipoPeca): PecaEntrada {
-  return { tipo: t, estado: 'rascunho', serie: t === 'newsletter' ? 'memoria-operaria' : undefined, autoria: 'PUKAS', titulo: '', resumo: '', corpo: '', fontes: [], traduzir: true };
+  const serie = SERIES.find((s) => s.id === Astro.url.searchParams.get('serie'))?.id ?? SERIES[0].id;
+  return { tipo: t, estado: 'rascunho', serie: t === 'newsletter' ? serie : undefined, autoria: 'PUKAS', titulo: '', resumo: '', corpo: '', fontes: [], traduzir: true };
 }
 const travas = travasDaPeca(v);
 const pronta = travas.every((t) => t.ok);
@@ -106,7 +109,7 @@ const traducao = linha?.traducoes?.[0];
   <form method="post" enctype="multipart/form-data" class="editor" data-chave={`pukas:peca:${id ?? `nova-${tipo}`}`} data-atualizado={linha?.atualizado_em ?? ''} data-limpar={Astro.url.searchParams.get('ok') ? '1' : undefined}>
     {tipo === 'newsletter' && (
       <div class="linha">
-        <div class="campo"><label for="serie">Série</label><select id="serie" name="serie"><option value="memoria-operaria" selected>Memória Operária</option></select></div>
+        <div class="campo"><label for="serie">Série</label><select id="serie" name="serie">{SERIES.map((x) => <option value={x.id} selected={x.id === v.serie}>{x.nome}</option>)}</select></div>
         <div class="campo"><label for="numero">Número</label><input id="numero" name="numero" type="number" min="1" value={v.numero} required /></div>
       </div>
     )}

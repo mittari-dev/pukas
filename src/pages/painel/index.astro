@@ -2,12 +2,14 @@
 // Estúdio (a fila do painel): criar nova peça (modal com o tipo), abas por estado, filtro por tipo.
 import Painel from '../../layouts/Painel.astro';
 import { listarFila } from '../../lib/banco/painel';
-import { formatarNumero } from '../../lib/formato';
+import { SERIES, formatarNumero, nomeSerie } from '../../lib/formato';
 import { textoManchete } from '../../lib/manchete';
 import type { EstadoPeca, TipoPeca } from '../../lib/painel/travas';
 
 const ABAS: [EstadoPeca, string][] = [['rascunho', 'Rascunhos'], ['em_revisao', 'Em revisão'], ['publicada', 'Publicadas'], ['rejeitada', 'Rejeitadas']];
-const TIPOS: [TipoPeca, string][] = [['newsletter', 'Memória Operária'], ['noticia', 'Notícia'], ['cultura', 'Cultura'], ['pagina', 'Página']];
+const TIPOS: [TipoPeca, string][] = [['newsletter', 'Newsletter'], ['noticia', 'Notícia'], ['cultura', 'Cultura'], ['pagina', 'Página']];
+// Filtro de tipo sem "Página": o manifesto aparece em Todos; página nova não se cria pelo Estúdio.
+const FILTROS = TIPOS.filter(([t]) => t !== 'pagina');
 
 // Estado vazio: o que costuma aparecer em cada aba.
 const VAZIO: Record<EstadoPeca, { titulo: string; texto: string }> = {
@@ -19,7 +21,7 @@ const VAZIO: Record<EstadoPeca, { titulo: string; texto: string }> = {
 // Opções do modal: os tipos que o editor já aceita (/painel/peca/nova?tipo=...). "Página" fica de fora:
 // o site só mostra a página "manifesto" (editável por Publicadas); página nova só com endereço criado junto.
 const OPCOES: { tipo: TipoPeca; nome: string; texto: string }[] = [
-  { tipo: 'newsletter', nome: 'Memória Operária', texto: 'Edição da newsletter: foto, fontes primárias e checagem.' },
+  { tipo: 'newsletter', nome: 'Newsletter', texto: 'Edição de uma série (escolha abaixo): foto, fontes primárias e checagem.' },
   { tipo: 'noticia', nome: 'Notícia', texto: 'Fato do presente que pesa sobre a classe trabalhadora, com fontes.' },
   { tipo: 'cultura', nome: 'Cultura', texto: 'Conto, cena, poema ou ensaio.' },
 ];
@@ -49,7 +51,7 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
     <span id="tipos-rotulo" class="tipos__rotulo">Tipo</span>
     <ul>
       <li><a href={link(estado)} aria-current={!tipo ? 'page' : undefined}>Todos</a></li>
-      {TIPOS.map(([t, nome]) => <li><a href={link(estado, t)} aria-current={t === tipo ? 'page' : undefined}>{nome}</a></li>)}
+      {FILTROS.map(([t, nome]) => <li><a href={link(estado, t)} aria-current={t === tipo ? 'page' : undefined}>{nome}</a></li>)}
     </ul>
   </nav>
 
@@ -65,7 +67,7 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
         <li>
           <a href={`/painel/peca/${p.id}`}>
             <span class="maquina fila__meta">
-              {nomeTipo[p.tipo]}{p.numero !== null && p.tipo !== 'pagina' ? ` · ${formatarNumero(p.numero)}` : ''} · {quando(p.atualizado_em)}
+              {nomeTipo[p.tipo]}{nomeSerie(p.serie) ? ` · ${nomeSerie(p.serie)}` : ''}{p.numero !== null && p.tipo !== 'pagina' ? ` · ${formatarNumero(p.numero)}` : ''} · {quando(p.atualizado_em)}
             </span>
             <span class="fila__titulo">{textoManchete(p.titulo) || '(sem título)'}</span>
           </a>
@@ -89,6 +91,12 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
           </label>
         ))}
       </fieldset>
+      <div class="campo nova__serie">
+        <label for="nova-serie">Série da newsletter</label>
+        <select id="nova-serie" name="serie">
+          {SERIES.map((x) => <option value={x.id}>{x.nome}</option>)}
+        </select>
+      </div>
       <div class="nova__acoes">
         <a class="botao botao--linha" href="#" data-fechar-nova>Cancelar</a>
         <button class="botao botao--marca" type="submit">Continuar →</button>
@@ -313,6 +321,13 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
   .opcao__texto {
     font-size: 14px;
     line-height: 1.4;
+  }
+  /* A série só vale para newsletter: some quando outro tipo está marcado. */
+  .nova__serie {
+    margin: calc(-1 * var(--esp-2)) 0 var(--esp-5);
+  }
+  .nova:has(input[name='tipo']:not([value='newsletter']):checked) .nova__serie {
+    display: none;
   }
   .nova__acoes {
     display: flex;
