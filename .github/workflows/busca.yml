@@ -1,0 +1,40 @@
+name: Busca (robô de notícias)
+
+# Pauta na segunda, quarta e sexta, "Rodar agora" do painel e os rascunhos pedidos. Quase sempre não há nada a fazer.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: busca
+  cancel-in-progress: false
+
+jobs:
+  busca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - name: Segredos configurados?
+        id: segredos
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] && [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Segredos ainda não configurados; nada a fazer."
+          fi
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/checkout@v4
+      - if: steps.segredos.outputs.ok == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - if: steps.segredos.outputs.ok == 'true'
+        run: npm ci
+      - if: steps.segredos.outputs.ok == 'true'
+        run: npx tsx scripts/busca.ts
