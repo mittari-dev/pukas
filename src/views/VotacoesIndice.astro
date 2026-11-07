@@ -1,0 +1,114 @@
+---
+// /votacoes: as abertas em cima e as encerradas embaixo, com o resultado. Fora do cache da borda, como cada votação.
+import Base from '../layouts/Base.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import { carregarVotacoes, type VotacaoPublica } from '../lib/carregar';
+import { resultado } from '../lib/banco/votos';
+import { formatarData } from '../lib/formato';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import { textoManchete } from '../lib/manchete';
+import { porcentagens } from '../lib/votacoes/voto';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const { abertas, encerradas } = await carregarVotacoes(idioma);
+const resultados = new Map(
+  await Promise.all(encerradas.map(async (v) => [v.pecaId, porcentagens((await resultado(v.pecaId)) ?? { a_favor: 0, contra: 0, nao_sei: 0 })] as const)),
+);
+const casa = (v: VotacaoPublica) => t(idioma, v.proposicao.casa === 'camara' ? 'votacao.camara' : 'votacao.senado');
+const identificacao = (v: VotacaoPublica) => `${v.proposicao.sigla} ${v.proposicao.numero}/${v.proposicao.ano}, ${casa(v)}`;
+---
+<Base titulo={t(idioma, 'votacoes.titulo')} descricao={t(idioma, 'votacao.metodologia')} receita="leitura" idioma={idioma}>
+  <div class="leitura">
+    <div class="titulo"><Manchete titulo={t(idioma, 'votacoes.titulo')} tamanho="m" /></div>
+
+    <h2 class="secao-titulo maquina">{t(idioma, 'votacoes.abertas')}</h2>
+    {abertas.length === 0 ? (
+      <p class="vazio">{t(idioma, 'votacoes.vazio')}</p>
+    ) : (
+      <ul class="lista">
+        {abertas.map((v) => (
+          <li>
+            <a href={prefixar(`/votacoes/${v.id}`, idioma)}>
+              <span class="maquina lista__meta">{identificacao(v)}{v.fechaEm && <> · {t(idioma, 'votacao.fecha')} {formatarData(v.fechaEm, idioma)}</>}</span>
+              <span class="lista__titulo">{textoManchete(v.titulo)}</span>
+              <span class="lista__resumo">{v.resumo}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {encerradas.length > 0 && (
+      <>
+        <h2 class="secao-titulo maquina">{t(idioma, 'votacoes.encerradas')}</h2>
+        <ul class="lista">
+          {encerradas.map((v) => {
+            const r = resultados.get(v.pecaId)!;
+            return (
+              <li>
+                <a href={prefixar(`/votacoes/${v.id}`, idioma)}>
+                  <span class="maquina lista__meta">{identificacao(v)}{v.fechaEm && <> · {t(idioma, 'votacao.fechou')} {formatarData(v.fechaEm, idioma)}</>}</span>
+                  <span class="lista__titulo">{textoManchete(v.titulo)}</span>
+                  <span class="maquina lista__resumo">
+                    {t(idioma, 'votacao.afavor')} {r.a_favor}% · {t(idioma, 'votacao.contra')} {r.contra}% · {t(idioma, 'votacao.naosei')} {r.nao_sei}%
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    )}
+
+    <p class="metodologia">{t(idioma, 'votacao.metodologia')}</p>
+  </div>
+</Base>
+
+<style>
+  .titulo {
+    margin: var(--esp-5) 0 var(--esp-5);
+  }
+  .lista {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--esp-6);
+  }
+  .lista a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-1);
+    padding: var(--esp-4) 0;
+    border-bottom: 1px solid currentColor;
+    text-decoration: none;
+  }
+  .lista a:hover .lista__titulo,
+  .lista a:focus-visible .lista__titulo {
+    color: var(--acento);
+  }
+  .lista__meta {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .lista__titulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 30px;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .lista__resumo {
+    font-size: 16px;
+  }
+  .vazio {
+    font-weight: 700;
+    margin-bottom: var(--esp-6);
+  }
+  .metodologia {
+    font-size: 14px;
+  }
+</style>

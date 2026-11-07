@@ -9,8 +9,10 @@ import { clientePublico, urlBanco } from './banco/cliente';
 import { emEspanhol, paraEdicao, paraObra, type ComCorpo, type LinhaPeca } from './banco/pecas';
 import type { TipoPeca } from './painel/travas';
 import { serieNoIdioma, type LinhaSerie, type Serie } from './series';
+import type { Fonte } from './edicoes';
+import type { Casa, Proposicao } from './votacoes/congresso';
 
-export type EdicaoIdioma = Edicao & MarcaTraducao & { body?: string };
+export type EdicaoIdioma = Edicao & MarcaTraducao & { body?: string; pecaId?: string };
 export type ObraIdioma = Obra & MarcaTraducao & { body?: string };
 export interface Pagina {
   id: string;
@@ -75,4 +77,102 @@ export async function carregarPagina(slug: string, idioma: Idioma = 'pt'): Promi
 // /es/<peça sem tradução>: mostra o original com o aviso "Traducción en camino" (ruling 6 do plano).
 export function pendente<T extends MarcaTraducao>(peca: T): T {
   return { ...peca, traducao: { revisado: false, pendente: true } };
+}
+
+// Votações (spec consultas §2 e §3). Em espanhol, título e explicação traduzidos quando prontos; sem tradução, o original
+// (a votação vale para os dois idiomas e tem prazo: não espera a tradução).
+export interface VotacaoPublica {
+  id: string;
+  pecaId: string;
+  titulo: string;
+  resumo: string;
+  proposicao: Proposicao;
+  publicadaEm: Date;
+  fechaEm: Date | null;
+  fechada: boolean;
+  altoImpacto: boolean;
+  fontes: Fonte[];
+}
+
+function paraVotacao(l: LinhaPeca, idioma: Idioma, agora: Date): VotacaoPublica {
+  const tr = idioma === 'es' ? l.traducoes?.find((x) => x.estado === 'pronta') : undefined;
+  const fechaEm = l.fecha_em ? new Date(l.fecha_em) : null;
+  return {
+    id: l.slug ?? l.id,
+    pecaId: l.id,
+    titulo: tr?.titulo ?? l.titulo,
+    resumo: tr?.resumo ?? l.resumo,
+    proposicao: l.proposicao!,
+    publicadaEm: new Date(l.publicada_em ?? Date.now()),
+    fechaEm,
+    fechada: fechaEm !== null && agora > fechaEm,
+    altoImpacto: Boolean(l.alto_impacto),
+    fontes: paraEdicao(l, '').data.fontes,
+  };
+}
+
+export async function carregarVotacoes(idioma: Idioma = 'pt', agora = new Date()): Promise<{ abertas: VotacaoPublica[]; encerradas: VotacaoPublica[] }> {
+  const todas = (await publicadas('votacao')).map((l) => paraVotacao(l, idioma, agora));
+  return { abertas: todas.filter((v) => !v.fechada), encerradas: todas.filter((v) => v.fechada) };
+}
+
+export async function carregarVotacao(slug: string, idioma: Idioma = 'pt', agora = new Date()): Promise<VotacaoPublica | null> {
+  const { data, error } = await clientePublico().from('pecas').select('*, traducoes(*)').eq('tipo', 'votacao').eq('estado', 'publicada').eq('slug', slug).maybeSingle();
+  if (error) throw new Error(`banco: ${error.message}`);
+  return data ? paraVotacao(data as LinhaPeca, idioma, agora) : null;
+}
+
+// Ligação votação ↔ notícias: a RLS só mostra quando as duas estão no ar.
+export async function noticiasDaVotacao(votacaoId: string): Promise<{ slug: string; titulo: string }[]> {
+  const db = clientePublico();
+  const { data: ligacoes, error } = await db.from('votacao_noticias').select('noticia_id').eq('votacao_id', votacaoId);
+  if (error) throw new Error(`banco: ${error.message}`);
+  if (!ligacoes?.length) return [];
+  const { data, error: e } = await db.from('pecas').select('slug, titulo').in('id', ligacoes.map((x) => x.noticia_id)).eq('estado', 'publicada');
+  if (e) throw new Error(`banco: ${e.message}`);
+  return (data ?? []) as { slug: string; titulo: string }[];
+}
+
+export async function votacaoDaNoticia(noticiaId: string, idioma: Idioma = 'pt', agora = new Date()): Promise<VotacaoPublica | null> {
+  const db = clientePublico();
+  const { data: ligacoes, error } = await db.from('votacao_noticias').select('votacao_id').eq('noticia_id', noticiaId);
+  if (error) throw new Error(`banco: ${error.message}`);
+  if (!ligacoes?.length) return null;
+  const { data, error: e } = await db
+    .from('pecas')
+    .select('*, traducoes(*)')
+    .in('id', ligacoes.map((x) => x.votacao_id))
+    .eq('estado', 'publicada')
+    .order('publicada_em', { ascending: false });
+  if (e) throw new Error(`banco: ${e.message}`);
+  const vs = ((data ?? []) as LinhaPeca[]).map((l) => paraVotacao(l, idioma, agora));
+  return vs.find((v) => !v.fechada) ?? vs[0] ?? null;
+}
+
+export interface Plenario {
+  idOficial: string;
+  casa: Casa;
+  data: Date;
+  descricao: string;
+  sim: number;
+  nao: number;
+  abstencao: number;
+  outros: number;
+  votos: { nome: string; partido: string; uf: string; voto: string }[];
+}
+
+export async function plenarioDaVotacao(votacaoId: string): Promise<Plenario[]> {
+  const { data, error } = await clientePublico().from('plenario_votacoes').select('*, plenario_votos(*)').eq('votacao_id', votacaoId).order('data', { ascending: false });
+  if (error) throw new Error(`banco: ${error.message}`);
+  return (data ?? []).map((p) => ({
+    idOficial: p.id_oficial,
+    casa: p.casa,
+    data: new Date(p.data),
+    descricao: p.descricao,
+    sim: p.sim,
+    nao: p.nao,
+    abstencao: p.abstencao,
+    outros: p.outros,
+    votos: [...(p.plenario_votos ?? [])].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+  }));
 }

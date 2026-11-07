@@ -5,7 +5,7 @@ import { prefixar, semPrefixo, IDIOMAS, type Idioma } from './idioma.js';
 const PAISES_ES = new Set(['AR', 'BO', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'ES', 'GQ', 'GT', 'HN', 'MX', 'NI', 'PA', 'PE', 'PR', 'PY', 'SV', 'UY', 'VE']);
 
 // Entradas que sempre existem nos dois idiomas. Páginas de conteúdo nunca são redirecionadas.
-const ENTRADAS = new Set(['/', '/links', '/manifesto', '/cultura', '/noticias', '/newsletter', '/newsletter/memoria-operaria']);
+const ENTRADAS = new Set(['/', '/links', '/manifesto', '/cultura', '/noticias', '/votacoes', '/newsletter', '/newsletter/memoria-operaria']);
 
 export interface Sinais {
   cookie?: string;

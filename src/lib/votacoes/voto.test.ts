@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { ehOpcao, gerarComprovante, hashSecreto, ipDaRequisicao, limparRelato, motivoDescarte, oQueMostrar } from './voto';
+import { ehOpcao, gerarComprovante, hashSecreto, ipDaRequisicao, limparRelato, motivoDescarte, oQueMostrar, porcentagens } from './voto';
 
 describe('comprovante', () => {
   test('PK- e 6 caracteres sem os que se confundem', () => {
@@ -59,4 +59,14 @@ test('o que mostrar', () => {
   expect(oQueMostrar({ votou: false, fechada: false })).toBe('so_total');
   expect(oQueMostrar({ votou: true, fechada: false })).toBe('parcial');
   expect(oQueMostrar({ votou: false, fechada: true })).toBe('final');
+});
+
+describe('porcentagens', () => {
+  test('arredonda para inteiro, sem forçar a soma a 100', () => {
+    expect(porcentagens({ a_favor: 1, contra: 1, nao_sei: 1 })).toEqual({ a_favor: 33, contra: 33, nao_sei: 33, total: 3 });
+    expect(porcentagens({ a_favor: 2, contra: 1, nao_sei: 0 })).toEqual({ a_favor: 67, contra: 33, nao_sei: 0, total: 3 });
+  });
+  test('sem votos, tudo zero', () => {
+    expect(porcentagens({ a_favor: 0, contra: 0, nao_sei: 0 })).toEqual({ a_favor: 0, contra: 0, nao_sei: 0, total: 0 });
+  });
 });

@@ -3,7 +3,7 @@
 import type { Fonte } from '../edicoes';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../edicoes';
 
-export type TipoPeca = 'newsletter' | 'cultura' | 'noticia' | 'pagina';
+export type TipoPeca = 'newsletter' | 'cultura' | 'noticia' | 'pagina' | 'votacao';
 export type EstadoPeca = 'rascunho' | 'em_revisao' | 'publicada' | 'rejeitada';
 export type Papel = 'editor' | 'revisor' | 'redator';
 

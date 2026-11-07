@@ -16,7 +16,7 @@ import { ligarPeca } from '../../../../lib/banco/agenda';
 
 const { cliente, usuario } = Astro.locals.painel!;
 const TIPOS: TipoPeca[] = ['newsletter', 'noticia', 'cultura', 'pagina'];
-const NOME: Record<TipoPeca, string> = { newsletter: 'Newsletter', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página' };
+const NOME: Record<TipoPeca, string> = { newsletter: 'Newsletter', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página', votacao: 'Votação' };
 const ESTADO: Record<EstadoPeca, string> = { rascunho: 'Rascunho', em_revisao: 'Em revisão', publicada: 'Publicada', rejeitada: 'Rejeitada' };
 const DESTINO: Record<Exclude<Acao, 'editar' | 'corrigir'>, EstadoPeca> = { enviar_revisao: 'em_revisao', rejeitar: 'rejeitada', publicar: 'publicada' };
 

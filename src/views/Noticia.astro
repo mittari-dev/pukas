@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
-import type { EdicaoIdioma } from '../lib/carregar';
+import { votacaoDaNoticia, type EdicaoIdioma } from '../lib/carregar';
 import { ordenarFontes } from '../lib/edicoes';
 import { formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -19,6 +19,7 @@ const { idioma, noticia, alternativa } = Astro.props;
 const d = noticia.data;
 const corpo = await renderizarMarkdown(noticia.body ?? '');
 const foto = d.foto.arquivo as string;
+const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
 ---
 <Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" imagem={foto || undefined} idioma={idioma} alternativa={alternativa}>
   <article class="leitura">
@@ -39,6 +40,13 @@ const foto = d.foto.arquivo as string;
     <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     <div class="corpo" set:html={corpo} />
+
+    {votacao && (
+      <a class="votacao-ligada" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>
+        <span class="maquina">{t(idioma, 'noticia.vote')}</span>
+        <span class="votacao-ligada__titulo">{textoManchete(votacao.titulo)}</span>
+      </a>
+    )}
 
     <section aria-labelledby="fontes">
       <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>
@@ -80,6 +88,22 @@ const foto = d.foto.arquivo as string;
 </Base>
 
 <style>
+  .votacao-ligada {
+    display: grid;
+    gap: var(--esp-1);
+    border: 3px solid var(--acento);
+    padding: var(--esp-4);
+    margin: var(--esp-5) 0;
+    text-decoration: none;
+  }
+  .votacao-ligada__titulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: 24px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
   .edicao__carimbo {
     margin: var(--esp-4) 0 var(--esp-6);
   }

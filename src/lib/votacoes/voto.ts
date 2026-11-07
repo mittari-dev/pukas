@@ -40,3 +40,10 @@ export function limparRelato(s: unknown): { relato: string | null; erro?: string
 
 export type Visao = 'so_total' | 'parcial' | 'final';
 export const oQueMostrar = (x: { votou: boolean; fechada: boolean }): Visao => (x.fechada ? 'final' : x.votou ? 'parcial' : 'so_total');
+
+// Porcentagem inteira de cada opção; a soma pode dar 99 ou 101, e a página mostra o número absoluto ao lado.
+export function porcentagens(r: Record<Opcao, number>): Record<Opcao, number> & { total: number } {
+  const total = r.a_favor + r.contra + r.nao_sei;
+  const pct = (n: number) => (total ? Math.round((100 * n) / total) : 0);
+  return { a_favor: pct(r.a_favor), contra: pct(r.contra), nao_sei: pct(r.nao_sei), total };
+}
