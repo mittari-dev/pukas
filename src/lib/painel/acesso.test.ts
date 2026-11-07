@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { cabecalhosAdmin, decidirAcessoAdmin, enderecoNovo, voltaSegura } from './acesso';
+import { cabecalhosAdmin, decidirAcessoAdmin, enderecoNovo, mensagemDeLogin, voltaSegura } from './acesso';
 
 const sessao = (extra: Partial<Parameters<typeof decidirAcessoAdmin>[0]>) => ({ caminho: '/painel', logado: true, aal: 'aal2' as const, temFator: true, ...extra });
 
@@ -66,5 +66,13 @@ describe('enderecoNovo', () => {
     expect(enderecoNovo('/admin/peca/1')).toBe('/painel/peca/1');
     expect(enderecoNovo('/administracao')).toBeNull();
     expect(enderecoNovo('/manifesto')).toBeNull();
+  });
+});
+
+describe('mensagemDeLogin', () => {
+  test('banco fora do ar não parece senha errada', () => {
+    expect(mensagemDeLogin({ status: 400, name: 'AuthApiError' })).toBe('E-mail, senha ou código errados.');
+    expect(mensagemDeLogin({ status: 0, name: 'AuthRetryableFetchError' })).toBe('O painel não conseguiu falar com o banco agora. Tente de novo em instantes.');
+    expect(mensagemDeLogin({ status: 503, name: 'AuthApiError' })).toBe('O painel não conseguiu falar com o banco agora. Tente de novo em instantes.');
   });
 });
