@@ -53,6 +53,18 @@ export async function votoDoAparelho(votacaoId: string, aparelhoHash: string): P
   return data;
 }
 
+export async function votoDaConta(votacaoId: string, contaHash: string): Promise<{ comprovante: string } | null> {
+  const { data, error } = await mestre().from('votos').select('comprovante').eq('votacao_id', votacaoId).eq('conta_hash', contaHash).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+// Alto impacto: a conta Google temporária sai do Supabase depois do voto; no banco fica só o hash dela.
+export async function apagarConta(uid: string): Promise<void> {
+  const { error } = await mestre().auth.admin.deleteUser(uid);
+  if (error) console.error('apagar conta do voto:', error.message);
+}
+
 export async function validosDaRedeNaHora(votacaoId: string, ipHash: string): Promise<number> {
   const desde = new Date(Date.now() - 60 * 60_000).toISOString();
   const { count, error } = await mestre()
@@ -68,14 +80,14 @@ export async function validosDaRedeNaHora(votacaoId: string, ipHash: string): Pr
 
 export type Gravado = { comprovante: string; ja: boolean } | { fechada: true };
 
-// Dois cliques ao mesmo tempo: o índice único do aparelho segura o segundo, que recebe o comprovante do primeiro.
+// Dois cliques ao mesmo tempo: o índice único do aparelho (ou da conta) segura o segundo, que recebe o comprovante do primeiro.
 export async function gravarVoto(linha: LinhaVoto, novoComprovante: () => string): Promise<Gravado> {
   for (let tentativa = 0; tentativa < 3; tentativa++) {
     const { error } = await mestre().from('votos').insert(linha);
     if (!error) return { comprovante: linha.comprovante, ja: false };
     if (error.code === 'P0001') return { fechada: true };
     if (error.code !== '23505') throw new Error(error.message);
-    const existente = await votoDoAparelho(linha.votacao_id, linha.aparelho_hash);
+    const existente = (await votoDoAparelho(linha.votacao_id, linha.aparelho_hash)) ?? (linha.conta_hash ? await votoDaConta(linha.votacao_id, linha.conta_hash) : null);
     if (existente) return { comprovante: existente.comprovante, ja: true };
     // Comprovante sorteado repetido (raro): sorteia outro.
     linha = { ...linha, comprovante: novoComprovante() };

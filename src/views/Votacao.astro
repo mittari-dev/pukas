@@ -5,6 +5,8 @@ import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import { noticiasDaVotacao, plenarioDaVotacao, type VotacaoPublica } from '../lib/carregar';
 import { comprovantes, resultado, votoDoAparelho } from '../lib/banco/votos';
+import { clienteDaRequisicao, googleLigado } from '../lib/banco/cliente';
+import { sessaoGoogle } from '../lib/votacoes/conta';
 import { ordenarFontes } from '../lib/edicoes';
 import { formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -33,8 +35,11 @@ const descartes = Object.entries(r?.descartes ?? {});
 const totalDescartados = descartes.reduce((s, [, n]) => s + n, 0);
 const visao = oQueMostrar({ votou: Boolean(meu), fechada: v.fechada });
 const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? process.env.PUBLIC_TURNSTILE_SITE_KEY;
-// Alto impacto entra com o login Google (Tarefa 9); até lá, não abre para voto.
-const podeVotar = !v.fechada && !meu && !v.altoImpacto && Boolean(siteKey);
+// Alto impacto: só vota quem entrou com o Google. Sem o provedor ligado no Supabase, a votação não abre.
+const pedeGoogle = v.altoImpacto && !v.fechada && !meu;
+const googleOk = pedeGoogle ? await googleLigado() : false;
+const sessao = pedeGoogle && googleOk ? sessaoGoogle((await clienteDaRequisicao(Astro).auth.getUser()).data.user) : null;
+const podeVotar = !v.fechada && !meu && Boolean(siteKey) && (!v.altoImpacto || sessao !== null);
 
 const ROTULO: Record<Opcao, Chave> = { a_favor: 'votacao.afavor', contra: 'votacao.contra', nao_sei: 'votacao.naosei' };
 const MOTIVO: Record<string, Chave> = { 'campo escondido preenchido': 'votacao.motivoHoneypot', 'muitos votos da mesma rede': 'votacao.motivoRede' };
@@ -86,7 +91,13 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
       </section>
     )}
 
-    {v.altoImpacto && !v.fechada && !meu && <p class="votacao__aviso">{t(idioma, 'votacao.altoImpactoIndisponivel')}</p>}
+    {pedeGoogle && !googleOk && <p class="votacao__aviso">{t(idioma, 'votacao.altoImpactoIndisponivel')}</p>}
+    {pedeGoogle && googleOk && !sessao && (
+      <div class="votacao__google">
+        <p>{t(idioma, 'votacao.altoImpacto')}</p>
+        <a class="maquina voto__enviar" href={`/api/entrar-google?votacao=${v.id}${idioma === 'es' ? '&idioma=es' : ''}`}>{t(idioma, 'votacao.entrarGoogle')}</a>
+      </div>
+    )}
 
     {podeVotar && (
       <form class="voto" method="post" action="/api/votar">
@@ -226,6 +237,14 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
     color: var(--cal);
     font-size: 14px;
     cursor: pointer;
+  }
+  .votacao__google {
+    margin: var(--esp-5) 0;
+  }
+  .votacao__google a {
+    display: inline-grid;
+    place-items: center;
+    text-decoration: none;
   }
   .voto {
     display: grid;

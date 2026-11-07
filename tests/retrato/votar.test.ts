@@ -104,6 +104,14 @@ describe.skipIf(!base)('/api/votar', () => {
     expect(n.cookies.get('pk_voto')).toBe('fechada');
   });
 
+  test('alto impacto sem login Google volta "robo" e não grava', async () => {
+    const v = await votacao({ alto_impacto: true });
+    const n = navegador();
+    await n.votar({ votacao: v.slug, opcao: 'contra', 'cf-turnstile-response': TOKEN });
+    expect(n.cookies.get('pk_voto')).toBe('robo');
+    expect(await comprovantes(v.id)).toHaveLength(0);
+  });
+
   test('opção inválida volta "erro"', async () => {
     const v = await votacao();
     const n = navegador();
