@@ -1,0 +1,153 @@
+---
+// Equipe (só editor): convidar por e-mail, trocar papel, tirar da equipe. A pessoa convidada cria a própria senha e o 2FA.
+import Painel from '../../layouts/Painel.astro';
+import { convidar, listarEquipe, mudarPapel, remover } from '../../lib/banco/equipe';
+import { lerConvite, mudancaNaEquipe } from '../../lib/painel/equipe';
+import type { Papel } from '../../lib/painel/travas';
+
+const eu = Astro.locals.painel!.usuario!;
+if (eu.papel !== 'editor') return Astro.rewrite('/404');
+
+const PAPEIS: [Papel, string][] = [['editor', 'Editor'], ['revisor', 'Revisor'], ['redator', 'Redator']];
+let erro = '';
+let aviso = '';
+let convite: { email: string; link: string } | undefined;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const acao = String(form.get('acao') ?? '');
+  const alvo = String(form.get('id') ?? '');
+  if (acao === 'convidar') {
+    const c = lerConvite(form);
+    if (!c.ok) erro = c.erro;
+    else {
+      const r = await convidar(c.valor.email, c.valor.nome, c.valor.papel, Astro.url.origin);
+      if (r.ok) convite = { email: c.valor.email, link: r.link };
+      else erro = r.erro;
+    }
+  } else if (acao === 'papel' || acao === 'remover') {
+    const papel = String(form.get('papel') ?? '') as Papel;
+    erro = mudancaNaEquipe(eu, alvo, acao) ?? '';
+    if (!erro && acao === 'papel' && !PAPEIS.some(([p]) => p === papel)) erro = 'Papel inválido.';
+    if (!erro) {
+      const r = acao === 'papel' ? await mudarPapel(alvo, papel) : await remover(alvo);
+      if (r.ok) aviso = acao === 'papel' ? 'Papel mudado.' : 'Pessoa tirada da equipe.';
+      else erro = r.erro;
+    }
+  }
+}
+
+const equipe = await listarEquipe();
+---
+<Painel titulo="Equipe">
+  <h1>Equipe</h1>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+  {aviso && <p class="mensagem mensagem--ok" role="status">{aviso}</p>}
+  {convite && (
+    <section class="mensagem mensagem--ok" role="status">
+      <p><strong>Convite criado para {convite.email}.</strong> Mande este link para a pessoa (WhatsApp, Signal…). Ele só funciona uma vez e vence em 24 horas.</p>
+      <label class="sr-only" for="link-convite">Link do convite</label>
+      <input id="link-convite" class="equipe__link maquina" value={convite.link} readonly />
+    </section>
+  )}
+
+  <ul class="equipe">
+    {equipe.map((m) => (
+      <li>
+        <div>
+          <strong>{m.nome || '(sem nome)'}</strong>{m.id === eu.id && ' (você)'}
+          <span class="maquina equipe__meta">{m.email}{!m.entrou && ' · convite ainda não aceito'}</span>
+        </div>
+        {m.id === eu.id ? (
+          <span class="maquina">{m.papel.toUpperCase()}</span>
+        ) : (
+          <div class="equipe__acoes">
+            <form method="post">
+              <input type="hidden" name="acao" value="papel" />
+              <input type="hidden" name="id" value={m.id} />
+              <label class="sr-only" for={`papel-${m.id}`}>Papel de {m.nome}</label>
+              <select id={`papel-${m.id}`} name="papel">
+                {PAPEIS.map(([p, nome]) => <option value={p} selected={p === m.papel}>{nome}</option>)}
+              </select>
+              <button class="botao botao--linha maquina" type="submit">Mudar</button>
+            </form>
+            <form method="post">
+              <input type="hidden" name="acao" value="remover" />
+              <input type="hidden" name="id" value={m.id} />
+              <button class="botao botao--linha maquina" type="submit" aria-label={`Tirar ${m.nome} da equipe`}>Tirar</button>
+            </form>
+          </div>
+        )}
+      </li>
+    ))}
+  </ul>
+
+  <h2>Convidar</h2>
+  <p>O painel gera um link para você mandar à pessoa. Pelo link ela cria a própria senha e cadastra o 2FA no primeiro acesso.</p>
+  <form method="post">
+    <input type="hidden" name="acao" value="convidar" />
+    <div class="campo">
+      <label for="nome">Nome</label>
+      <input id="nome" name="nome" required autocomplete="off" />
+    </div>
+    <div class="campo">
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" required autocomplete="off" />
+    </div>
+    <div class="campo">
+      <label for="papel">Papel</label>
+      <select id="papel" name="papel">
+        <option value="redator">Redator: escreve rascunhos e manda para revisão</option>
+        <option value="revisor">Revisor: também revisa e rejeita</option>
+        <option value="editor">Editor: também publica, corrige e mexe na equipe</option>
+      </select>
+    </div>
+    <button class="botao botao--marca" type="submit">Gerar link do convite</button>
+  </form>
+</Painel>
+
+<style>
+  .equipe {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--esp-7);
+    border-top: 3px solid var(--tinta);
+  }
+  .equipe li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--esp-3);
+    padding: var(--esp-4) 0;
+    border-bottom: 1px solid var(--tinta);
+  }
+  .equipe__meta {
+    display: block;
+    font-size: 12px;
+    margin-top: var(--esp-1);
+  }
+  .equipe__acoes,
+  .equipe__acoes form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--esp-2);
+  }
+  .equipe__link {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--esp-3);
+    border: 3px solid var(--tinta);
+    background: var(--cal);
+    font-size: 13px;
+  }
+  .equipe select,
+  .campo select {
+    font: inherit;
+    min-height: 44px;
+    padding: 0 var(--esp-3);
+    border: 3px solid var(--tinta);
+    background: var(--cal);
+  }
+</style>

@@ -12,6 +12,8 @@ export type Decisao = { tipo: 'seguir' } | { tipo: 'redirecionar'; para: string 
 
 const ENTRAR = '/admin/entrar';
 const DOIS_FATORES = '/admin/2fa';
+// O link do e-mail de convite: é ele que cria a sessão, então abre sem login.
+const CONVITE = '/admin/convite';
 
 // Volta só para dentro do painel: nada de outro site nem de //host.
 export function voltaSegura(volta: string | null | undefined): string {
@@ -21,7 +23,7 @@ export function voltaSegura(volta: string | null | undefined): string {
 const com = (destino: string, volta: string) => `${destino}?volta=${encodeURIComponent(voltaSegura(volta))}`;
 
 export function decidirAcessoAdmin({ caminho, logado, aal }: Sessao): Decisao {
-  if (caminho === ENTRAR) return { tipo: 'seguir' };
+  if (caminho === ENTRAR || caminho === CONVITE) return { tipo: 'seguir' };
   if (!logado) return { tipo: 'redirecionar', para: com(ENTRAR, caminho === DOIS_FATORES ? '/admin' : caminho) };
   if (caminho === DOIS_FATORES) return { tipo: 'seguir' };
   if (aal !== 'aal2') return { tipo: 'redirecionar', para: com(DOIS_FATORES, caminho) };
