@@ -2,11 +2,391 @@
   "correcoes": [],
   "pecas": [
     {
+      "alto_impacto": false,
+      "autoria": "Augusto dos Anjos",
+      "aviso": null,
+      "checagem": null,
+      "corpo": "Vês! Ninguém assistiu ao formidável  \nEnterro de tua última quimera.  \nSomente a Ingratidão – esta pantera –  \nFoi tua companheira inseparável!\n\nAcostuma-te à lama que te espera!  \nO Homem, que, nesta terra miserável,  \nMora, entre feras, sente inevitável  \nNecessidade de também ser fera.\n\nToma um fósforo. Acende teu cigarro!  \nO beijo, amigo, é a véspera do escarro,  \nA mão que afaga é a mesma que apedreja.\n\nSe a alguém causa inda pena a tua chaga,  \nApedreja essa mão vil que te afaga,  \nEscarra nessa boca que te beija!",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [],
+      "foto_caminho": null,
+      "foto_credito": null,
+      "foto_descricao": null,
+      "foto_licenca": null,
+      "foto_origem": null,
+      "id": "340a1a43-fa14-4b6d-863a-5fcc7de7f788",
+      "legenda": null,
+      "numero": 1,
+      "proposicao": null,
+      "publicada_em": "2026-10-20T21:00:00+00:00",
+      "resumo": "Soneto de Augusto dos Anjos, publicado em 1912 no livro \"Eu\". Domínio público.",
+      "serie": null,
+      "slug": "versos-intimos",
+      "subtipo": "poema",
+      "tipo": "cultura",
+      "titulo": "Versos íntimos",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "Augusto dos Anjos",
+      "aviso": null,
+      "checagem": null,
+      "corpo": "Eu, filho do carbono e do amoníaco,  \nMonstro de escuridão e rutilância,  \nSofro, desde a epigênese da infância,  \nA influência má dos signos do zodíaco.\n\nProfundissimamente hipocondríaco,  \nEste ambiente me causa repugnância...  \nSobe-me à boca uma ânsia análoga à ânsia  \nQue se escapa da boca de um cardíaco.\n\nJá o verme – este operário das ruínas –  \nQue o sangue podre das carnificinas  \nCome, e à vida em geral declara guerra,\n\nAnda a espreitar meus olhos para roê-los,  \nE há de deixar-me apenas os cabelos,  \nNa frialdade inorgânica da terra!",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [],
+      "foto_caminho": null,
+      "foto_credito": null,
+      "foto_descricao": null,
+      "foto_licenca": null,
+      "foto_origem": null,
+      "id": "3bf29527-9f5b-491c-bada-70045f6f3cff",
+      "legenda": null,
+      "numero": 2,
+      "proposicao": null,
+      "publicada_em": "2026-11-04T21:00:00+00:00",
+      "resumo": "Outro soneto do livro \"Eu\" (1912), onde o verme aparece como \"operário das ruínas\". Domínio público.",
+      "serie": null,
+      "slug": "psicologia-de-um-vencido",
+      "subtipo": "poema",
+      "tipo": "cultura",
+      "titulo": "Psicologia de um vencido",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": {
+        "em": "2026-11-08",
+        "por": "Claude (teste)"
+      },
+      "corpo": "Em junho de 1917, as tecelãs do Cotonifício Crespi, na Mooca, cruzaram os braços. Pediam aumento e o fim de descontos que comiam o salário. A fábrica não cedeu, e a paralisação foi passando de uma empresa para outra.\n\nNo dia 9 de julho, durante um protesto no Brás, a polícia atirou contra os grevistas. José Martínez, sapateiro espanhol de 21 anos, morreu. O enterro, dois dias depois, virou uma das maiores manifestações que São Paulo já tinha visto: milhares de pessoas atravessaram a cidade atrás do caixão.\n\n## A cidade parou\n\nDepois do enterro, a greve deixou de ser de fábrica e virou da cidade. Bondes pararam, o comércio fechou, faltou pão e leite. Dezenas de milhares de trabalhadores ficaram em casa ou foram para a rua.\n\nO Comitê de Defesa Proletária juntou as reivindicações numa lista só: aumento de salário, jornada de oito horas, fim do trabalho de crianças menores de 14 anos, fim do trabalho noturno para mulheres e menores, e a soltura dos presos da greve.\n\n## O acordo e o que veio depois\n\nEm meados de julho, patrões e governo aceitaram um acordo: 20% de aumento, nenhuma demissão por causa da greve e a libertação dos presos. Boa parte das promessas não foi cumprida nos meses seguintes, e muitos líderes acabaram presos ou expulsos do país.\n\nA jornada de oito horas só virou regra em 1932. Mas foi em 1917 que ela apareceu, escrita, numa lista de quem parou a cidade para pedir.",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Hemeroteca Digital Brasileira (Biblioteca Nacional)",
+          "tipo": "primaria",
+          "titulo": "Correio Paulistano, edições de julho de 1917",
+          "url": "https://bndigital.bn.gov.br/hemeroteca-digital/"
+        },
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Wikipédia",
+          "tipo": "secundaria",
+          "titulo": "Greve geral de 1917",
+          "url": "https://pt.wikipedia.org/wiki/Greve_geral_de_1917"
+        }
+      ],
+      "foto_caminho": "1971c05b-7551-4af4-8f32-78ba21f47fd8.jpg",
+      "foto_credito": "PUKAS",
+      "foto_descricao": "Imagem provisória de teste: 1917, greve geral em São Paulo",
+      "foto_licenca": "Imagem provisória de teste",
+      "foto_origem": null,
+      "id": "6017ecf2-f315-4549-9d78-a966ba8aa996",
+      "legenda": null,
+      "numero": 1,
+      "proposicao": null,
+      "publicada_em": "2026-10-12T12:00:00+00:00",
+      "resumo": "Em julho de 1917, a morte de um sapateiro de 21 anos pela polícia virou greve geral. Em poucos dias, a maior cidade industrial do país parou.",
+      "serie": "memoria-operaria",
+      "slug": null,
+      "subtipo": null,
+      "tipo": "newsletter",
+      "titulo": "A greve | que parou | *São Paulo.*",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": {
+        "em": "2026-11-08",
+        "por": "Claude (teste)"
+      },
+      "corpo": "Todo fim de ano, o 13º salário aparece como se fosse costume. Não é. Ele tem data de nascimento: a Lei nº 4.090, de 13 de julho de 1962, que \"institui a gratificação de Natal para os trabalhadores\".\n\nA lei manda que, em dezembro, todo empregado receba uma gratificação de um doze avos da remuneração de dezembro por mês trabalhado no ano. Quem trabalhou o ano inteiro recebe um salário a mais.\n\n## Por que em 1962\n\nO início dos anos 1960 foi de greves e de sindicatos crescendo. Em 1962 nasceu o Comando Geral dos Trabalhadores, que juntava as principais entidades sindicais, e o 13º estava entre as bandeiras que elas levavam para a rua. A lei foi sancionada pelo presidente João Goulart no meio desse período de pressão.\n\nHouve quem dissesse, na época, que a medida ia quebrar as empresas. Não quebrou.\n\n## A segunda lei\n\nTrês anos depois, já na ditadura, a Lei nº 4.749, de 12 de agosto de 1965, dividiu o pagamento: um adiantamento de metade do salário entre fevereiro e novembro, e o resto até 20 de dezembro. É assim até hoje.",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Planalto",
+          "tipo": "primaria",
+          "titulo": "Lei nº 4.090, de 13 de julho de 1962",
+          "url": "https://www.planalto.gov.br/ccivil_03/leis/l4090.htm"
+        },
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Planalto",
+          "tipo": "primaria",
+          "titulo": "Lei nº 4.749, de 12 de agosto de 1965",
+          "url": "https://www.planalto.gov.br/ccivil_03/leis/l4749.htm"
+        }
+      ],
+      "foto_caminho": "b4d6e9e7-b554-4248-903a-8a35c22779a7.jpg",
+      "foto_credito": "PUKAS",
+      "foto_descricao": "Imagem provisória de teste: 13º salário, Lei 4.090 de 1962",
+      "foto_licenca": "Imagem provisória de teste",
+      "foto_origem": null,
+      "id": "7b9abf78-53ea-45c8-ae03-78dd3097d158",
+      "legenda": null,
+      "numero": 2,
+      "proposicao": null,
+      "publicada_em": "2026-10-19T12:00:00+00:00",
+      "resumo": "A gratificação de Natal virou lei em 13 de julho de 1962, sancionada por João Goulart, num ano de greves e pressão sindical.",
+      "serie": "memoria-operaria",
+      "slug": null,
+      "subtipo": null,
+      "tipo": "newsletter",
+      "titulo": "O 13º | não foi | *presente de Natal.*",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": {
+        "em": "2026-11-08",
+        "por": "Claude (teste)"
+      },
+      "corpo": "Na manhã de 12 de maio de 1978, os metalúrgicos da Saab-Scania, em São Bernardo do Campo, bateram o ponto, entraram na fábrica e não ligaram as máquinas. Ficaram de braços cruzados. A paralisação durou quatro dias e terminou com um acordo com a empresa.\n\nFazer greve, naquele momento, era quase impossível pela lei. Mesmo assim, a parada da Scania se espalhou por outras fábricas do ABC paulista.\n\n## Vila Euclides\n\nEm 1979, as assembleias saíram do sindicato e foram para o Estádio de Vila Euclides, em São Bernardo. Em 23 de março daquele ano, cerca de 70 mil operários lotaram o estádio. O governo respondeu com intervenção no Sindicato dos Metalúrgicos.\n\n## 1980: 41 dias\n\nA greve de 1980 durou 41 dias. Dois dias antes das prisões, o ministro do Trabalho decretou intervenção nos sindicatos de São Bernardo e Santo André. Em 19 de abril, dirigentes sindicais, entre eles Luiz Inácio Lula da Silva, foram presos e levados ao Dops. Em 20 de maio, a Justiça Militar revogou a prisão. Em 1981, os dirigentes foram condenados com base na Lei de Segurança Nacional; a ação depois prescreveu.\n\nA greve terminou sem as conquistas que pedia. Mas o ABC mostrou que dava para parar, e o país não voltou a ser o mesmo.",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Planalto",
+          "tipo": "primaria",
+          "titulo": "Lei nº 6.620, de 17 de dezembro de 1978 (Lei de Segurança Nacional)",
+          "url": "https://www.planalto.gov.br/ccivil_03/leis/1970-1979/l6620.htm"
+        },
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Fundação Perseu Abramo",
+          "tipo": "secundaria",
+          "titulo": "40 anos da greve na Scania: braços cruzados contra a ditadura",
+          "url": "https://fpabramo.org.br/40-anos-da-greve-na-scania-bracos-cruzados-contra-ditadura/"
+        },
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Diário do Grande ABC",
+          "tipo": "secundaria",
+          "titulo": "Em 1981, petista foi condenado por tribunal militar; ação prescreveu",
+          "url": "https://www.dgabc.com.br/Noticia/2824269/em-1981-petista-foi-condenado-por-tribunal-militar-acao-prescreveu"
+        }
+      ],
+      "foto_caminho": "afb2002c-ae85-4a44-b2f2-777b92b722f6.jpg",
+      "foto_credito": "PUKAS",
+      "foto_descricao": "Imagem provisória de teste: greves do ABC, 1978 a 1980",
+      "foto_licenca": "Imagem provisória de teste",
+      "foto_origem": null,
+      "id": "0656af46-1ffa-4460-9c7d-180b6ca1d36c",
+      "legenda": null,
+      "numero": 3,
+      "proposicao": null,
+      "publicada_em": "2026-10-26T12:00:00+00:00",
+      "resumo": "Em 12 de maio de 1978, metalúrgicos da Saab-Scania pararam as máquinas em São Bernardo do Campo. Em plena ditadura, a greve voltou.",
+      "serie": "memoria-operaria",
+      "slug": null,
+      "subtipo": null,
+      "tipo": "newsletter",
+      "titulo": "Braços cruzados, | *máquinas paradas.*",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": {
+        "em": "2026-11-08",
+        "por": "Claude (teste)"
+      },
+      "corpo": "A Constituição de 1988 diz, no artigo 7º, inciso XIII, que a jornada normal não pode passar de oito horas por dia e quarenta e quatro por semana. Antes dela, o limite era de 48 horas semanais.\n\nA conta das oito horas vem de longe. Ela já estava na lista da greve geral de 1917 e só virou regra nos decretos de 1932, para o comércio e a indústria. Cada hora a menos foi pedida em greve, assembleia e votação.\n\n![Imagem provisória de teste: 5x2, fim da escala 6x1](https://jyasvubglgiopgtfdyak.supabase.co/storage/v1/object/public/fotos/acc3bc6c-11cb-427f-819d-ccd6c53d9bc0.jpg)\n\n## E agora\n\nEm 14 de outubro de 2026, o Senado aprovou a PEC 221/2019, que acaba com a escala 6x1, por 75 votos a 1 nos dois turnos. O texto que saiu da Comissão de Constituição e Justiça previa cinco dias de trabalho e dois de descanso, e a jornada caindo de 44 para 42 horas e, depois de 14 meses, para 40.\n\nA proposta segue para promulgação. Mais uma vez, a hora a menos não caiu do céu.",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Planalto",
+          "tipo": "primaria",
+          "titulo": "Constituição Federal de 1988, art. 7º, XIII",
+          "url": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+        },
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Bahia Notícias",
+          "tipo": "secundaria",
+          "titulo": "Senado aprova PEC do fim da escala 6x1 em primeiro turno com 75 votos favoráveis e 1 contra",
+          "url": "https://www.bahianoticias.com.br/noticia/322453-senado-aprova-pec-do-fim-da-escala-6x1-em-primeiro-turno-com-75-votos-favoraveis-e-1-contra"
+        }
+      ],
+      "foto_caminho": "717f2780-1e9c-4011-84a8-46ad8a6f14c7.jpg",
+      "foto_credito": "PUKAS",
+      "foto_descricao": "Imagem provisória de teste: 44 horas, Constituição de 1988",
+      "foto_licenca": "Imagem provisória de teste",
+      "foto_origem": null,
+      "id": "dc92c59f-2f70-4e02-bda6-6175f843d962",
+      "legenda": null,
+      "numero": 4,
+      "proposicao": null,
+      "publicada_em": "2026-11-02T12:00:00+00:00",
+      "resumo": "Desde 1988, a Constituição limita o trabalho a 8 horas por dia e 44 por semana. Em outubro de 2026, o Senado aprovou baixar para 40.",
+      "serie": "memoria-operaria",
+      "slug": null,
+      "subtipo": null,
+      "tipo": "newsletter",
+      "titulo": "Oito horas | foram arrancadas, | *não dadas.*",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": {
+        "em": "2026-11-08",
+        "por": "Claude (teste)"
+      },
+      "corpo": "O PLP 12/2024, enviado pelo governo federal em 2024, cria regras para o trabalho de motoristas de aplicativo de transporte de passageiros em carros: um valor mínimo pela hora trabalhada, contribuição ao INSS e outros direitos.\n\nSegundo a página do projeto na Câmara dos Deputados, a situação dele desde 12 de maio de 2026 é \"pronta para pauta\". Ou seja: pode ir a votação no plenário, mas não tem data.\n\nO texto divide a própria categoria. Parte dos motoristas teme perder renda e liberdade de horário; outra parte quer proteção mínima e aposentadoria.\n\nNo PUKAS, a votação sobre o projeto está aberta. Diga se é a favor ou contra e conte como isso mexe com o seu trabalho.",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Câmara dos Deputados",
+          "tipo": "primaria",
+          "titulo": "PLP 12/2024: ficha de tramitação",
+          "url": "https://www.camara.leg.br/propostas-legislativas/2419243"
+        },
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Canaltech",
+          "tipo": "secundaria",
+          "titulo": "Entenda o PLP 12/2024, que cria categoria para motoristas de apps",
+          "url": "https://canaltech.com.br/governo/entenda-o-plp-122024-que-cria-categoria-para-motoristas-de-apps-281473/"
+        }
+      ],
+      "foto_caminho": "cf5e10bc-5edd-432c-bbf2-3f464b0d88bf.jpg",
+      "foto_credito": "PUKAS",
+      "foto_descricao": "Imagem provisória de teste: aplicativos, PLP 12/2024",
+      "foto_licenca": "Imagem provisória de teste",
+      "foto_origem": null,
+      "id": "ca87ab9f-fbad-448f-be0d-b0c9e517e96b",
+      "legenda": null,
+      "numero": null,
+      "proposicao": null,
+      "publicada_em": "2026-11-07T11:00:00+00:00",
+      "resumo": "O projeto do governo que regula o trabalho dos motoristas de aplicativo está pronto para votação na Câmara desde maio de 2026, sem data marcada.",
+      "serie": null,
+      "slug": "regulacao-dos-apps-parada-na-camara",
+      "subtipo": null,
+      "tipo": "noticia",
+      "titulo": "Regra para motorista | de app está parada",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": {
+        "em": "2026-11-08",
+        "por": "Claude (teste)"
+      },
+      "corpo": "O salário mínimo de 2026 é de R$ 1.621, definido pelo Decreto 12.797/2025 e em vigor desde 1º de janeiro. Foi um reajuste de 6,79% sobre os R$ 1.518 de 2025.\n\nA conta tem duas partes: a inflação medida pelo INPC nos 12 meses até novembro do ano anterior, mais um ganho ligado ao crescimento da economia, limitado a 2,5%.\n\nPor isso o valor de 2027 só fecha em dezembro, quando sai o INPC de novembro. O número que aparece antes disso no Orçamento é uma estimativa.",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "SBT News",
+          "tipo": "secundaria",
+          "titulo": "Salário mínimo será de R$ 1.621 em 2026, diz governo federal",
+          "url": "https://sbtnews.sbt.com.br/noticia/economia/salario-minimo-sera-de-r-1-621-em-2026-diz-governo-federal"
+        }
+      ],
+      "foto_caminho": "2ce72cef-362c-4398-9a75-2e78695012d7.jpg",
+      "foto_credito": "PUKAS",
+      "foto_descricao": "Imagem provisória de teste: salário mínimo de R$ 1.621",
+      "foto_licenca": "Imagem provisória de teste",
+      "foto_origem": null,
+      "id": "f2b2673e-c570-45e1-a487-87bf84f44ced",
+      "legenda": null,
+      "numero": null,
+      "proposicao": null,
+      "publicada_em": "2026-11-05T11:00:00+00:00",
+      "resumo": "Hoje o mínimo é R$ 1.621. O valor de 2027 é fixado por decreto em dezembro, com a inflação medida até novembro.",
+      "serie": null,
+      "slug": "salario-minimo-2027-sai-em-dezembro",
+      "subtipo": null,
+      "tipo": "noticia",
+      "titulo": "Salário mínimo de 2027 | sai em dezembro",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": {
+        "em": "2026-11-08",
+        "por": "Claude (teste)"
+      },
+      "corpo": "O Senado aprovou na quarta-feira, 14 de outubro de 2026, a PEC 221/2019, que acaba com a escala 6x1. O placar foi de 75 votos a favor e 1 contra em cada um dos dois turnos. Por ser emenda à Constituição, eram precisos pelo menos 49 votos.\n\nO texto que saiu da Comissão de Constituição e Justiça do Senado, relatado por Omar Aziz (PSD-AM), prevê:\n\n- cinco dias de trabalho e dois de descanso, de preferência com um deles no domingo, começando 60 dias depois da promulgação;\n- jornada semanal caindo de 44 para 42 horas e, 14 meses depois, para 40;\n- uma exceção para quem tem diploma de nível superior e ganha mais de R$ 21,1 mil por mês.\n\nA votação tinha sido adiada em setembro, sem acordo entre governo e oposição. Agora a proposta vai para promulgação pelo Congresso.",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Bahia Notícias",
+          "tipo": "secundaria",
+          "titulo": "Senado aprova PEC do fim da escala 6x1 em primeiro turno com 75 votos favoráveis e 1 contra",
+          "url": "https://www.bahianoticias.com.br/noticia/322453-senado-aprova-pec-do-fim-da-escala-6x1-em-primeiro-turno-com-75-votos-favoraveis-e-1-contra"
+        },
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "O POVO",
+          "tipo": "secundaria",
+          "titulo": "Comissão do Senado aprova o fim da escala 6x1 e matéria vai a plenário",
+          "url": "https://mais.opovo.com.br/jornal/economia/2026/09/02/comissao-do-senado-aprova-o-fim-da-escala-6x1-e-materia-vai-a-plenario.html"
+        }
+      ],
+      "foto_caminho": "acc3bc6c-11cb-427f-819d-ccd6c53d9bc0.jpg",
+      "foto_credito": "PUKAS",
+      "foto_descricao": "Imagem provisória de teste: 5x2, fim da escala 6x1",
+      "foto_licenca": "Imagem provisória de teste",
+      "foto_origem": null,
+      "id": "fcaf9f05-aea5-46bb-87a1-0f0700791f2f",
+      "legenda": null,
+      "numero": null,
+      "proposicao": null,
+      "publicada_em": "2026-10-15T11:00:00+00:00",
+      "resumo": "Foram 75 votos a 1 nos dois turnos. A jornada semanal cai de 44 para 40 horas, em duas etapas, e a proposta segue para promulgação.",
+      "serie": null,
+      "slug": "senado-aprova-fim-da-escala-6x1",
+      "subtipo": null,
+      "tipo": "noticia",
+      "titulo": "Senado aprova | *o fim da escala 6x1*",
+      "traduzir": false,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
       "autoria": "PUKAS",
       "aviso": null,
       "checagem": null,
-      "corpo": "## A gente trabalha. E mesmo assim falta.\n\nFalta dinheiro no fim do mês, falta tempo, falta descanso. E o problema não é preguiça: o que você produz não fica com você.\n\nO PUKAS existe pra contar essa história do jeito que ela é, sem palavra difícil e sem papo de gabinete. Se precisar de dicionário pra entender, quem errou fomos nós.\n\n## Nada do que você tem caiu do céu.\n\nFérias, 13º, hora extra paga, jornada de 8 horas: cada uma dessas coisas alguém conquistou, junto com os outros, quando ninguém queria dar. E dá pra perder tudo isso se a gente esquecer como chegou aqui. Por isso a gente lembra, e mostra a prova.\n\n## Aqui, o fato ganha.\n\nToda informação tem fonte, e a fonte fica à vista. Se a gente errar, corrige em público. Se um fato bater de frente com o que a gente pensa, fica o fato, porque mentira a favor da gente continua sendo mentira.\n\n## A gente não quer seguidor. Quer gente que passe adiante.\n\nA gente não pede voto e não vende curso. Leu? Manda pro grupo da família, tira print, fala no ponto de ônibus. Informação parada não muda nada.",
+      "corpo": "## A gente trabalha. E mesmo assim falta.\n\nFalta dinheiro no fim do mês, falta tempo, falta descanso. E o problema não é preguiça: o que você produz não fica com você.\n\nO PUKAS existe pra contar essa história do jeito que ela é, sem palavra difícil e sem papo de gabinete. Se precisar de dicionário pra entender, quem errou fomos nós.\n\n## Nada do que você tem caiu do céu.\n\nFérias, 13º, hora extra paga, jornada de 8 horas: cada uma dessas coisas alguém conquistou, junto com os outros, quando ninguém queria dar. E dá pra perder tudo isso se a gente esquecer como chegou aqui. Por isso a gente lembra, e mostra a prova.\n\n## Aqui, o fato ganha.\n\nToda informação tem fonte, e a fonte fica à vista. Se a gente errar, corrige em público. Se um fato bater de frente com o que a gente pensa, fica o fato, porque mentira a favor da gente continua sendo mentira.\n\n## Ninguém ganha passe livre.\n\nGoverno, partido ou líder que diz defender quem trabalha, a gente julga pelo que faz. Se cortar direito, apertar salário ou reprimir quem se organiza, leva a mesma cobrança que qualquer outro. Apoiar uma medida certa não é assinar embaixo de tudo. E aqui não tem ídolo: ninguém fica acima da prova.\n\n## A derrota também entra na história.\n\nA gente conta as vitórias e conta as greves perdidas, os erros e as traições do nosso próprio lado, com o mesmo cuidado. É olhando a derrota que dá pra ver o que deu errado e não repetir.\n\n## Notícia é notícia. Opinião tem nome.\n\nNa notícia vai fato, número e fonte, sem adjetivo enfeitando. Na análise a gente se posiciona e avisa que está se posicionando, porque nem todo texto precisa virar panfleto.\n\n## Daqui da América Latina, pra América Latina.\n\nA gente escreve em português e em espanhol. A luta de quem trabalha é parecida dos dois lados da fronteira, e merece ser contada por quem vive aqui.\n\n## A gente não quer seguidor. Quer gente que passe adiante.\n\nA gente não pede voto e não vende curso. Leu? Manda pro grupo da família, tira print, fala no ponto de ônibus. Informação parada não muda nada.",
       "estado": "publicada",
+      "fecha_em": null,
       "fontes": [],
       "foto_caminho": null,
       "foto_credito": null,
@@ -16,6 +396,7 @@
       "id": "33681d2f-5a0f-4b5d-8c40-a5b56d663075",
       "legenda": null,
       "numero": null,
+      "proposicao": null,
       "publicada_em": "2026-11-07T01:59:45.090351+00:00",
       "resumo": "Nada do que você tem caiu do céu. A gente lembra, mostra a prova e passa adiante.",
       "serie": null,
@@ -25,12 +406,87 @@
       "titulo": "Manifesto",
       "traduzir": true,
       "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": null,
+      "corpo": "Esta página explica o que o PUKAS guarda sobre você, pra quê, por quanto tempo e como pedir pra apagar. Ela segue a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).\n\n## Quem cuida dos seus dados\n\nO PUKAS. Para qualquer pedido sobre os seus dados, escreva para [contato.pukasjornal@gmail.com](mailto:contato.pukasjornal@gmail.com). A gente responde em até 15 dias.\n\n## Ler o site\n\nNão precisa de cadastro. O site não usa cookie de propaganda nem ferramenta de rastreamento. A Vercel, que hospeda o site, e o Supabase, que guarda o banco de dados, registram dados técnicos de cada acesso, como o endereço de IP, por segurança e por pouco tempo.\n\n## Votações\n\nQuando você vota, a gente guarda a opção, o relato (se você escrever), se você deixou citar o relato, o comprovante, um código do aparelho e um código da rede. Os dois códigos são embaralhados de um jeito que não dá pra desfazer e servem só pra barrar voto repetido e voto em massa. A gente não guarda nome, e-mail nem o IP aberto. Se você deixar citar, um trecho do relato pode aparecer numa matéria, sem o seu nome. A base legal é o seu consentimento (art. 7º, I) e a prevenção de fraude (art. 7º, IX).\n\n- Cookie `pk_aparelho`: guarda o código do aparelho por 1 ano, pra saber que este aparelho já votou ou já curtiu.\n- Cookie `pk_voto`: dura 1 minuto e só serve pra mostrar o seu comprovante na tela.\n- Anti-robô: a página de votar e o formulário de assinar usam o Cloudflare Turnstile, que vê o seu IP e dados do navegador pra conferir que você não é um robô.\n\n## Votação de alto impacto (login com Google)\n\nEm algumas votações, você entra com a sua conta Google, pra garantir uma pessoa por voto. O Google manda pro PUKAS o identificador da conta, o nome e o e-mail. A gente guarda só um código embaralhado do identificador. O nome e o e-mail ficam no sistema de login só durante o voto, e a conta temporária é apagada logo depois.\n\n## Curtir\n\nQuando você curte uma matéria, a gente guarda só o código embaralhado do aparelho, pra contar uma curtida por aparelho. O número de curtidas não aparece no site; só a equipe vê.\n\n## Newsletter por e-mail\n\nSe você assina, a gente guarda o seu e-mail, o idioma e as datas de assinatura e confirmação, só pra mandar a newsletter e os e-mails de boas-vindas. Pedido de assinatura que não é confirmado em 7 dias é apagado. O envio é feito pelo Resend. Todo e-mail tem um link pra sair: clicou, o seu e-mail é apagado da lista. A base legal é o seu consentimento.\n\n## Com quem os dados passam\n\nO PUKAS não vende nem empresta dados de ninguém. Os dados passam só pelas empresas que fazem o site funcionar: Vercel (hospedagem), Supabase (banco de dados), Cloudflare (anti-robô), Google (login, só no alto impacto) e Resend (e-mail). Algumas delas guardam dados fora do Brasil, dentro das regras da LGPD pra transferência internacional (art. 33).\n\n## Por quanto tempo\n\nOs votos ficam enquanto a votação estiver no site, porque são o registro público do resultado. O relato sai quando você pede, mandando o comprovante. O e-mail da newsletter sai quando você clica em sair.\n\n## Seus direitos (art. 18)\n\nVocê pode pedir pra confirmar se a gente tem dados seus, ver, corrigir ou apagar esses dados, retirar o consentimento e saber com quem eles foram divididos. Num voto sem conta, a gente só acha o seu voto pelo comprovante, então guarde ele. Se achar que a gente não respondeu direito, pode reclamar na ANPD ([gov.br/anpd](https://www.gov.br/anpd)).\n\nÚltima atualização: 08 de novembro de 2026.",
+      "estado": "publicada",
+      "fecha_em": null,
+      "fontes": [],
+      "foto_caminho": null,
+      "foto_credito": null,
+      "foto_descricao": null,
+      "foto_licenca": null,
+      "foto_origem": null,
+      "id": "7d38f88a-6d0c-4626-b216-96894f1f5453",
+      "legenda": null,
+      "numero": null,
+      "proposicao": null,
+      "publicada_em": "2026-11-08T01:33:28.911945+00:00",
+      "resumo": "",
+      "serie": null,
+      "slug": "privacidade",
+      "subtipo": null,
+      "tipo": "pagina",
+      "titulo": "Privacidade",
+      "traduzir": true,
+      "video": null
+    },
+    {
+      "alto_impacto": false,
+      "autoria": "PUKAS",
+      "aviso": null,
+      "checagem": {
+        "em": "2026-11-08",
+        "por": "Claude (teste)"
+      },
+      "corpo": "",
+      "estado": "publicada",
+      "fecha_em": "2026-12-08T05:00:48.714326+00:00",
+      "fontes": [
+        {
+          "acessadaEm": "2026-11-08",
+          "instituicao": "Câmara dos Deputados",
+          "tipo": "primaria",
+          "titulo": "PLP 12/2024: ficha de tramitação",
+          "url": "https://www.camara.leg.br/propostas-legislativas/2419243"
+        }
+      ],
+      "foto_caminho": null,
+      "foto_credito": null,
+      "foto_descricao": null,
+      "foto_licenca": null,
+      "foto_origem": null,
+      "id": "ae195a28-032d-4117-806d-81a832e876c6",
+      "legenda": null,
+      "numero": null,
+      "proposicao": {
+        "ano": 2024,
+        "casa": "camara",
+        "ementa": "Dispõe sobre a relação de trabalho intermediado por empresas operadoras de aplicativos de transporte remunerado privado individual de passageiros em veículos automotores de quatro rodas e estabelece mecanismos de inclusão previdenciária e outros direitos para melhoria das condições de trabalho.",
+        "id": "2419243",
+        "numero": 12,
+        "sigla": "PLP",
+        "url": "https://www.camara.leg.br/propostas-legislativas/2419243"
+      },
+      "publicada_em": "2026-11-08T05:00:48.714326+00:00",
+      "resumo": "O projeto cria regras para motoristas de aplicativo de carro: valor mínimo pela hora trabalhada e contribuição ao INSS. Quem defende fala em proteção; quem critica fala em perda de renda e de liberdade.",
+      "serie": null,
+      "slug": "plp-12-2024-motoristas-de-aplicativo",
+      "subtipo": null,
+      "tipo": "votacao",
+      "titulo": "Regras para motorista | de aplicativo: | *você apoia?*",
+      "traduzir": false,
+      "video": null
     }
   ],
   "traducoes": [
     {
       "aviso": null,
-      "corpo": "## Trabajamos. Y aun así no alcanza.\n\nFalta dinero a fin de mes, falta tiempo, falta descanso. Y el problema no es la pereza: lo que tú produces no se queda contigo.\n\nPUKAS existe para contar esta historia tal como es, sin palabras difíciles y sin palabrería de escritorio. Si hace falta un diccionario para entenderla, los que fallamos somos nosotros.\n\n## Nada de lo que tienes cayó del cielo.\n\nVacaciones, aguinaldo, horas extra pagadas, jornada de 8 horas: cada una de estas cosas alguien la conquistó, junto con otros, cuando nadie quería darla. Y todo eso se puede perder si olvidamos cómo llegamos hasta aquí. Por eso recordamos, y mostramos la prueba.\n\n## Aquí, el hecho gana.\n\nToda la información tiene fuente, y la fuente queda a la vista. Si nos equivocamos, corregimos en público. Si un hecho choca con lo que pensamos, se queda el hecho, porque una mentira a nuestro favor sigue siendo mentira.\n\n## No queremos seguidores. Queremos gente que lo pase.\n\nNo pedimos votos y no vendemos cursos. ¿Lo leíste? Mándalo al grupo de la familia, sácale una captura, coméntalo en la parada del autobús. La información quieta no cambia nada.",
+      "corpo": "## Trabajamos. Y aun así no alcanza.\n\nFalta dinero a fin de mes, falta tiempo, falta descanso. Y el problema no es la pereza: lo que tú produces no se queda contigo.\n\nPUKAS existe para contar esta historia tal como es, sin palabras difíciles y sin palabrería de escritorio. Si hace falta un diccionario para entenderla, los que fallamos somos nosotros.\n\n## Nada de lo que tienes cayó del cielo.\n\nVacaciones, aguinaldo, horas extra pagadas, jornada de 8 horas: cada una de estas cosas alguien la conquistó, junto con otros, cuando nadie quería darla. Y todo eso se puede perder si olvidamos cómo llegamos hasta aquí. Por eso recordamos, y mostramos la prueba.\n\n## Aquí, el hecho gana.\n\nToda la información tiene fuente, y la fuente queda a la vista. Si nos equivocamos, corregimos en público. Si un hecho choca con lo que pensamos, se queda el hecho, porque una mentira a nuestro favor sigue siendo mentira.\n\n## Nadie tiene pase libre.\n\nGobierno, partido o líder que dice defender a quien trabaja, lo juzgamos por lo que hace. Si recorta derechos, aprieta el salario o reprime a quien se organiza, recibe el mismo reclamo que cualquier otro. Apoyar una medida correcta no es firmar todo lo demás. Y aquí no hay ídolos: nadie está por encima de la prueba.\n\n## La derrota también entra en la historia.\n\nContamos las victorias y contamos las huelgas perdidas, los errores y las traiciones de nuestro propio lado, con el mismo cuidado. Mirando la derrota se ve qué salió mal, para no repetirlo.\n\n## La noticia es noticia. La opinión lleva nombre.\n\nEn la noticia va hecho, número y fuente, sin adjetivos de adorno. En el análisis tomamos posición y avisamos que la estamos tomando, porque no todo texto tiene que volverse panfleto.\n\n## Desde América Latina, para América Latina.\n\nEscribimos en portugués y en español. La lucha de quien trabaja se parece a los dos lados de la frontera, y merece ser contada por quien vive aquí.\n\n## No queremos seguidores. Queremos gente que lo pase.\n\nNo pedimos votos y no vendemos cursos. ¿Lo leíste? Mándalo al grupo de la familia, sácale una captura, coméntalo en la parada del autobús. La información quieta no cambia nada.",
       "erro": null,
       "estado": "pronta",
       "idioma": "es",
@@ -41,6 +497,20 @@
       "resumo": "Nada de lo que tienes cayó del cielo. Lo recordamos, mostramos la prueba y lo pasamos.",
       "revisado": true,
       "titulo": "Manifiesto"
+    },
+    {
+      "aviso": null,
+      "corpo": "Esta página explica qué guarda PUKAS sobre ti, para qué, por cuánto tiempo y cómo pedir que se borre. Sigue la Ley General de Protección de Datos de Brasil (LGPD, Ley 13.709/2018).\n\n## Quién cuida tus datos\n\nPUKAS. Para cualquier pedido sobre tus datos, escribe a [contato.pukasjornal@gmail.com](mailto:contato.pukasjornal@gmail.com). Respondemos en hasta 15 días.\n\n## Leer el sitio\n\nNo necesitas registrarte. El sitio no usa cookies de publicidad ni herramientas de rastreo. Vercel, que aloja el sitio, y Supabase, que guarda la base de datos, registran datos técnicos de cada acceso, como la dirección IP, por seguridad y por poco tiempo.\n\n## Votaciones\n\nCuando votas, guardamos la opción, el relato (si escribes uno), si autorizaste citarlo, el comprobante, un código del dispositivo y un código de la red. Los dos códigos se mezclan de una forma que no se puede deshacer y sirven solo para frenar votos repetidos y votos en masa. No guardamos nombre, correo ni la IP abierta. Si autorizas citar, un fragmento del relato puede aparecer en una nota, sin tu nombre. La base legal es tu consentimiento (art. 7º, I) y la prevención de fraude (art. 7º, IX).\n\n- Cookie `pk_aparelho`: guarda el código del dispositivo por 1 año, para saber que este dispositivo ya votó o ya dio me gusta.\n- Cookie `pk_voto`: dura 1 minuto y solo sirve para mostrar tu comprobante en la pantalla.\n- Antirrobot: la página de votar y el formulario de suscripción usan Cloudflare Turnstile, que ve tu IP y datos del navegador para comprobar que no eres un robot.\n\n## Votación de alto impacto (inicio de sesión con Google)\n\nEn algunas votaciones entras con tu cuenta de Google, para garantizar una persona por voto. Google le envía a PUKAS el identificador de la cuenta, el nombre y el correo. Guardamos solo un código mezclado del identificador. El nombre y el correo quedan en el sistema de inicio de sesión solo durante el voto, y la cuenta temporal se borra enseguida.\n\n## Me gusta\n\nCuando das me gusta a una nota, guardamos solo el código mezclado del dispositivo, para contar un me gusta por dispositivo. El número no aparece en el sitio; solo lo ve el equipo.\n\n## Newsletter por correo\n\nSi te suscribes, guardamos tu correo, el idioma y las fechas de suscripción y confirmación, solo para enviar la newsletter y los correos de bienvenida. Una suscripción que no se confirma en 7 días se borra. El envío lo hace Resend. Todo correo tiene un enlace para salir: al hacer clic, tu correo se borra de la lista. La base legal es tu consentimiento.\n\n## Con quién pasan los datos\n\nPUKAS no vende ni presta datos de nadie. Los datos pasan solo por las empresas que hacen funcionar el sitio: Vercel (alojamiento), Supabase (base de datos), Cloudflare (antirrobot), Google (inicio de sesión, solo en alto impacto) y Resend (correo). Algunas guardan datos fuera de Brasil, dentro de las reglas de la LGPD para transferencia internacional (art. 33).\n\n## Por cuánto tiempo\n\nLos votos quedan mientras la votación esté en el sitio, porque son el registro público del resultado. El relato se borra cuando lo pides, enviando el comprobante. El correo de la newsletter se borra cuando haces clic en salir.\n\n## Tus derechos (art. 18)\n\nPuedes pedir que confirmemos si tenemos datos tuyos, verlos, corregirlos o borrarlos, retirar el consentimiento y saber con quién se compartieron. En un voto sin cuenta, solo encontramos tu voto por el comprobante, así que guárdalo. Si crees que no respondimos bien, puedes reclamar ante la ANPD de Brasil ([gov.br/anpd](https://www.gov.br/anpd)).\n\nÚltima actualización: 8 de noviembre de 2026.",
+      "erro": null,
+      "estado": "pronta",
+      "idioma": "es",
+      "legenda": null,
+      "lote_id": null,
+      "modelo": "manual (Claude, aprovado pelo fundador)",
+      "peca_id": "7d38f88a-6d0c-4626-b216-96894f1f5453",
+      "resumo": "",
+      "revisado": true,
+      "titulo": "Privacidad"
     }
   ]
 }
