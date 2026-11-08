@@ -1,11 +1,10 @@
 ---
-// Capa de jornal: manchete principal (última Memória Operária) e, ao lado, as colunas de Notícias e Cultura. No celular tudo vira uma coluna, nessa ordem.
+// Capa de jornal: manchete principal (última Memória Operária) em cima e, embaixo, uma seção para cada coisa: Notícias, Cultura, Newsletter e Votações. No celular tudo vira uma coluna, nessa ordem.
 import Base from '../layouts/Base.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
 import Manchete from '../components/identidade/Manchete.astro';
-import ListaEdicoes from '../components/ListaEdicoes.astro';
 import { carregarEdicoes, carregarNoticias, carregarObras, carregarSeries, carregarVotacoes } from '../lib/carregar';
-import { caminhoEdicao, formatarData } from '../lib/formato';
+import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
 import '../styles/leitura.css';
@@ -15,14 +14,12 @@ interface Props {
 }
 const { idioma } = Astro.props;
 const [edicoes, noticias, obras, { abertas }] = await Promise.all([carregarEdicoes(idioma), carregarNoticias(idioma), carregarObras(idioma), carregarVotacoes(idioma)]);
-// A votação aberta mais recente abre a coluna, acima de Notícias.
 const votacao = abertas[0];
 const ultima = edicoes[0];
 const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slug === ultima.data.serie)?.selo.replace('*', '') ?? '') : '';
 ---
 <Base titulo="PUKAS" descricao={t(idioma, 'site.descricao')} receita="leitura" idioma={idioma}>
   <div class="capa">
-    <div class="capa__grade">
       {ultima ? (
         <section class="principal" aria-labelledby="ultima">
           {chapeuMemoria && <p class="chapeu">{chapeuMemoria}</p>}
@@ -38,58 +35,73 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
         </section>
       )}
 
-      <aside class="colunas">
-        {votacao && (
-          <section aria-labelledby="col-votacao">
-            <h2 id="col-votacao" class="coluna__titulo maquina">{t(idioma, 'capa.votacao')}</h2>
-            <a class="chamada" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>
-              <span class="maquina chamada__meta">{votacao.proposicao.sigla} {votacao.proposicao.numero}/{votacao.proposicao.ano}</span>
-              <span class="chamada__titulo">{textoManchete(votacao.titulo)}</span>
-              <span class="chamada__resumo">{votacao.resumo}</span>
-            </a>
-          </section>
+    <div class="secoes">
+      <section aria-labelledby="sec-noticias">
+        <h2 id="sec-noticias" class="coluna__titulo maquina">{t(idioma, 'capa.noticias')}</h2>
+        {noticias.length === 0 ? (
+          <p class="coluna__vazio">{t(idioma, 'capa.semNoticias')}</p>
+        ) : (
+          <ul class="chamadas">
+            {noticias.slice(0, 5).map((n) => (
+              <li>
+                <a href={prefixar(`/noticias/${n.id}`, idioma)}>
+                  <span class="maquina chamada__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
+                  <span class="chamada__titulo">{textoManchete(n.data.titulo)}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         )}
-        <section aria-labelledby="col-noticias">
-          <h2 id="col-noticias" class="coluna__titulo maquina">{t(idioma, 'capa.noticias')}</h2>
-          {noticias.length === 0 ? (
-            <p class="coluna__vazio">{t(idioma, 'capa.semNoticias')}</p>
-          ) : (
-            <ul class="chamadas">
-              {noticias.slice(0, 5).map((n) => (
-                <li>
-                  <a href={prefixar(`/noticias/${n.id}`, idioma)}>
-                    <span class="maquina chamada__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
-                    <span class="chamada__titulo">{textoManchete(n.data.titulo)}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-          <a class="maquina coluna__mais" href={prefixar('/noticias', idioma)}>{t(idioma, 'capa.verNoticias')}</a>
-        </section>
-
-        <section aria-labelledby="col-cultura">
-          <h2 id="col-cultura" class="coluna__titulo maquina">{t(idioma, 'capa.cultura')}</h2>
-          {obras[0] ? (
-            <a class="chamada" href={prefixar(`/cultura/${obras[0].id}`, idioma)}>
-              <span class="maquina chamada__meta">{t(idioma, `tipo.${obras[0].data.tipo}`)}</span>
-              <span class="chamada__titulo">{textoManchete(obras[0].data.titulo)}</span>
-              <span class="chamada__resumo">{obras[0].data.resumo}</span>
-            </a>
-          ) : (
-            <p class="coluna__vazio">{t(idioma, 'capa.semCultura')}</p>
-          )}
-          <a class="maquina coluna__mais" href={prefixar('/cultura', idioma)}>{t(idioma, 'capa.verCultura')}</a>
-        </section>
-      </aside>
-    </div>
-
-    {edicoes.length > 0 && (
-      <section class="capa__arquivo" aria-labelledby="arquivo">
-        <h2 id="arquivo" class="secao-titulo maquina">{t(idioma, 'capa.todasEdicoes')}</h2>
-        <ListaEdicoes edicoes={edicoes} />
+        <a class="maquina coluna__mais" href={prefixar('/noticias', idioma)}>{t(idioma, 'capa.verNoticias')}</a>
       </section>
-    )}
+
+      <section aria-labelledby="sec-cultura">
+        <h2 id="sec-cultura" class="coluna__titulo maquina">{t(idioma, 'capa.cultura')}</h2>
+        {obras[0] ? (
+          <a class="chamada" href={prefixar(`/cultura/${obras[0].id}`, idioma)}>
+            <span class="maquina chamada__meta">{t(idioma, `tipo.${obras[0].data.tipo}`)}</span>
+            <span class="chamada__titulo">{textoManchete(obras[0].data.titulo)}</span>
+            <span class="chamada__resumo">{obras[0].data.resumo}</span>
+          </a>
+        ) : (
+          <p class="coluna__vazio">{t(idioma, 'capa.semCultura')}</p>
+        )}
+        <a class="maquina coluna__mais" href={prefixar('/cultura', idioma)}>{t(idioma, 'capa.verCultura')}</a>
+      </section>
+
+      <section aria-labelledby="sec-newsletter">
+        <h2 id="sec-newsletter" class="coluna__titulo maquina">{t(idioma, 'capa.newsletter')}</h2>
+        {edicoes.length === 0 ? (
+          <p class="coluna__vazio">{t(idioma, 'serie.vazio')}</p>
+        ) : (
+          <ul class="chamadas">
+            {edicoes.slice(0, 5).map((e) => (
+              <li>
+                <a href={caminhoEdicao(e.data.serie, e.data.numero, idioma)}>
+                  <span class="maquina chamada__meta">Nº {formatarNumero(e.data.numero)} · {formatarData(e.data.publicadaEm, idioma)}</span>
+                  <span class="chamada__titulo">{textoManchete(e.data.titulo)}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+        <a class="maquina coluna__mais" href={prefixar('/newsletter', idioma)}>{t(idioma, 'capa.verNewsletter')}</a>
+      </section>
+
+      <section aria-labelledby="sec-votacao">
+        <h2 id="sec-votacao" class="coluna__titulo maquina">{t(idioma, votacao ? 'capa.votacao' : 'capa.votacoes')}</h2>
+        {votacao ? (
+          <a class="chamada" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>
+            <span class="maquina chamada__meta">{votacao.proposicao.sigla} {votacao.proposicao.numero}/{votacao.proposicao.ano}</span>
+            <span class="chamada__titulo">{textoManchete(votacao.titulo)}</span>
+            <span class="chamada__resumo">{votacao.resumo}</span>
+          </a>
+        ) : (
+          <p class="coluna__vazio">{t(idioma, 'votacoes.vazio')}</p>
+        )}
+        <a class="maquina coluna__mais" href={prefixar('/votacoes', idioma)}>{t(idioma, 'capa.verVotacoes')}</a>
+      </section>
+    </div>
 
     <p class="expediente">
       {t(idioma, 'capa.expediente')} {t(idioma, 'site.institucional')}{' '}
@@ -99,29 +111,11 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
 </Base>
 
 <style>
-  /* Capa mais larga que a leitura: duas colunas no computador; o texto corrido segue a medida de 68ch. */
+  /* Capa mais larga que a leitura: as seções lado a lado no computador; o texto corrido segue a medida de 68ch. */
   .capa {
     max-width: 1120px;
     margin: 0 auto;
     padding: var(--esp-6) var(--esp-4) 0;
-  }
-
-  .capa__grade {
-    display: grid;
-    gap: var(--esp-7);
-  }
-  @media (min-width: 900px) {
-    .capa__grade {
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-      gap: 0;
-    }
-    .principal {
-      padding-right: var(--esp-6);
-    }
-    .colunas {
-      padding-left: var(--esp-6);
-      border-left: 1px solid currentColor;
-    }
   }
 
   .chapeu {
@@ -148,10 +142,16 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
     background: var(--pau-brasil);
   }
 
-  .colunas {
+  /* Uma seção por assunto, cada uma com o seu título: no celular uma embaixo da outra, no computador lado a lado. */
+  .secoes {
     display: grid;
-    align-content: start;
-    gap: var(--esp-6);
+    gap: var(--esp-7) var(--esp-6);
+    margin-top: var(--esp-7);
+  }
+  @media (min-width: 900px) {
+    .secoes {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
   .coluna__titulo {
     margin: 0 0 var(--esp-2);
@@ -208,14 +208,6 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
     letter-spacing: 0.08em;
   }
 
-  .capa__arquivo {
-    max-width: 68ch;
-    margin-top: var(--esp-7);
-  }
-  /* O título da seção já fecha com um fio: a lista não repete o dela. */
-  .capa__arquivo :global(.lista) {
-    border-top: 0;
-  }
   .expediente {
     max-width: 68ch;
     margin: var(--esp-7) 0 0;

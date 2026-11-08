@@ -63,3 +63,49 @@
     }
   });
 })();
+
+// Mídia no meio do texto: pede um endereço de envio ao painel, sobe o arquivo direto para o Storage
+// e põe ![descrição](endereço) no ponto do texto onde estava o cursor.
+(() => {
+  const botao = document.querySelector('[data-midia-inserir]');
+  const arquivo = document.querySelector('[data-midia-arquivo]');
+  const descricao = document.querySelector('[data-midia-descricao]');
+  const aviso = document.querySelector('[data-midia-aviso]');
+  const corpo = document.querySelector('#corpo');
+  if (!botao || !arquivo || !corpo) return;
+  const dizer = (texto) => { if (aviso) { aviso.textContent = texto; aviso.hidden = !texto; } };
+  // Clicar no botão tira o foco do texto: guarda onde o cursor estava.
+  let ponto = corpo.value.length;
+  const marcar = () => { ponto = corpo.selectionStart; };
+  corpo.addEventListener('keyup', marcar);
+  corpo.addEventListener('click', marcar);
+  corpo.addEventListener('blur', marcar);
+  botao.addEventListener('click', async () => {
+    const f = arquivo.files?.[0];
+    if (!f) return dizer('Escolha um arquivo primeiro.');
+    if (f.size > 50 * 1024 * 1024) return dizer('O arquivo passa de 50 MB. Diminua e tente de novo.');
+    botao.disabled = true;
+    dizer('Enviando…');
+    try {
+      const pedido = await fetch('/painel/midia', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ tipo: f.type }) });
+      const r = await pedido.json().catch(() => ({ erro: 'Sessão expirou? Recarregue a página.' }));
+      if (!pedido.ok) return dizer(r.erro ?? 'Não deu para enviar.');
+      const envio = await fetch(r.envio, { method: 'PUT', headers: { 'content-type': f.type }, body: f });
+      if (!envio.ok) return dizer('Não deu para enviar o arquivo. Tente de novo.');
+      const texto = (descricao?.value ?? '').replace(/[[\]]/g, '').trim();
+      const antes = corpo.value.slice(0, ponto).replace(/\s*$/, '');
+      const depois = corpo.value.slice(ponto).replace(/^\s*/, '');
+      const linha = `![${texto}](${r.publico})`;
+      corpo.value = [antes, linha, depois].filter(Boolean).join('\n\n');
+      ponto = (antes ? antes.length + 2 : 0) + linha.length;
+      corpo.dispatchEvent(new Event('input', { bubbles: true }));
+      arquivo.value = '';
+      if (descricao) descricao.value = '';
+      dizer(texto ? 'Mídia inserida no texto. Salve para guardar.' : 'Mídia inserida. Falta a descrição: escreva entre os colchetes [ ] da linha nova. Salve para guardar.');
+    } catch {
+      dizer('Sem conexão. Tente de novo.');
+    } finally {
+      botao.disabled = false;
+    }
+  });
+})();

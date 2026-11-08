@@ -24,7 +24,10 @@ const pt = {
 
   'capa.manchete': 'Direito | nenhum caiu | do céu. | *Foi luta.*',
   'capa.lerEdicao': 'LER A EDIÇÃO',
-  'capa.todasEdicoes': 'MEMÓRIA OPERÁRIA · TODAS AS EDIÇÕES',
+  'capa.newsletter': 'NEWSLETTER',
+  'capa.verNewsletter': 'Todas as edições',
+  'capa.votacoes': 'VOTAÇÕES',
+  'capa.verVotacoes': 'Todas as votações',
   'capa.noticias': 'NOTÍCIAS',
   'capa.cultura': 'CULTURA',
   'capa.verNoticias': 'Todas as notícias',
@@ -166,7 +169,10 @@ const es: Record<Chave, string> = {
 
   'capa.manchete': 'Ningún derecho | cayó | del cielo. | *Fue lucha.*',
   'capa.lerEdicao': 'LEER LA EDICIÓN',
-  'capa.todasEdicoes': 'MEMORIA OBRERA · TODAS LAS EDICIONES',
+  'capa.newsletter': 'NEWSLETTER',
+  'capa.verNewsletter': 'Todas las ediciones',
+  'capa.votacoes': 'VOTACIONES',
+  'capa.verVotacoes': 'Todas las votaciones',
   'capa.noticias': 'NOTICIAS',
   'capa.cultura': 'CULTURA',
   'capa.verNoticias': 'Todas las noticias',

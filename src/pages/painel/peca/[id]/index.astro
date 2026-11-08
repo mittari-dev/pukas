@@ -241,6 +241,19 @@ const traducao = linha?.traducoes?.[0];
       <p class="ajuda">## para subtítulo, **negrito**, [texto](link). Linha em branco separa parágrafos.</p>
     </div>
 
+    {papel === 'editor' && (
+      <fieldset class="campo midia">
+        <legend>Foto, vídeo ou áudio no meio do texto</legend>
+        <label for="midia_arquivo">Arquivo (foto JPG, PNG ou WebP; vídeo MP4 ou WebM; áudio MP3, M4A ou OGG; até 50 MB)</label>
+        <input id="midia_arquivo" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg" data-midia-arquivo />
+        <label for="midia_descricao">Descrição para quem não enxerga ou não ouve</label>
+        <input id="midia_descricao" data-midia-descricao />
+        <p><button type="button" class="botao botao--linha" data-midia-inserir>Inserir onde está o cursor</button></p>
+        <p class="ajuda" data-midia-aviso aria-live="polite" hidden></p>
+        <p class="ajuda">Clique no texto, no ponto onde a mídia deve entrar, e depois em Inserir. Ela vira uma linha <code>![descrição](endereço)</code>: para mudar de lugar, recorte essa linha e cole entre outros parágrafos.</p>
+      </fieldset>
+    )}
+
     {tipo !== 'pagina' && tipo !== 'votacao' && (
       <fieldset class="campo">
         <legend>{tipo === 'cultura' ? 'Capa (opcional)' : tipo === 'noticia' ? 'Foto (opcional)' : 'Foto'}</legend>

@@ -67,6 +67,9 @@
   max-width: 100%;
   height: auto;
 }
+.leitura .corpo audio {
+  width: 100%;
+}
 
 .secao-titulo {
   margin: var(--esp-7) 0 var(--esp-3);
