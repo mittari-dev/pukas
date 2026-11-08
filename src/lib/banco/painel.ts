@@ -13,6 +13,23 @@ const TIPOS_FOTO: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': '
 // O Vercel recusa requisição acima de 4,5 MB antes de chegar aqui; a foto vai junto com o texto do formulário.
 export const FOTO_MAX_BYTES = 4 * 1024 * 1024;
 
+// Mídia no meio do texto vai do navegador direto para o Storage (até 50 MB), sem passar pelo limite de 4,5 MB do Vercel.
+const TIPOS_MIDIA: Record<string, string> = {
+  'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
+  'video/mp4': 'mp4', 'video/webm': 'webm',
+  'audio/mpeg': 'mp3', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/ogg': 'ogg',
+};
+
+export async function pedirEnvioMidia(cliente: SupabaseClient, tipo: string, base: string): Promise<Resultado<{ envio: string; publico: string }>> {
+  const extensao = TIPOS_MIDIA[tipo];
+  if (!extensao) return { ok: false, erro: 'Mídia precisa ser foto (JPG, PNG, WebP), vídeo (MP4, WebM) ou áudio (MP3, M4A, OGG).' };
+  const caminho = `${crypto.randomUUID()}.${extensao}`;
+  // O balde só aceita editor com 2FA (RLS): sem isso o banco nem dá o endereço.
+  const { data, error } = await cliente.storage.from('midias').createSignedUploadUrl(caminho);
+  if (error || !data) return { ok: false, erro: 'Só quem é editor envia mídia.' };
+  return { ok: true, valor: { envio: data.signedUrl, publico: `${base}/storage/v1/object/public/midias/${caminho}` } };
+}
+
 export interface LinhaFila {
   id: string;
   tipo: TipoPeca;
