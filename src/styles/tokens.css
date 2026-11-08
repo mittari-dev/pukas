@@ -8,8 +8,9 @@
   --cal: #F1EDE4;        /* papel, leitura (funcional) */
   --ipe: #E0A526;        /* destaque, dado */
   --verde-mata: #1A452C; /* módulo técnico */
-  --tinta-suave: #5E584E; /* metadados e resumos sobre Cal (5,9:1) */
-  --fio-cal: #C9C2B4;     /* fio fino entre itens de uma lista, sobre Cal */
+  /* Apoio da leitura, misturados da paleta (sem cor nova): metadado e resumo (~6:1 sobre Cal) e o fio entre itens. */
+  --tinta-suave: color-mix(in srgb, var(--tinta) 72%, var(--cal));
+  --fio-cal: color-mix(in srgb, var(--tinta) 20%, var(--cal));
 
   /* Tipografia */
   --fonte-manchete: 'Archivo Variable', 'Archivo', sans-serif;
