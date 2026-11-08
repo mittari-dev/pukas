@@ -44,6 +44,11 @@ const seletor = { pt: idioma === 'pt' ? undefined : `${alternativa}?idioma=pt`, 
     </nav>
   </details>
   <a href={prefixar('/', idioma)} class="marca"><Tarja variante={tarja} rotulo={t(idioma, 'nav.marca')} /></a>
+  <nav class="topo maquina" aria-label={t(idioma, 'nav.secoes')}>
+    {itens.filter((i) => i.href !== '/' && i.href !== '/links').map((i) => (
+      <a href={prefixar(i.href, idioma)} aria-current={i.href === ativa ? 'page' : undefined}>{i.rotulo}</a>
+    ))}
+  </nav>
   <Setas voltar={t(idioma, 'nav.voltar')} avancar={t(idioma, 'nav.avancar')} />
   <nav class="idiomas maquina" aria-label={t(idioma, 'nav.idioma')}>
     {seletor.pt ? <a href={seletor.pt} hreflang="pt-BR" lang="pt-BR">PT</a> : <span aria-current="true">PT</span>}
@@ -79,14 +84,46 @@ const seletor = { pt: idioma === 'pt' ? undefined : `${alternativa}?idioma=pt`, 
     align-items: center;
     gap: var(--esp-4);
     padding: var(--esp-3) var(--esp-4);
-    border-bottom: 3px solid currentColor;
+    border-bottom: 2px solid currentColor;
   }
   .marca {
     text-decoration: none;
     line-height: 0;
   }
   .marca :global(.tarja) {
-    font-size: clamp(32px, 9vw, 64px);
+    font-size: clamp(30px, 8vw, 44px);
+  }
+
+  /* Computador: as seções à vista na barra; a gaveta continua para quem preferir. */
+  .topo {
+    display: none;
+  }
+  @media (min-width: 1024px) {
+    .topo {
+      display: flex;
+      gap: var(--esp-5);
+      margin-left: auto;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .topo a {
+      text-decoration: none;
+      padding: var(--esp-2) 0;
+    }
+    .topo a:hover,
+    .topo a:focus-visible,
+    .topo a[aria-current='page'] {
+      color: var(--ativo);
+    }
+    .topo a[aria-current='page'] {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 6px;
+    }
+    .barra :global(.setas) {
+      margin-left: var(--esp-3);
+    }
   }
 
   /* Celular: menu, Tarja, setas e PT | ES precisam caber numa linha de 360px. */

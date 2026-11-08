@@ -8,8 +8,8 @@
 
 .leitura .corpo p,
 .leitura .corpo li {
-  font-size: clamp(19px, 1.05rem + 0.4vw, 21px);
-  line-height: 1.6;
+  font-size: var(--tipo-corpo);
+  line-height: 1.65;
   max-width: 62ch;
 }
 
@@ -40,7 +40,7 @@
   font-stretch: var(--largura-manchete);
   text-transform: uppercase;
   line-height: 0.95;
-  font-size: clamp(28px, 6vw, 40px);
+  font-size: var(--tipo-secao);
   margin: var(--esp-7) 0 var(--esp-3);
 }
 
@@ -72,12 +72,54 @@
 }
 
 .secao-titulo {
-  margin: var(--esp-7) 0 var(--esp-3);
-  padding: var(--esp-2) 0;
-  border-top: 3px solid currentColor;
-  border-bottom: 1px solid currentColor;
-  font-size: 14px;
+  margin: var(--esp-7) 0 var(--esp-2);
+  padding-top: var(--esp-3);
+  border-top: 2px solid currentColor;
+  font-size: 13px;
   letter-spacing: 0.14em;
+  color: var(--acento);
+}
+
+/* Lista de matérias (notícias, edições, cultura, votações). Uma só para o site inteiro:
+   abre e fecha na linha grossa; entre os itens, só o fio fino. */
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+}
+.lista li + li {
+  border-top: 1px solid var(--fio);
+}
+.lista a {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+  padding: var(--esp-5) 0;
+  text-decoration: none;
+}
+.lista a:hover .lista__titulo,
+.lista a:focus-visible .lista__titulo {
+  color: var(--acento);
+}
+.lista__meta {
+  font-size: var(--tipo-meta);
+  letter-spacing: 0.08em;
+  color: var(--suave);
+}
+.lista__titulo {
+  font-weight: 700;
+  font-size: var(--tipo-item);
+  line-height: 1.2;
+}
+.lista__resumo {
+  font-size: var(--tipo-resumo);
+  line-height: 1.5;
+  color: var(--suave);
+}
+.vazio {
+  font-weight: 700;
 }
 
 .edicao__chapeu {

@@ -26,12 +26,12 @@ const Tag = nivel === 1 ? 'h1' : 'h2';
     display: block;
     text-wrap: balance;
   }
-  /* g: ~11 caracteres por linha num celular de 360px; m: títulos de seção e de edição. */
+  /* g: manchete da capa; m: manchete de página e de matéria (escala em tokens.css). */
   .manchete--g {
-    font-size: clamp(56px, 16vw, 136px);
+    font-size: var(--tipo-display);
   }
   .manchete--m {
-    font-size: clamp(52px, 14vw, 104px);
+    font-size: var(--tipo-titulo);
   }
   /* inline-block: o fundo fica do tamanho da linha e não cobre a linha de cima. */
   .manchete__destaque {
