@@ -21,13 +21,15 @@
     });
 
     const compartilhar = caixa.querySelector('[data-compartilhar]');
-    if (navigator.share) {
+    if (!navigator.share) compartilhar.remove();
+    else {
       compartilhar.hidden = false;
       compartilhar.addEventListener('click', () => navigator.share({ title: caixa.dataset.titulo, url: caixa.dataset.url }).catch(() => {}));
     }
 
     const copiar = caixa.querySelector('[data-copiar]');
-    if (navigator.clipboard) {
+    if (!navigator.clipboard) copiar.remove();
+    else {
       copiar.hidden = false;
       copiar.addEventListener('click', async () => {
         try {
@@ -41,5 +43,7 @@
         } catch {}
       });
     }
+    // Botões que ficaram: no computador, todos numa linha do mesmo tamanho.
+    caixa.style.setProperty('--botoes', String(caixa.children.length));
   }
 })();
