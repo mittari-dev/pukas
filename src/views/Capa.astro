@@ -3,7 +3,6 @@
 import Base from '../layouts/Base.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
 import Manchete from '../components/identidade/Manchete.astro';
-import FormAssinar from '../components/FormAssinar.astro';
 import { carregarEdicoes, carregarNoticias, carregarObras, carregarSeries, carregarVotacoes } from '../lib/carregar';
 import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -87,7 +86,6 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
           </ul>
         )}
         <a class="maquina coluna__mais" href={prefixar('/newsletter', idioma)}>{t(idioma, 'capa.verNewsletter')}</a>
-        <FormAssinar idioma={idioma} />
       </section>
 
       <section aria-labelledby="sec-votacao">
@@ -105,10 +103,6 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
       </section>
     </div>
 
-    <p class="expediente">
-      {t(idioma, 'capa.expediente')} {t(idioma, 'site.institucional')}{' '}
-      <a href={prefixar('/manifesto', idioma)}>{t(idioma, 'site.leiaManifesto')}</a>.
-    </p>
   </div>
 </Base>
 
@@ -210,11 +204,4 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
     letter-spacing: 0.08em;
   }
 
-  .expediente {
-    max-width: 68ch;
-    margin: var(--esp-7) 0 0;
-    padding-top: var(--esp-3);
-    border-top: 1px solid currentColor;
-    font-size: 15px;
-  }
 </style>

@@ -50,7 +50,6 @@ const pt = {
   'capa.verCultura': 'Toda a cultura',
   'capa.semNoticias': 'Ainda não há notícias publicadas.',
   'capa.semCultura': 'Ainda não há obras publicadas.',
-  'capa.expediente': 'Erros são corrigidos na própria matéria, com a data da correção.',
 
   'newsletter.titulo': 'Newsletter',
   'serie.vazio': 'A primeira edição ainda não foi publicada.',
@@ -215,7 +214,6 @@ const es: Record<Chave, string> = {
   'capa.verCultura': 'Toda la cultura',
   'capa.semNoticias': 'Todavía no hay noticias publicadas.',
   'capa.semCultura': 'Todavía no hay obras publicadas.',
-  'capa.expediente': 'Los errores se corrigen en la propia nota, con la fecha de la corrección.',
 
   'newsletter.titulo': 'Newsletter',
   'serie.vazio': 'Todavía no hay ediciones en español.',
