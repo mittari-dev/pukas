@@ -5,12 +5,14 @@ import { prefixar, t, type Idioma } from '../lib/idioma';
 
 interface Props {
   idioma: Idioma;
+  // Sobre o bloco Tinta da capa: botão em Pau-Brasil, campo e textos em Cal.
+  escuro?: boolean;
 }
-const { idioma } = Astro.props;
+const { idioma, escuro = false } = Astro.props;
 const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? process.env.PUBLIC_TURNSTILE_SITE_KEY;
 const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] as const;
 ---
-<form class="assinar" method="post" action="/api/assinar" data-assinar>
+<form class:list={['assinar', { 'assinar--escuro': escuro }]} method="post" action="/api/assinar" data-assinar>
   {SITUACOES.map((s) => <p class="assinar__aviso" data-situacao={s} role="status" hidden>{t(idioma, `assinar.${s}`)}</p>)}
   <label class="maquina assinar__rotulo" for={`assinar-email-${idioma}`}>{t(idioma, 'assinar.rotulo')}</label>
   <div class="assinar__linha">
@@ -19,7 +21,7 @@ const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] 
   </div>
   <input type="hidden" name="idioma" value={idioma} />
   <div class="assinar__escondido" aria-hidden="true"><input name="site" tabindex="-1" autocomplete="off" /></div>
-  <div class="assinar__robo" data-sitekey={siteKey} data-language={idioma === 'es' ? 'es' : 'pt-br'}></div>
+  <div class="assinar__robo" data-sitekey={siteKey} data-language={idioma === 'es' ? 'es' : 'pt-br'} data-appearance="interaction-only"></div>
   <p class="assinar__ajuda">{t(idioma, 'assinar.ajuda')} <a href={prefixar('/privacidade', idioma)}>{t(idioma, 'assinar.privacidade')}</a>.</p>
 </form>
 <script is:inline src="/assinar.js" defer></script>
@@ -61,6 +63,23 @@ const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] 
   .assinar__linha button:hover,
   .assinar__linha button:focus-visible {
     background: var(--pau-brasil);
+  }
+  .assinar__linha input {
+    min-height: 48px;
+  }
+  .assinar__linha button {
+    min-height: 48px;
+  }
+  .assinar--escuro .assinar__linha button {
+    background: var(--pau-brasil);
+  }
+  .assinar--escuro .assinar__linha button:hover,
+  .assinar--escuro .assinar__linha button:focus-visible {
+    background: var(--cal);
+    color: var(--tinta);
+  }
+  .assinar--escuro .assinar__aviso {
+    border-left-color: var(--cal);
   }
   .assinar__escondido {
     position: absolute;

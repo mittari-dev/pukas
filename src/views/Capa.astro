@@ -1,12 +1,16 @@
 ---
-// Capa de jornal: manchete principal (última Memória Operária) em cima e, embaixo, uma seção para cada coisa: Notícias, Cultura, Newsletter e Votações. No celular tudo vira uma coluna, nessa ordem.
+// Capa (Home A, escolhida pelo fundador em 08/11/2026): a frase fixa no topo e a última Memória Operária ao lado;
+// depois a votação aberta em destaque, notícias com cultura ao lado, as edições anteriores e um bloco só para assinar.
+// No celular tudo vira uma coluna, nessa ordem.
 import Base from '../layouts/Base.astro';
-import Carimbo from '../components/identidade/Carimbo.astro';
 import Manchete from '../components/identidade/Manchete.astro';
-import { carregarEdicoes, carregarNoticias, carregarObras, carregarSeries, carregarVotacoes } from '../lib/carregar';
+import FormAssinar from '../components/FormAssinar.astro';
+import { carregarEdicoes, carregarNoticias, carregarObras, carregarVotacoes } from '../lib/carregar';
 import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
+import { OPCOES, type Opcao } from '../lib/votacoes/voto';
+import type { Chave } from '../i18n/textos';
 import '../styles/leitura.css';
 
 interface Props {
@@ -16,92 +20,123 @@ const { idioma } = Astro.props;
 const [edicoes, noticias, obras, { abertas }] = await Promise.all([carregarEdicoes(idioma), carregarNoticias(idioma), carregarObras(idioma), carregarVotacoes(idioma)]);
 const votacao = abertas[0];
 const ultima = edicoes[0];
-const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slug === ultima.data.serie)?.selo.replace('*', '') ?? '') : '';
+const ROTULO: Record<Opcao, Chave> = { a_favor: 'votacao.afavor', contra: 'votacao.contra', nao_sei: 'votacao.naosei' };
+const ICONE: Record<Opcao, string> = { a_favor: 'M4 12.5l5 5L20 6.5', contra: 'M6 6l12 12M18 6L6 18', nao_sei: 'M9 9a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.8V15M12 18.5v.5' };
 ---
 <Base titulo="PUKAS" descricao={t(idioma, 'site.descricao')} receita="leitura" idioma={idioma}>
   <div class="capa">
+    <section class="topo">
+      <div class="topo__frase"><Manchete titulo={t(idioma, 'capa.manchete')} /></div>
       {ultima ? (
-        <section class="principal" aria-labelledby="ultima">
-          {chapeuMemoria && <p class="chapeu">{chapeuMemoria}</p>}
-          <Carimbo numero={ultima.data.numero} data={ultima.data.publicadaEm} />
-          <div class="principal__manchete"><Manchete id="ultima" titulo={ultima.data.titulo} /></div>
-          <p class="principal__resumo">{ultima.data.resumo}</p>
-          <a class="maquina principal__ler" href={caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma)}>{t(idioma, 'capa.lerEdicao')}</a>
-        </section>
+        <a class="ultima" href={caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma)}>
+          <span class="maquina ultima__chapeu">{t(idioma, 'capa.ultimaEdicao')}</span>
+          {ultima.data.foto.arquivo && <img class="ultima__foto" src={ultima.data.foto.arquivo as string} alt={ultima.data.foto.descricao} width="560" height="315" loading="eager" decoding="async" />}
+          <span class="maquina ultima__meta">{formatarNumero(ultima.data.numero)} · {formatarData(ultima.data.publicadaEm, idioma)}</span>
+          <span class="ultima__titulo">{textoManchete(ultima.data.titulo)}</span>
+          <span class="ultima__resumo">{ultima.data.resumo}</span>
+          <span class="maquina ultima__ler">{t(idioma, 'capa.lerEdicao')} →</span>
+        </a>
       ) : (
-        <section class="principal">
-          <div class="principal__manchete"><Manchete titulo={t(idioma, 'capa.manchete')} /></div>
-          <p class="principal__resumo">{t(idioma, 'serie.vazio')}</p>
-        </section>
+        <p class="topo__vazio">{t(idioma, 'serie.vazio')}</p>
       )}
+    </section>
 
-    <div class="secoes">
-      <section aria-labelledby="sec-noticias">
-        <h2 id="sec-noticias" class="coluna__titulo maquina">{t(idioma, 'capa.noticias')}</h2>
+    {votacao && (
+      <section class="votacao" aria-labelledby="votacao-titulo">
+        <div class="votacao__texto">
+          <span class="maquina votacao__meta">
+            {t(idioma, 'capa.votacao')} · {votacao.proposicao.sigla} {votacao.proposicao.numero}/{votacao.proposicao.ano}{votacao.fechaEm && <> · {t(idioma, 'votacao.fecha')} {formatarData(votacao.fechaEm, idioma)}</>}
+          </span>
+          <a id="votacao-titulo" class="votacao__titulo" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>{textoManchete(votacao.titulo)}</a>
+          <span class="votacao__resumo">{votacao.resumo}</span>
+        </div>
+        <div class="votacao__opcoes">
+          {OPCOES.map((o) => (
+            <a class="maquina votacao__opcao" href={prefixar(`/votacoes/${votacao.id}#votar`, idioma)}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICONE[o]} /></svg>
+              {t(idioma, ROTULO[o])}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <div class="meio">
+      <section class="secao" aria-labelledby="sec-noticias">
+        <div class="secao__cabeca">
+          <h2 id="sec-noticias" class="secao__titulo">{t(idioma, 'capa.noticias')}</h2>
+          <a class="maquina secao__mais" href={prefixar('/noticias', idioma)}>{t(idioma, 'capa.verNoticias')} →</a>
+        </div>
         {noticias.length === 0 ? (
-          <p class="coluna__vazio">{t(idioma, 'capa.semNoticias')}</p>
+          <p class="secao__vazio">{t(idioma, 'capa.semNoticias')}</p>
         ) : (
-          <ul class="chamadas">
-            {noticias.slice(0, 5).map((n) => (
+          <ul class="itens">
+            {noticias.slice(0, 3).map((n) => (
               <li>
-                <a href={prefixar(`/noticias/${n.id}`, idioma)}>
-                  <span class="maquina chamada__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
-                  <span class="chamada__titulo">{textoManchete(n.data.titulo)}</span>
+                <a class:list={['noticia', { 'noticia--foto': Boolean(n.data.foto.arquivo) }]} href={prefixar(`/noticias/${n.id}`, idioma)}>
+                  {n.data.foto.arquivo && <img class="noticia__foto" src={n.data.foto.arquivo as string} alt="" width="200" height="120" loading="lazy" decoding="async" />}
+                  <span class="noticia__texto">
+                    <span class="maquina item__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
+                    <span class="item__titulo">{textoManchete(n.data.titulo)}</span>
+                    <span class="item__resumo">{n.data.resumo}</span>
+                  </span>
                 </a>
               </li>
             ))}
           </ul>
         )}
-        <a class="maquina coluna__mais" href={prefixar('/noticias', idioma)}>{t(idioma, 'capa.verNoticias')}</a>
       </section>
 
-      <section aria-labelledby="sec-cultura">
-        <h2 id="sec-cultura" class="coluna__titulo maquina">{t(idioma, 'capa.cultura')}</h2>
-        {obras[0] ? (
-          <a class="chamada" href={prefixar(`/cultura/${obras[0].id}`, idioma)}>
-            <span class="maquina chamada__meta">{t(idioma, `tipo.${obras[0].data.tipo}`)}</span>
-            <span class="chamada__titulo">{textoManchete(obras[0].data.titulo)}</span>
-            <span class="chamada__resumo">{obras[0].data.resumo}</span>
-          </a>
+      <section class="secao" aria-labelledby="sec-cultura">
+        <div class="secao__cabeca">
+          <h2 id="sec-cultura" class="secao__titulo">{t(idioma, 'capa.cultura')}</h2>
+          <a class="maquina secao__mais" href={prefixar('/cultura', idioma)}>{t(idioma, 'capa.verCultura')} →</a>
+        </div>
+        {obras.length === 0 ? (
+          <p class="secao__vazio">{t(idioma, 'capa.semCultura')}</p>
         ) : (
-          <p class="coluna__vazio">{t(idioma, 'capa.semCultura')}</p>
-        )}
-        <a class="maquina coluna__mais" href={prefixar('/cultura', idioma)}>{t(idioma, 'capa.verCultura')}</a>
-      </section>
-
-      <section aria-labelledby="sec-newsletter">
-        <h2 id="sec-newsletter" class="coluna__titulo maquina">{t(idioma, 'capa.newsletter')}</h2>
-        {edicoes.length === 0 ? (
-          <p class="coluna__vazio">{t(idioma, 'serie.vazio')}</p>
-        ) : (
-          <ul class="chamadas">
-            {edicoes.slice(0, 5).map((e) => (
+          <ul class="itens">
+            {obras.slice(0, 2).map((o) => (
               <li>
-                <a href={caminhoEdicao(e.data.serie, e.data.numero, idioma)}>
-                  <span class="maquina chamada__meta">{formatarNumero(e.data.numero)} · {formatarData(e.data.publicadaEm, idioma)}</span>
-                  <span class="chamada__titulo">{textoManchete(e.data.titulo)}</span>
+                <a class="obra" href={prefixar(`/cultura/${o.id}`, idioma)}>
+                  <span class="maquina item__meta">{t(idioma, `tipo.${o.data.tipo}`)} · {o.data.autoria}</span>
+                  <span class="item__titulo">{textoManchete(o.data.titulo)}</span>
+                  <span class="item__resumo">{o.data.resumo}</span>
                 </a>
               </li>
             ))}
           </ul>
         )}
-        <a class="maquina coluna__mais" href={prefixar('/newsletter', idioma)}>{t(idioma, 'capa.verNewsletter')}</a>
-      </section>
-
-      <section aria-labelledby="sec-votacao">
-        <h2 id="sec-votacao" class="coluna__titulo maquina">{t(idioma, votacao ? 'capa.votacao' : 'capa.votacoes')}</h2>
-        {votacao ? (
-          <a class="chamada" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>
-            <span class="maquina chamada__meta">{votacao.proposicao.sigla} {votacao.proposicao.numero}/{votacao.proposicao.ano}</span>
-            <span class="chamada__titulo">{textoManchete(votacao.titulo)}</span>
-            <span class="chamada__resumo">{votacao.resumo}</span>
-          </a>
-        ) : (
-          <p class="coluna__vazio">{t(idioma, 'votacoes.vazio')}</p>
-        )}
-        <a class="maquina coluna__mais" href={prefixar('/votacoes', idioma)}>{t(idioma, 'capa.verVotacoes')}</a>
       </section>
     </div>
+
+    {edicoes.length > 1 && (
+      <section class="secao edicoes" aria-labelledby="sec-edicoes">
+        <div class="secao__cabeca">
+          <h2 id="sec-edicoes" class="secao__titulo">{t(idioma, 'capa.memoria')}</h2>
+          <a class="maquina secao__mais" href={prefixar('/newsletter', idioma)}>{t(idioma, 'capa.verNewsletter')} →</a>
+        </div>
+        <ul class="edicoes__grade">
+          {edicoes.slice(1, 4).map((e) => (
+            <li>
+              <a class="edicao" href={caminhoEdicao(e.data.serie, e.data.numero, idioma)}>
+                <span class="edicao__numero">{formatarNumero(e.data.numero)}</span>
+                <span class="maquina item__meta">{formatarData(e.data.publicadaEm, idioma)}</span>
+                <span class="item__titulo">{textoManchete(e.data.titulo)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <section class="assinar" aria-labelledby="assinar-titulo">
+      <div class="assinar__texto">
+        <h2 id="assinar-titulo" class="assinar__titulo">{t(idioma, 'capa.assinarTitulo')}</h2>
+        <p class="assinar__sub">{t(idioma, 'capa.assinarTexto')}</p>
+      </div>
+      <FormAssinar idioma={idioma} escuro />
+    </section>
 
     <p class="expediente">
       {t(idioma, 'site.institucional')} <a href={prefixar('/manifesto', idioma)}>{t(idioma, 'site.leiaManifesto')}</a>.
@@ -110,108 +145,320 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
 </Base>
 
 <style>
-  /* Capa mais larga que a leitura: as seções lado a lado no computador; o texto corrido segue a medida de 68ch. */
   .capa {
-    max-width: 1120px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: var(--esp-6) var(--esp-4) 0;
   }
-
-  .chapeu {
-    margin: 0 0 var(--esp-3);
-  }
-  .principal__manchete {
-    margin-top: var(--esp-5);
-  }
-  .principal__resumo {
-    margin: var(--esp-5) 0;
-    font-size: 20px;
-    max-width: 52ch;
-  }
-  .principal__ler {
-    display: inline-block;
-    padding: var(--esp-3) var(--esp-4);
-    background: var(--tinta);
-    color: var(--cal);
-    text-decoration: none;
-    letter-spacing: 0.08em;
-  }
-  .principal__ler:hover,
-  .principal__ler:focus-visible {
-    background: var(--pau-brasil);
+  @media (min-width: 900px) {
+    .capa {
+      padding: var(--esp-8) var(--esp-8) 0;
+    }
   }
 
-  /* Uma seção por assunto, cada uma com o seu título: no celular uma embaixo da outra, no computador lado a lado. */
-  .secoes {
+  /* Topo: frase fixa e, ao lado (embaixo no celular), a última edição. */
+  .topo {
     display: grid;
-    gap: var(--esp-7) var(--esp-6);
+    gap: var(--esp-6);
+    align-items: end;
+  }
+  @media (min-width: 900px) {
+    .topo {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--esp-8);
+    }
+  }
+  .topo__vazio {
+    margin: 0;
+    font-size: var(--tipo-resumo);
+  }
+  .ultima {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-3);
+    padding: var(--esp-4);
+    border: 2px solid currentColor;
+    text-decoration: none;
+  }
+  .ultima__chapeu {
+    font-size: var(--tipo-meta);
+    letter-spacing: 0.12em;
+    color: var(--acento);
+  }
+  .ultima__foto {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  .ultima__meta {
+    font-size: var(--tipo-meta);
+    letter-spacing: 0.08em;
+    color: var(--suave);
+  }
+  .ultima__titulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: clamp(28px, 7vw, 36px);
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .ultima__resumo {
+    font-size: var(--tipo-resumo);
+    line-height: 1.5;
+  }
+  .ultima__ler {
+    font-size: 13px;
+    letter-spacing: 0.12em;
+  }
+  .ultima:hover .ultima__titulo,
+  .ultima:focus-visible .ultima__titulo {
+    color: var(--acento);
+  }
+
+  /* Votação aberta: faixa vermelha com as três opções. */
+  .votacao {
+    display: grid;
+    gap: var(--esp-5);
+    margin-top: var(--esp-7);
+    padding: var(--esp-5) var(--esp-4);
+    background: var(--pau-brasil);
+    color: var(--cal);
+  }
+  @media (min-width: 900px) {
+    .votacao {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--esp-7);
+      padding: var(--esp-6) var(--esp-7);
+    }
+  }
+  .votacao__texto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-2);
+  }
+  .votacao__meta {
+    font-size: var(--tipo-meta);
+    letter-spacing: 0.1em;
+  }
+  .votacao__titulo {
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: clamp(30px, 7vw, 44px);
+    line-height: 0.95;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .votacao__resumo {
+    font-size: var(--tipo-resumo);
+    line-height: 1.5;
+    max-width: 640px;
+  }
+  .votacao__opcoes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--esp-2);
+  }
+  @media (min-width: 900px) {
+    .votacao__opcoes {
+      grid-template-columns: repeat(3, 112px);
+    }
+  }
+  .votacao__opcao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--esp-1);
+    min-height: 76px;
+    border: 2px solid currentColor;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .votacao__opcao:hover,
+  .votacao__opcao:focus-visible {
+    background: var(--cal);
+    color: var(--pau-brasil);
+  }
+  .votacao__opcao svg {
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Seções: um título só (sem a linha grossa + linha fina) e o fio fino só entre itens. */
+  .meio {
+    display: grid;
+    gap: var(--esp-7);
     margin-top: var(--esp-7);
   }
   @media (min-width: 900px) {
-    .secoes {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+    .meio {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: var(--esp-8);
     }
   }
-  .coluna__titulo {
-    margin: 0 0 var(--esp-2);
-    padding: var(--esp-2) 0;
-    border-top: 3px solid currentColor;
-    border-bottom: 1px solid currentColor;
-    font-size: 13px;
-    letter-spacing: 0.14em;
+  .secao__cabeca {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--esp-3);
+    padding-bottom: var(--esp-3);
+    border-bottom: 2px solid currentColor;
   }
-  .chamadas {
+  .secao__titulo {
+    margin: 0;
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: var(--tipo-secao);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .secao__mais {
+    flex: none;
+    font-size: var(--tipo-meta);
+    letter-spacing: 0.1em;
+  }
+  .secao__vazio {
+    margin: var(--esp-4) 0 0;
+  }
+  .itens {
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  .chamadas li + li {
-    border-top: 1px solid currentColor;
+  .itens li + li {
+    border-top: 1px solid var(--fio);
   }
-  .chamadas a,
-  .chamada {
-    display: grid;
-    gap: var(--esp-1);
-    padding: var(--esp-3) 0;
+  .noticia,
+  .obra {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-2);
+    padding: var(--esp-5) 0;
     text-decoration: none;
   }
-  .chamada__meta {
-    font-size: 11px;
-    letter-spacing: 0.08em;
+  .noticia--foto {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--esp-4);
+    align-items: start;
   }
-  .chamada__titulo {
-    font-family: var(--fonte-manchete);
-    font-stretch: var(--largura-manchete);
-    font-weight: 900;
-    font-size: 22px;
+  @media (min-width: 600px) {
+    .noticia--foto {
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: var(--esp-5);
+    }
+  }
+  .noticia__foto {
+    width: 100%;
+    aspect-ratio: 5 / 3;
+    object-fit: cover;
+  }
+  .noticia__texto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-2);
+  }
+  .item__meta {
+    font-size: var(--tipo-meta);
+    letter-spacing: 0.08em;
+    color: var(--suave);
+  }
+  .item__titulo {
+    font-weight: 700;
+    font-size: var(--tipo-item);
+    line-height: 1.2;
+  }
+  .item__resumo {
+    font-size: var(--tipo-resumo);
+    line-height: 1.5;
+    color: var(--suave);
+  }
+  .noticia:hover .item__titulo,
+  .noticia:focus-visible .item__titulo,
+  .obra:hover .item__titulo,
+  .obra:focus-visible .item__titulo,
+  .edicao:hover .item__titulo,
+  .edicao:focus-visible .item__titulo {
+    color: var(--acento);
+  }
+
+  /* Memória Operária: as edições anteriores lado a lado no computador. */
+  .edicoes {
+    margin-top: var(--esp-7);
+  }
+  .edicoes__grade {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--esp-5);
+    padding-top: var(--esp-5);
+  }
+  @media (min-width: 900px) {
+    .edicoes__grade {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--esp-6);
+    }
+  }
+  .edicao {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-2);
+    text-decoration: none;
+  }
+  .edicao__numero {
+    font-family: var(--fonte-carimbo);
+    font-size: 36px;
     line-height: 1;
+    color: var(--acento);
+  }
+
+  /* Assinar: bloco próprio, separado das listas. */
+  .assinar {
+    display: grid;
+    gap: var(--esp-5);
+    margin-top: var(--esp-7);
+    padding: var(--esp-6) var(--esp-4);
+    background: var(--tinta);
+    color: var(--cal);
+  }
+  @media (min-width: 900px) {
+    .assinar {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: var(--esp-7);
+      padding: var(--esp-6) var(--esp-7);
+    }
+  }
+  .assinar__titulo {
+    margin: 0;
+    font-family: var(--fonte-manchete);
+    font-weight: 900;
+    font-stretch: var(--largura-manchete);
+    font-size: clamp(30px, 7vw, 44px);
+    line-height: 0.95;
     text-transform: uppercase;
   }
-  .chamadas a:hover .chamada__titulo,
-  .chamadas a:focus-visible .chamada__titulo,
-  .chamada:hover .chamada__titulo,
-  .chamada:focus-visible .chamada__titulo {
-    color: var(--pau-brasil);
-  }
-  .chamada__resumo {
-    font-size: 15px;
-  }
-  .coluna__vazio {
-    margin: var(--esp-3) 0;
-    font-size: 15px;
-  }
-  .coluna__mais {
-    display: inline-block;
-    padding: var(--esp-2) 0;
-    font-size: 12px;
-    letter-spacing: 0.08em;
+  .assinar__sub {
+    margin: var(--esp-2) 0 0;
+    font-size: var(--tipo-resumo);
   }
 
   .expediente {
     max-width: 68ch;
     margin: var(--esp-7) 0 0;
-    padding-top: var(--esp-3);
-    border-top: 1px solid currentColor;
     font-size: 15px;
   }
 </style>

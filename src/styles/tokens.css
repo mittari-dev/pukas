@@ -8,6 +8,8 @@
   --cal: #F1EDE4;        /* papel, leitura (funcional) */
   --ipe: #E0A526;        /* destaque, dado */
   --verde-mata: #1A452C; /* módulo técnico */
+  --tinta-suave: #5E584E; /* metadados e resumos sobre Cal (5,9:1) */
+  --fio-cal: #C9C2B4;     /* fio fino entre itens de uma lista, sobre Cal */
 
   /* Tipografia */
   --fonte-manchete: 'Archivo Variable', 'Archivo', sans-serif;
@@ -15,6 +17,16 @@
   --fonte-maquina: 'Space Mono', monospace;
   --fonte-carimbo: 'Anton', sans-serif;
   --largura-manchete: 62%;
+
+  /* Escala tipográfica (auditoria 08/11): display = manchete da capa; titulo = manchete de página e de matéria;
+     secao = título de seção; item = título numa lista; o resto é texto corrido, resumo e metadado. */
+  --tipo-display: clamp(44px, 11vw, 124px);
+  --tipo-titulo: clamp(38px, 9.5vw, 88px);
+  --tipo-secao: clamp(28px, 6.5vw, 40px);
+  --tipo-item: clamp(20px, 4.8vw, 26px);
+  --tipo-corpo: clamp(18px, 1rem + 0.3vw, 20px);
+  --tipo-resumo: 17px;
+  --tipo-meta: 12px;
 
   /* Espaço: múltiplos de 4px */
   --esp-1: 4px;
@@ -37,6 +49,8 @@
   --destaque-texto: var(--pau-brasil); /* *trecho* da manchete */
   --destaque-fundo: transparent;
   --destaque-recuo: 0em;
+  --suave: var(--tinta-suave);
+  --fio: var(--fio-cal);
 }
 
 .receita-agitacao {
@@ -50,4 +64,6 @@
   --destaque-texto: var(--cal);
   --destaque-fundo: var(--tinta);
   --destaque-recuo: 0.08em; /* o bloco sangra para a esquerda e o texto fica alinhado */
+  --suave: var(--cal);
+  --fio: var(--cal);
 }

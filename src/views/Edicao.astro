@@ -30,6 +30,9 @@ const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.sel
 <Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" selo={selo || undefined} imagem={foto || undefined} idioma={idioma} alternativa={alternativa}>
   <article class="leitura">
     <div class="edicao__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
+    {selo && <p class="chapeu edicao__chapeu">{selo.replace('*', '')}</p>}
+    <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
+    <p class="edicao__resumo">{d.resumo}</p>
 
     <AvisoTraducao idioma={idioma} traducao={edicao.traducao} original={caminhoEdicao(d.serie, d.numero)} />
 
@@ -39,9 +42,6 @@ const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.sel
         {t(idioma, 'edicao.foto')}: {d.foto.origem ? <a href={d.foto.origem}>{d.foto.credito}</a> : d.foto.credito} · {d.foto.licenca}
       </figcaption>
     </figure>
-
-    {selo && <p class="chapeu edicao__chapeu">{selo.replace('*', '')}</p>}
-    <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     <div class="corpo" set:html={corpo} />
     {edicao.pecaId && <Reacoes idioma={idioma} pecaId={edicao.pecaId} titulo={d.titulo} />}
@@ -89,7 +89,7 @@ const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.sel
 
 <style>
   .edicao__carimbo {
-    margin: var(--esp-4) 0 var(--esp-6);
+    margin: var(--esp-5) 0 var(--esp-3);
   }
   .edicao__foto {
     margin: 0 0 var(--esp-5);
@@ -104,23 +104,45 @@ const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.sel
     letter-spacing: 0.06em;
   }
   .edicao__manchete {
-    margin-bottom: var(--esp-6);
+    margin: var(--esp-3) 0 var(--esp-4);
   }
+  /* Resumo logo abaixo da manchete: é o que a pessoa lê antes de decidir seguir. */
+  .edicao__resumo {
+    margin: 0 0 var(--esp-5);
+    font-size: clamp(19px, 1rem + 0.5vw, 22px);
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  /* Fontes: lista limpa, sem número; o fio fino separa e a linha grossa fecha. */
   .fontes {
-    padding-left: var(--esp-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-bottom: 2px solid currentColor;
   }
   .fontes li {
-    margin-bottom: var(--esp-3);
+    padding: var(--esp-3) 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
     overflow-wrap: anywhere;
+  }
+  .fontes li + li {
+    border-top: 1px solid var(--fio);
   }
   .fontes__meta {
     display: block;
+    margin-top: var(--esp-1);
     font-size: 11px;
+    font-weight: 700;
     letter-spacing: 0.08em;
+    color: var(--suave);
   }
   .edicao__checagem {
-    font-size: 13px;
+    margin-top: var(--esp-3);
+    font-size: 12px;
     letter-spacing: 0.08em;
+    color: var(--suave);
   }
   .correcoes {
     padding-left: var(--esp-4);
@@ -128,7 +150,7 @@ const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.sel
   .edicao__chamada {
     margin: var(--esp-8) 0 var(--esp-5);
     text-align: center;
-    font-size: clamp(32px, 8vw, 56px);
+    font-size: clamp(28px, 7vw, 48px);
     color: var(--acento);
   }
   .edicao__nav {

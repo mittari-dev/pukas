@@ -61,11 +61,11 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
   <article class="leitura votacao" data-visao={visao}>
     <p class="maquina votacao__proposicao"><a href={p.url}>{p.sigla} {p.numero}/{p.ano}, {casa}</a></p>
     <div class="votacao__manchete"><Manchete titulo={v.titulo} tamanho="m" /></div>
-    <p class="votacao__ementa">{p.ementa}</p>
     <p class="votacao__explicacao">{v.resumo}</p>
     {v.fechaEm && (
       <p class="maquina votacao__prazo">{t(idioma, v.fechada ? 'votacao.fechou' : 'votacao.fecha')} {formatarData(v.fechaEm, idioma)}</p>
     )}
+    <p class="votacao__ementa">{p.ementa}</p>
 
     {noticias.length > 0 && (
       <ul class="votacao__noticias">
@@ -103,7 +103,7 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
     )}
 
     {podeVotar && (
-      <form class="voto" method="post" action="/api/votar">
+      <form id="votar" class="voto" method="post" action="/api/votar">
         <input type="hidden" name="votacao" value={v.id} />
         <fieldset class="voto__opcoes">
           <legend class="sr-only">{textoManchete(v.titulo)}</legend>
@@ -126,7 +126,7 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
         <div class="voto__isca" aria-hidden="true">
           <label>Site <input type="text" name="site" tabindex="-1" autocomplete="off" /></label>
         </div>
-        <div class="cf-turnstile" data-sitekey={siteKey} data-language={lingua}></div>
+        <div class="cf-turnstile" data-sitekey={siteKey} data-language={lingua} data-appearance="interaction-only"></div>
         <button class="maquina voto__enviar" type="submit">{t(idioma, 'votacao.votar')}</button>
       </form>
     )}
@@ -195,16 +195,41 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
 </Base>
 
 <style>
+  /* Hierarquia: proposição (chapéu) → pergunta → explicação neutra → prazo → texto oficial da ementa, menor. */
   .votacao__proposicao {
     margin-top: var(--esp-5);
     font-size: 13px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
+    color: var(--acento);
   }
   .votacao__manchete {
     margin: var(--esp-3) 0 var(--esp-4);
   }
-  .votacao__ementa {
+  .votacao__explicacao {
+    margin: 0 0 var(--esp-3);
+    font-size: clamp(19px, 1rem + 0.5vw, 22px);
     font-weight: 700;
+    line-height: 1.45;
+  }
+  .votacao__prazo {
+    display: inline-block;
+    margin: 0 0 var(--esp-4);
+    padding: var(--esp-1) var(--esp-2);
+    background: var(--tinta);
+    color: var(--cal);
+    letter-spacing: 0.08em;
+  }
+  .votacao__ementa {
+    margin: 0 0 var(--esp-4);
+    padding-left: var(--esp-3);
+    border-left: 2px solid var(--fio);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--suave);
+  }
+  .resultado__metodologia {
+    font-size: 14px;
+    color: var(--suave);
   }
   .votacao__prazo,
   .resultado__descartes,
