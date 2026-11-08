@@ -2,6 +2,7 @@
 // /newsletter: as séries da newsletter. Cada série tem o seu arquivo em /newsletter/<série>.
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
+import FormAssinar from '../components/FormAssinar.astro';
 import { carregarEdicoes, carregarSeries } from '../lib/carregar';
 import { formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -19,6 +20,7 @@ const series = lista.map((s) => ({ href: `/newsletter/${s.slug}`, titulo: s.nome
 <Base titulo={t(idioma, 'newsletter.titulo')} descricao={t(idioma, 'site.descricao')} receita="leitura" idioma={idioma}>
   <div class="leitura">
     <div class="titulo"><Manchete titulo={t(idioma, 'newsletter.titulo')} tamanho="m" /></div>
+    <FormAssinar idioma={idioma} />
     <ul class="lista">
       {series.map((s) => (
         <li>

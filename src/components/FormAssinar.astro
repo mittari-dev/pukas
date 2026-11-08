@@ -1,0 +1,76 @@
+---
+// Formulário de assinar a newsletter por e-mail (POST /api/assinar). O anti-robô só carrega quando a pessoa
+// mexe no formulário (public/assinar.js): quem só lê a capa não passa pela Cloudflare.
+import { prefixar, t, type Idioma } from '../lib/idioma';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? process.env.PUBLIC_TURNSTILE_SITE_KEY;
+const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] as const;
+---
+<form class="assinar" method="post" action="/api/assinar" data-assinar>
+  {SITUACOES.map((s) => <p class="assinar__aviso" data-situacao={s} role="status" hidden>{t(idioma, `assinar.${s}`)}</p>)}
+  <label class="maquina assinar__rotulo" for={`assinar-email-${idioma}`}>{t(idioma, 'assinar.rotulo')}</label>
+  <div class="assinar__linha">
+    <input id={`assinar-email-${idioma}`} name="email" type="email" autocomplete="email" required maxlength="254" />
+    <button class="maquina">{t(idioma, 'assinar.botao')}</button>
+  </div>
+  <input type="hidden" name="idioma" value={idioma} />
+  <div class="assinar__escondido" aria-hidden="true"><input name="site" tabindex="-1" autocomplete="off" /></div>
+  <div class="assinar__robo" data-sitekey={siteKey} data-language={idioma === 'es' ? 'es' : 'pt-br'}></div>
+  <p class="assinar__ajuda">{t(idioma, 'assinar.ajuda')} <a href={prefixar('/privacidade', idioma)}>{t(idioma, 'assinar.privacidade')}</a>.</p>
+</form>
+<script is:inline src="/assinar.js" defer></script>
+
+<style>
+  .assinar {
+    display: grid;
+    gap: var(--esp-2);
+    margin: var(--esp-3) 0;
+  }
+  .assinar__rotulo {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .assinar__linha {
+    display: flex;
+    gap: var(--esp-2);
+  }
+  .assinar__linha input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--esp-2);
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+  .assinar__linha button {
+    padding: var(--esp-2) var(--esp-3);
+    border: 0;
+    background: var(--tinta);
+    color: var(--cal);
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+  .assinar__linha button:hover,
+  .assinar__linha button:focus-visible {
+    background: var(--pau-brasil);
+  }
+  .assinar__escondido {
+    position: absolute;
+    left: -9999px;
+  }
+  .assinar__ajuda {
+    margin: 0;
+    font-size: 13px;
+  }
+  .assinar__aviso {
+    margin: 0;
+    padding: var(--esp-2) var(--esp-3);
+    border-left: 3px solid var(--pau-brasil);
+    font-size: 15px;
+  }
+</style>
