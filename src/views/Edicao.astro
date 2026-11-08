@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import CabecaMateria from '../components/CabecaMateria.astro';
 import FimMateria from '../components/FimMateria.astro';
+import { imagem, srcset } from '../lib/imagem';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
 import type { EdicaoIdioma } from '../lib/carregar';
 import { caminhoEdicao, formatarData, formatarNumero, minutosDeLeitura } from '../lib/formato';
@@ -37,7 +38,7 @@ const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.sel
     <AvisoTraducao idioma={idioma} traducao={edicao.traducao} original={caminhoEdicao(d.serie, d.numero)} />
 
     <figure class="edicao__foto">
-      <img src={foto} alt={d.foto.descricao} width="680" loading="eager" decoding="async" />
+      <img src={imagem(foto, 800)} srcset={srcset(foto)} sizes="(min-width: 720px) 680px, 100vw" alt={d.foto.descricao} width="800" height="450" loading="eager" decoding="async" fetchpriority="high" />
       <figcaption class="maquina">
         {t(idioma, 'edicao.foto')}: {d.foto.origem ? <a href={d.foto.origem}>{d.foto.credito}</a> : d.foto.credito} · {d.foto.licenca}
       </figcaption>

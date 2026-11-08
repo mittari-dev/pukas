@@ -2,6 +2,8 @@
 import Base from '../layouts/Base.astro';
 import CabecaMateria from '../components/CabecaMateria.astro';
 import FimMateria from '../components/FimMateria.astro';
+import CartaoNoticia from '../components/CartaoNoticia.astro';
+import { imagem, srcset } from '../lib/imagem';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
 import { carregarEdicoes, carregarNoticias, votacaoDaNoticia, type EdicaoIdioma } from '../lib/carregar';
 import { caminhoEdicao, formatarData, formatarNumero, minutosDeLeitura } from '../lib/formato';
@@ -36,7 +38,7 @@ const outras = todas.filter((n) => n.id !== noticia.id).slice(0, 2);
 
     {foto && (
     <figure class="edicao__foto">
-      <img src={foto} alt={d.foto.descricao} width="680" loading="eager" decoding="async" />
+      <img src={imagem(foto, 800)} srcset={srcset(foto)} sizes="(min-width: 720px) 680px, 100vw" alt={d.foto.descricao} width="800" height="450" loading="eager" decoding="async" fetchpriority="high" />
       <figcaption class="maquina">
         {t(idioma, 'edicao.foto')}: {d.foto.origem ? <a href={d.foto.origem}>{d.foto.credito}</a> : d.foto.credito} · {d.foto.licenca}
       </figcaption>
@@ -57,21 +59,15 @@ const outras = todas.filter((n) => n.id !== noticia.id).slice(0, 2);
     {(outras.length > 0 || edicao) && (
       <section aria-labelledby="leia-tambem">
         <h2 id="leia-tambem" class="secao-titulo maquina">{t(idioma, 'noticia.leiaTambem')}</h2>
-        <ul class="lista leia">
+        <ul class="cartoes leia">
           {outras.map((n) => (
             <li>
-              <a href={prefixar(`/noticias/${n.id}`, idioma)}>
-                <span class="maquina lista__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
-                <span class="lista__titulo">{textoManchete(n.data.titulo)}</span>
-              </a>
+              <CartaoNoticia href={prefixar(`/noticias/${n.id}`, idioma)} foto={(n.data.foto.arquivo as string) || undefined} meta={formatarData(n.data.publicadaEm, idioma)} titulo={textoManchete(n.data.titulo)} />
             </li>
           ))}
           {edicao && (
             <li>
-              <a href={caminhoEdicao(edicao.data.serie, edicao.data.numero, idioma)}>
-                <span class="maquina lista__meta">{t(idioma, 'capa.memoria')} · {formatarNumero(edicao.data.numero)}</span>
-                <span class="lista__titulo">{textoManchete(edicao.data.titulo)}</span>
-              </a>
+              <CartaoNoticia href={caminhoEdicao(edicao.data.serie, edicao.data.numero, idioma)} foto={(edicao.data.foto.arquivo as string) || undefined} meta={`${t(idioma, 'capa.memoria')} · ${formatarNumero(edicao.data.numero)}`} titulo={textoManchete(edicao.data.titulo)} />
             </li>
           )}
         </ul>
@@ -110,8 +106,8 @@ const outras = todas.filter((n) => n.id !== noticia.id).slice(0, 2);
     font-size: 12px;
     letter-spacing: 0.06em;
   }
-  /* O título da seção já abre com a linha grossa: a lista não repete a dela. */
+  /* Leia também: um cartão embaixo do outro, na largura do texto. */
   .leia {
-    border-top: 0;
+    grid-template-columns: minmax(0, 1fr);
   }
 </style>

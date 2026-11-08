@@ -101,7 +101,7 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
     {pedeGoogle && googleOk && !sessao && (
       <div class="votacao__google">
         <p>{t(idioma, 'votacao.altoImpacto')}</p>
-        <a class="maquina voto__enviar" href={`/api/entrar-google?votacao=${v.id}${idioma === 'es' ? '&idioma=es' : ''}`}>{t(idioma, 'votacao.entrarGoogle')}</a>
+        <a class="maquina voto__enviar" data-astro-prefetch="false" href={`/api/entrar-google?votacao=${v.id}${idioma === 'es' ? '&idioma=es' : ''}`}>{t(idioma, 'votacao.entrarGoogle')}</a>
       </div>
     )}
 

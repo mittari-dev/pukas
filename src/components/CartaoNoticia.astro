@@ -1,0 +1,69 @@
+---
+// Cartão de matéria: foto inteira em cima e o texto embaixo. O mesmo na capa, em /noticias e no "Leia também".
+import { imagem, srcset } from '../lib/imagem';
+
+interface Props {
+  href: string;
+  titulo: string;
+  meta: string;
+  resumo?: string;
+  foto?: string;
+  // A foto carrega já (true) só no primeiro cartão visível; os outros esperam a rolagem.
+  primeiro?: boolean;
+}
+const { href, titulo, meta, resumo, foto, primeiro = false } = Astro.props;
+---
+<a class="cartao" href={href}>
+  {foto && (
+    <img
+      class="cartao__foto"
+      src={imagem(foto, 800)}
+      srcset={srcset(foto)}
+      sizes="(min-width: 900px) 380px, (min-width: 600px) 45vw, 100vw"
+      alt=""
+      width="800"
+      height="450"
+      loading={primeiro ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+  )}
+  <span class="maquina cartao__meta">{meta}</span>
+  <span class="cartao__titulo">{titulo}</span>
+  {resumo && <span class="cartao__resumo">{resumo}</span>}
+</a>
+
+<style>
+  .cartao {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-2);
+    text-decoration: none;
+  }
+  .cartao__foto {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    margin-bottom: var(--esp-2);
+  }
+  .cartao__meta {
+    font-size: var(--tipo-meta);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--suave);
+  }
+  .cartao__titulo {
+    font-weight: 700;
+    font-size: var(--tipo-item);
+    line-height: 1.2;
+  }
+  .cartao__resumo {
+    font-size: var(--tipo-resumo);
+    line-height: 1.5;
+    color: var(--suave);
+  }
+  .cartao:hover .cartao__titulo,
+  .cartao:focus-visible .cartao__titulo {
+    color: var(--acento);
+  }
+</style>
