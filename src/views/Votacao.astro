@@ -79,7 +79,10 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
       <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>
       <ol class="fontes">
         {ordenarFontes(v.fontes).map((f) => (
-          <li><a href={f.url || undefined}>{f.titulo}</a> · {f.instituicao}</li>
+          <li>
+            <a href={f.url || undefined}>{f.titulo}</a>
+            <span class="maquina fontes__meta">{f.instituicao} · {f.tipo === 'primaria' ? t(idioma, 'edicao.primaria') : t(idioma, 'edicao.secundaria')}</span>
+          </li>
         ))}
       </ol>
     </section>
@@ -409,5 +412,27 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
     padding-left: 0;
     list-style: none;
     columns: 2 14em;
+  }
+  .fontes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .fontes li {
+    padding: var(--esp-3) 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  .fontes li + li {
+    border-top: 1px solid var(--fio);
+  }
+  .fontes__meta {
+    display: block;
+    margin-top: var(--esp-1);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--suave);
   }
 </style>

@@ -28,9 +28,10 @@ const { idioma } = Astro.props;
     justify-content: space-between;
     align-items: center;
     gap: var(--esp-3);
-    max-width: 960px;
+    /* Mesma largura útil da capa (1280px menos as margens): a linha do rodapé bate com as bordas do conteúdo. */
+    width: min(1152px, calc(100% - 2 * var(--esp-4)));
     margin: var(--esp-5) auto 0;
-    padding: var(--esp-4);
+    padding: var(--esp-4) 0;
     border-top: 2px solid currentColor;
     font-size: 13px;
     letter-spacing: 0.08em;

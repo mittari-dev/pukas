@@ -2,10 +2,10 @@
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
-import { votacaoDaNoticia, type EdicaoIdioma } from '../lib/carregar';
+import { carregarEdicoes, carregarNoticias, votacaoDaNoticia, type EdicaoIdioma } from '../lib/carregar';
 import Reacoes from '../components/Reacoes.astro';
 import { ordenarFontes } from '../lib/edicoes';
-import { formatarData } from '../lib/formato';
+import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
 import { renderizarMarkdown } from '../lib/markdown';
@@ -20,7 +20,9 @@ const { idioma, noticia, alternativa } = Astro.props;
 const d = noticia.data;
 const corpo = await renderizarMarkdown(noticia.body ?? '');
 const foto = d.foto.arquivo as string;
-const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
+const [votacao, todas, [edicao]] = await Promise.all([votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma), carregarNoticias(idioma), carregarEdicoes(idioma)]);
+// Leia também: as duas notícias mais novas (menos esta) e a última Memória Operária.
+const outras = todas.filter((n) => n.id !== noticia.id).slice(0, 2);
 ---
 <Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" imagem={foto || undefined} idioma={idioma} alternativa={alternativa}>
   <article class="leitura">
@@ -81,6 +83,30 @@ const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
     )}
 
     <p class="edicao__chamada manchete">{t(idioma, 'edicao.chamada')}</p>
+
+    {(outras.length > 0 || edicao) && (
+      <section aria-labelledby="leia-tambem">
+        <h2 id="leia-tambem" class="secao-titulo maquina">{t(idioma, 'noticia.leiaTambem')}</h2>
+        <ul class="lista leia">
+          {outras.map((n) => (
+            <li>
+              <a href={prefixar(`/noticias/${n.id}`, idioma)}>
+                <span class="maquina lista__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
+                <span class="lista__titulo">{textoManchete(n.data.titulo)}</span>
+              </a>
+            </li>
+          ))}
+          {edicao && (
+            <li>
+              <a href={caminhoEdicao(edicao.data.serie, edicao.data.numero, idioma)}>
+                <span class="maquina lista__meta">{t(idioma, 'capa.memoria')} · {formatarNumero(edicao.data.numero)}</span>
+                <span class="lista__titulo">{textoManchete(edicao.data.titulo)}</span>
+              </a>
+            </li>
+          )}
+        </ul>
+      </section>
+    )}
 
   </article>
 </Base>
@@ -157,6 +183,10 @@ const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
   }
   .correcoes {
     padding-left: var(--esp-4);
+  }
+  /* O título da seção já abre com a linha grossa: a lista não repete a dela. */
+  .leia {
+    border-top: 0;
   }
   .edicao__chamada {
     margin: var(--esp-8) 0 var(--esp-5);

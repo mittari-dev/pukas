@@ -30,7 +30,6 @@ const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.sel
 <Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" selo={selo || undefined} imagem={foto || undefined} idioma={idioma} alternativa={alternativa}>
   <article class="leitura">
     <div class="edicao__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
-    {selo && <p class="chapeu edicao__chapeu">{selo.replace('*', '')}</p>}
     <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
     <p class="edicao__resumo">{d.resumo}</p>
 

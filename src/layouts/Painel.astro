@@ -168,7 +168,13 @@ const caminho = Astro.url.pathname;
     align-items: center;
     gap: var(--esp-3) var(--esp-4);
     padding: var(--esp-3) var(--esp-4);
-    border-bottom: 3px solid currentColor;
+    border-bottom: 2px solid currentColor;
+  }
+  /* Celular: a barra tem duas linhas (marca e seções); presa no topo, comia um quarto da tela. */
+  @media (max-width: 600px) {
+    .topo {
+      position: static;
+    }
   }
   .marca :global(svg),
   .marca :global(.tarja) {
