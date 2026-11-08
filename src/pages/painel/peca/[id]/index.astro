@@ -17,6 +17,7 @@ import { buscarProposicao, ErroCongresso, type Casa } from '../../../../lib/vota
 import { montarRascunho } from '../../../../lib/votacoes/rascunho';
 import { porcentagens, OPCOES, type Opcao } from '../../../../lib/votacoes/voto';
 import { contarConfirmados, enviarEdicao } from '../../../../lib/newsletter/fluxo';
+import { caminhoPublico, sugerirCodigo } from '../../../../lib/links';
 import { apagarRelato, ligarNoticias, noticiasLigadas, noticiasParaLigar, plenarioMaisRecente, relatos, resultadoNoPainel } from '../../../../lib/banco/votacoesPainel';
 
 const { cliente, usuario } = Astro.locals.painel!;
@@ -135,6 +136,11 @@ const porEmail = linha?.tipo === 'newsletter' && linha.estado === 'publicada' &&
 const [envioFeito, assinantes] = porEmail
   ? await Promise.all([cliente.from('envios_newsletter').select('enviado_em, enviados, falhas').eq('peca_id', linha!.id).maybeSingle().then((r) => r.data), contarConfirmados()])
   : [null, 0];
+
+// Peça no ar: curtidas (só a equipe vê) e atalho para o link curto.
+const noAr = linha?.estado === 'publicada' ? linha : null;
+const curtidas = noAr ? ((await cliente.rpc('curtidas_da_peca', { p: noAr.id })).data as number | null) ?? 0 : 0;
+const caminho = noAr ? caminhoPublico(noAr) : '';
 
 // O que aparece no formulário: o que acabou de ser enviado (se deu erro) ou o que está no banco.
 const base = urlBanco();
@@ -341,6 +347,14 @@ const traducao = linha?.traducoes?.[0];
       {pode(papel, 'publicar', estadoAtual) && <button class="botao botao--marca" name="acao" value="publicar" disabled={!pronta}>Publicar</button>}
     </div>
   </form>
+
+  {noAr && (
+    <section class="no-ar" aria-labelledby="no-ar">
+      <h2 id="no-ar" class="maquina">No ar</h2>
+      <p><a href={caminho}>{caminho}</a> · {curtidas} curtida{curtidas === 1 ? '' : 's'} (o público não vê esse número)</p>
+      <p><a class="botao botao--linha" href={`/painel/links?destino=${encodeURIComponent(caminho)}&codigo=${encodeURIComponent(sugerirCodigo(noAr.titulo))}`}>Criar link curto</a></p>
+    </section>
+  )}
 
   {porEmail && (
     <section class="por-email" aria-labelledby="por-email">

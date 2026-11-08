@@ -1,0 +1,61 @@
+---
+// Curtir e compartilhar, no fim do texto de cada peça. Curtir não mostra número (só a equipe vê, no painel).
+// O comportamento fica em public/reacoes.js; sem JavaScript, sobram os links de WhatsApp e do endereço.
+import { t, type Idioma } from '../lib/idioma';
+import { textoManchete } from '../lib/manchete';
+
+interface Props {
+  idioma: Idioma;
+  pecaId: string;
+  titulo: string;
+}
+const { idioma, pecaId, titulo } = Astro.props;
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const texto = `${textoManchete(titulo)} ${url}`;
+---
+<div class="reacoes" data-reacoes data-peca={pecaId} data-url={url} data-titulo={textoManchete(titulo)}>
+  <button type="button" class="reacoes__botao maquina" data-curtir aria-pressed="false" hidden>
+    <span data-rotulo>{t(idioma, 'reacoes.curtir')}</span><span data-feito hidden>{t(idioma, 'reacoes.curtiu')}</span>
+  </button>
+  <button type="button" class="reacoes__botao maquina" data-compartilhar hidden>{t(idioma, 'reacoes.compartilhar')}</button>
+  <a class="reacoes__botao maquina" href={`https://wa.me/?text=${encodeURIComponent(texto)}`} rel="noopener">{t(idioma, 'reacoes.whatsapp')}</a>
+  <button type="button" class="reacoes__botao maquina" data-copiar hidden>
+    <span data-rotulo>{t(idioma, 'reacoes.copiar')}</span><span data-feito hidden>{t(idioma, 'reacoes.copiado')}</span>
+  </button>
+</div>
+<script is:inline src="/reacoes.js" defer></script>
+
+<style>
+  .reacoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-2);
+    margin: var(--esp-6) 0;
+    padding: var(--esp-4) 0;
+    border-top: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+  }
+  .reacoes__botao {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--esp-4);
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .reacoes__botao:hover,
+  .reacoes__botao:focus-visible,
+  .reacoes__botao[aria-pressed='true'] {
+    background: var(--tinta);
+    color: var(--cal);
+  }
+  .reacoes__botao[data-curtir][aria-pressed='true'] {
+    background: var(--pau-brasil);
+    border-color: var(--pau-brasil);
+  }
+</style>

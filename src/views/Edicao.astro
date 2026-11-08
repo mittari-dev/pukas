@@ -4,6 +4,7 @@ import Manchete from '../components/identidade/Manchete.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
 import type { EdicaoIdioma } from '../lib/carregar';
+import Reacoes from '../components/Reacoes.astro';
 import { ordenarFontes } from '../lib/edicoes';
 import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -43,6 +44,7 @@ const selo = (await carregarSeries(idioma)).find((s) => s.slug === d.serie)?.sel
     <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     <div class="corpo" set:html={corpo} />
+    {edicao.pecaId && <Reacoes idioma={idioma} pecaId={edicao.pecaId} titulo={d.titulo} />}
 
     <section aria-labelledby="fontes">
       <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>

@@ -16,6 +16,7 @@ const secoes = [
   { rotulo: 'Agenda', href: '/painel/agenda', ativa: /^\/painel\/agenda/ },
   { rotulo: 'Busca', href: '/painel/busca', ativa: /^\/painel\/busca/ },
   { rotulo: 'Assinantes', href: '/painel/assinantes', ativa: /^\/painel\/assinantes/ },
+  { rotulo: 'Links', href: '/painel/links', ativa: /^\/painel\/links/ },
   ...(usuario?.papel === 'editor'
     ? [
         { rotulo: 'Séries', href: '/painel/series', ativa: /^\/painel\/series/ },

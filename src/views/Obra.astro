@@ -4,6 +4,7 @@ import Manchete from '../components/identidade/Manchete.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
 import type { ObraIdioma } from '../lib/carregar';
+import Reacoes from '../components/Reacoes.astro';
 import { ordenarFontes } from '../lib/edicoes';
 import { formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -44,6 +45,7 @@ const capa = d.capa?.arquivo as string | undefined;
     )}
 
     <div class:list={['corpo', { 'corpo--poema': d.tipo === 'poema' }]} set:html={corpo} />
+    {obra.pecaId && <Reacoes idioma={idioma} pecaId={obra.pecaId} titulo={d.titulo} />}
 
     {d.fontes.length > 0 && (
       <section aria-labelledby="fontes">

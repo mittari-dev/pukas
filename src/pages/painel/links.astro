@@ -1,0 +1,82 @@
+---
+// Links curtos: pukas.lat/ir/<código> → uma página do site. Para descrição de vídeo, bio e grupo; o clique é contado.
+import Painel from '../../layouts/Painel.astro';
+import { codigoValido, destinoValido, sugerirCodigo } from '../../lib/links';
+
+const { cliente } = Astro.locals.painel!;
+let erro = '';
+let aviso = '';
+const pedido = Astro.url.searchParams;
+let codigo = pedido.get('codigo') ?? '';
+let destino = pedido.get('destino') ?? '';
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  if (f.get('acao') === 'apagar') {
+    const { error } = await cliente.from('links_curtos').delete().eq('codigo', String(f.get('codigo') ?? ''));
+    aviso = error ? '' : 'Link apagado.';
+    erro = error ? 'Não deu para apagar. Tente de novo.' : '';
+  } else {
+    codigo = sugerirCodigo(String(f.get('codigo') ?? ''));
+    // Aceita o endereço inteiro colado do site: fica só o caminho.
+    destino = String(f.get('destino') ?? '').trim().replace(/^https?:\/\/(www\.)?(pukas\.lat|pukas\.vercel\.app)/, '');
+    if (!codigoValido(codigo)) erro = 'O código precisa de letras ou números (sem acento; o hífen separa palavras).';
+    else if (!destinoValido(destino)) erro = 'O destino precisa ser uma página do PUKAS, começando com / (por exemplo /votacoes/pec-45).';
+    else {
+      const { error } = await cliente.from('links_curtos').insert({ codigo, destino });
+      if (error) erro = error.code === '23505' ? `Já existe um link com o código "${codigo}". Escolha outro.` : 'Não deu para criar. Tente de novo.';
+      else {
+        aviso = `Pronto: pukas.lat/ir/${codigo}`;
+        codigo = destino = '';
+      }
+    }
+  }
+}
+const { data } = await cliente.from('links_curtos').select('codigo, destino, cliques, criado_em').order('criado_em', { ascending: false }).limit(300);
+const links = data ?? [];
+---
+<Painel titulo="Links">
+  <h1>Links curtos</h1>
+  <p class="sub">Um endereço curto para cada vídeo, post ou bio: pukas.lat/ir/código leva para a página que você escolher, e aqui aparece quantas vezes cada link foi clicado.</p>
+  {erro && <p class="mensagem" role="alert">{erro}</p>}
+  {aviso && <p class="mensagem" role="status">{aviso}</p>}
+
+  <form method="post" class="form">
+    <div class="campo"><label for="codigo">Código (o que vem depois de pukas.lat/ir/)</label><input id="codigo" name="codigo" required maxlength="40" value={codigo} placeholder="13-salario" /></div>
+    <div class="campo"><label for="destino">Para onde leva (página do PUKAS)</label><input id="destino" name="destino" required value={destino} placeholder="/newsletter/memoria-operaria/001" /></div>
+    <button class="botao">Criar link</button>
+  </form>
+
+  <h2>Links</h2>
+  {links.length === 0 ? <p>Nenhum link ainda.</p> : (
+    <ul class="links">
+      {links.map((l) => (
+        <li>
+          <span class="links__codigo">pukas.lat/ir/{l.codigo}</span>
+          <span class="maquina">→ <a href={l.destino}>{l.destino}</a> · {l.cliques} clique{l.cliques === 1 ? '' : 's'}</span>
+          <form method="post"><input type="hidden" name="codigo" value={l.codigo} /><button class="botao botao--linha" name="acao" value="apagar">Apagar</button></form>
+        </li>
+      ))}
+    </ul>
+  )}
+</Painel>
+
+<style>
+  .links {
+    list-style: none;
+    padding: 0;
+  }
+  .links li {
+    display: grid;
+    gap: var(--esp-1);
+    padding: var(--esp-3) 0;
+    border-top: 1px solid currentColor;
+  }
+  .links__codigo {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .links span {
+    overflow-wrap: anywhere;
+  }
+</style>

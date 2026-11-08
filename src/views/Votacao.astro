@@ -7,6 +7,7 @@ import { noticiasDaVotacao, plenarioDaVotacao, type VotacaoPublica } from '../li
 import { comprovantes, resultado, votoDoAparelho } from '../lib/banco/votos';
 import { clienteDaRequisicao, googleLigado } from '../lib/banco/cliente';
 import { sessaoGoogle } from '../lib/votacoes/conta';
+import Reacoes from '../components/Reacoes.astro';
 import { ordenarFontes } from '../lib/edicoes';
 import { formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -182,6 +183,7 @@ const lingua = idioma === 'es' ? 'es' : 'pt-BR';
         </ol>
       </section>
     )}
+    <Reacoes idioma={idioma} pecaId={v.pecaId} titulo={v.titulo} />
   </article>
   {podeVotar && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
   {meu && <script is:inline src="/votacao.js" defer></script>}

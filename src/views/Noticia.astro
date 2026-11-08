@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
 import { votacaoDaNoticia, type EdicaoIdioma } from '../lib/carregar';
+import Reacoes from '../components/Reacoes.astro';
 import { ordenarFontes } from '../lib/edicoes';
 import { formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -40,6 +41,7 @@ const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
     <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     <div class="corpo" set:html={corpo} />
+    <Reacoes idioma={idioma} pecaId={noticia.pecaId ?? noticia.id} titulo={d.titulo} />
 
     {votacao && (
       <a class="votacao-ligada" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>
