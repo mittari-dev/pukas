@@ -1,42 +1,50 @@
 ---
-// Página da bio (Instagram, YouTube, X). Quem chega veio de um vídeo ou post: primeiro o que tem prazo (votação aberta)
-// e a última edição, depois assinar por e-mail, as notícias e a cultura mais novas, e por fim os links fixos.
+// Página da bio (Instagram, YouTube, X). Ordem pedida pelo fundador em 08/11: as redes no topo; a última notícia,
+// a votação aberta e a última newsletter; o bloco de assinar; e os botões fixos (manifesto, edições, notícias).
 // Tudo entra sozinho conforme se publica. Receita Agitação.
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import FormAssinar from '../components/FormAssinar.astro';
-import { carregarEdicoes, carregarNoticias, carregarObras, carregarVotacoes } from '../lib/carregar';
+import { carregarEdicoes, carregarNoticias, carregarSeries, carregarVotacoes } from '../lib/carregar';
 import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
 import { links } from '../data/links';
+import { redes } from '../data/redes';
 
 interface Props {
   idioma: Idioma;
 }
 const { idioma } = Astro.props;
-// O botão diz "Última Memória Operária": a última edição dessa série, não de qualquer uma.
-const [[ultima], [obra], noticias, { abertas }] = await Promise.all([carregarEdicoes(idioma, 'memoria-operaria'), carregarObras(idioma), carregarNoticias(idioma), carregarVotacoes(idioma)]);
+const [[ultima], [noticia], { abertas }, series] = await Promise.all([carregarEdicoes(idioma), carregarNoticias(idioma), carregarVotacoes(idioma), carregarSeries(idioma)]);
 const votacao = abertas[0];
+const nomeSerie = ultima ? (series.find((s) => s.slug === ultima.data.serie)?.nome ?? '') : '';
+const comUrl = redes.filter((r) => r.url);
 type Botao = { rotulo: string; href: string; frase?: string };
 const antes: Botao[] = [
+  ...(noticia ? [{ rotulo: `${t(idioma, 'links.ultimaNoticia')} · ${formatarData(noticia.data.publicadaEm, idioma)}`, href: prefixar(`/noticias/${noticia.id}`, idioma), frase: textoManchete(noticia.data.titulo) }] : []),
   ...(votacao
     ? [{ rotulo: `${t(idioma, 'links.votacaoAberta')}${votacao.fechaEm ? ` · ${t(idioma, 'votacao.fecha')} ${formatarData(votacao.fechaEm, idioma)}` : ''}`, href: prefixar(`/votacoes/${votacao.id}`, idioma), frase: textoManchete(votacao.titulo) }]
     : []),
   ...(ultima
-    ? [{ rotulo: `${t(idioma, 'links.ultimaEdicao')} ${formatarNumero(ultima.data.numero)}`, href: caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma), frase: textoManchete(ultima.data.titulo) }]
+    ? [{ rotulo: `${t(idioma, 'links.ultimaNewsletter')} · ${nomeSerie} ${formatarNumero(ultima.data.numero)}`, href: caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma), frase: textoManchete(ultima.data.titulo) }]
     : []),
 ];
-const depois: Botao[] = [
-  ...noticias.slice(0, 3).map((n) => ({ rotulo: `${t(idioma, 'links.noticia')} · ${formatarData(n.data.publicadaEm, idioma)}`, href: prefixar(`/noticias/${n.id}`, idioma), frase: textoManchete(n.data.titulo) })),
-  ...(obra ? [{ rotulo: t(idioma, 'links.novoCultura'), href: prefixar(`/cultura/${obra.id}`, idioma), frase: textoManchete(obra.data.titulo) }] : []),
-  ...links.map((l) => ({ rotulo: t(idioma, l.chave), href: prefixar(l.href, idioma) })),
-];
+const depois: Botao[] = links.map((l) => ({ rotulo: t(idioma, l.chave), href: prefixar(l.href, idioma) }));
 const numero = (i: number) => String(i + 1).padStart(2, '0');
 ---
 <Base titulo={t(idioma, 'links.titulo')} descricao={t(idioma, 'links.descricao')} receita="agitacao" idioma={idioma}>
   <div class="links">
-    <div class="links__manchete"><Manchete titulo={t(idioma, 'links.manchete')} /></div>
+    <div class="links__manchete"><Manchete titulo={t(idioma, 'links.manchete')} corrida="sempre" /></div>
+    {comUrl.length > 0 && (
+      <nav class="redes" aria-label={t(idioma, 'links.redes')}>
+        {comUrl.map((r) => (
+          <a class="redes__item" href={r.url} rel="noopener" aria-label={r.nome}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={r.icone} /></svg>
+          </a>
+        ))}
+      </nav>
+    )}
     {antes.length > 0 && (
       <ul class="links__lista">
         {antes.map((b, i) => (
@@ -77,6 +85,37 @@ const numero = (i: number) => String(i + 1).padStart(2, '0');
   }
   .links__manchete {
     margin: var(--esp-5) 0 var(--esp-6);
+  }
+  /* Um pouco maior que a manchete padrão e em texto corrido (sem as quebras do |). */
+  .links__manchete :global(.manchete) {
+    font-size: clamp(52px, 15vw, 96px);
+  }
+  .redes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    gap: var(--esp-2);
+    margin: 0 0 var(--esp-5);
+  }
+  .redes__item {
+    display: grid;
+    place-items: center;
+    min-height: 56px;
+    border: 3px solid currentColor;
+    color: inherit;
+  }
+  .redes__item:hover,
+  .redes__item:focus-visible {
+    background: var(--tinta);
+    border-color: var(--tinta);
+  }
+  .redes__item svg {
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
   .links__assinar {
     margin: var(--esp-5) 0;

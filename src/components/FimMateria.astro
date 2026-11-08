@@ -1,0 +1,115 @@
+---
+// Fim de toda matéria, numa ordem só: (o que a página encaixar antes, ex. a votação ligada) → o bloco de passar adiante
+// (a chamada já com os botões de compartilhar) → fontes com a checagem → correções.
+import Reacoes from './Reacoes.astro';
+import { ordenarFontes, type Fonte } from '../lib/edicoes';
+import { formatarData } from '../lib/formato';
+import { t, type Idioma } from '../lib/idioma';
+
+interface Props {
+  idioma: Idioma;
+  pecaId?: string;
+  titulo: string;
+  fontes: Fonte[];
+  checagem?: { por: string; em: Date } | null;
+  correcoes?: { em: Date; texto: string }[];
+}
+const { idioma, pecaId, titulo, fontes, checagem, correcoes = [] } = Astro.props;
+---
+<div class="fim">
+  <slot />
+
+  {pecaId && (
+    <section class="passe" aria-labelledby="passe-titulo">
+      <h2 id="passe-titulo" class="manchete passe__titulo">{t(idioma, 'edicao.chamada')}</h2>
+      <Reacoes idioma={idioma} pecaId={pecaId} titulo={titulo} />
+    </section>
+  )}
+
+  {fontes.length > 0 && (
+    <section aria-labelledby="fontes">
+      <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>
+      <ol class="fontes">
+        {ordenarFontes(fontes).map((f) => (
+          <li>
+            <a href={f.url || undefined}>{f.titulo}</a>
+            <span class="maquina fontes__meta">
+              {f.instituicao} · {f.tipo === 'primaria' ? t(idioma, 'edicao.primaria') : t(idioma, 'edicao.secundaria')} · {t(idioma, 'edicao.acessadaEm')} {formatarData(f.acessadaEm, idioma)}
+            </span>
+          </li>
+        ))}
+      </ol>
+      {checagem && (
+        <p class="maquina checagem">{t(idioma, 'edicao.checadoPor')} {checagem.por.toUpperCase()} {t(idioma, 'edicao.em')} {formatarData(checagem.em, idioma)}</p>
+      )}
+    </section>
+  )}
+
+  {correcoes.length > 0 && (
+    <section aria-labelledby="correcoes">
+      <h2 id="correcoes" class="secao-titulo maquina">{t(idioma, 'edicao.correcoes')}</h2>
+      <ul class="correcoes">
+        {correcoes.map((c) => (
+          <li><time class="maquina" datetime={c.em.toISOString().slice(0, 10)}>{formatarData(c.em, idioma)}</time> {c.texto}</li>
+        ))}
+      </ul>
+    </section>
+  )}
+</div>
+
+<style>
+  .fim {
+    margin-top: var(--esp-7);
+  }
+  /* Passar adiante: um bloco só, com a chamada em cima dos botões. */
+  .passe {
+    padding: var(--esp-5) var(--esp-4) var(--esp-4);
+    border: 2px solid currentColor;
+  }
+  .passe__titulo {
+    margin: 0 0 var(--esp-4);
+    font-size: clamp(26px, 6.5vw, 40px);
+    line-height: 0.95;
+    text-align: center;
+    color: var(--acento);
+  }
+  .passe :global(.reacoes) {
+    margin: 0;
+  }
+  .fontes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .fontes li {
+    padding: var(--esp-3) 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  .fontes li + li {
+    border-top: 1px solid var(--fio);
+  }
+  .fontes__meta {
+    text-transform: uppercase;
+    display: block;
+    margin-top: var(--esp-1);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--suave);
+  }
+  .checagem {
+    margin: 0;
+    padding-top: var(--esp-3);
+    border-top: 1px solid var(--fio);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--suave);
+  }
+  .correcoes {
+    margin: 0;
+    padding-left: var(--esp-4);
+    font-size: 16px;
+  }
+</style>

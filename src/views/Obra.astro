@@ -1,12 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
-import Manchete from '../components/identidade/Manchete.astro';
-import Carimbo from '../components/identidade/Carimbo.astro';
+import CabecaMateria from '../components/CabecaMateria.astro';
+import FimMateria from '../components/FimMateria.astro';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
 import type { ObraIdioma } from '../lib/carregar';
-import Reacoes from '../components/Reacoes.astro';
-import { ordenarFontes } from '../lib/edicoes';
-import { formatarData } from '../lib/formato';
+import { formatarData, minutosDeLeitura } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
 import { renderizarMarkdown } from '../lib/markdown';
@@ -19,15 +17,21 @@ interface Props {
 }
 const { idioma, obra, alternativa } = Astro.props;
 const d = obra.data;
-const corpo = await renderizarMarkdown(obra.body ?? '');
+const poema = d.tipo === 'poema';
+// Poema: o verso quebrado com dois espaços vira <br> mais a quebra de linha; com pre-line, os dois somavam uma linha em branco.
+const html = await renderizarMarkdown(obra.body ?? '');
+const corpo = poema ? html.replace(/<br \/>\n/g, '<br />') : html;
 const capa = d.capa?.arquivo as string | undefined;
 ---
 <Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" selo={t(idioma, 'selo.cultura')} imagem={capa} idioma={idioma} alternativa={alternativa}>
   <article class="leitura">
-    <div class="obra__carimbo"><Carimbo numero={d.numero} data={d.publicadaEm} /></div>
+    <CabecaMateria
+      chapeu={`${t(idioma, 'capa.cultura')} · ${t(idioma, `tipo.${d.tipo}`)}`}
+      titulo={d.titulo}
+      linhaFina={d.resumo}
+      meta={[`${t(idioma, 'materia.por')} ${d.autoria.toUpperCase()}`, formatarData(d.publicadaEm, idioma), poema ? '' : t(idioma, 'materia.minutos').replace('{n}', String(minutosDeLeitura(obra.body ?? '')))]}
+    />
     <AvisoTraducao idioma={idioma} traducao={obra.traducao} original={`/cultura/${obra.id}`} />
-    <p class="chapeu obra__tipo">{t(idioma, `tipo.${d.tipo}`)} · {d.autoria.toUpperCase()}</p>
-    <div class="obra__titulo"><Manchete titulo={d.titulo} tamanho="m" /></div>
 
     {d.aviso && (
       <p class="obra__aviso" role="note"><span class="maquina">{t(idioma, 'cultura.aviso')}</span> {d.aviso}</p>
@@ -45,34 +49,14 @@ const capa = d.capa?.arquivo as string | undefined;
     )}
 
     <div class:list={['corpo', { 'corpo--poema': d.tipo === 'poema' }]} set:html={corpo} />
-    {obra.pecaId && <Reacoes idioma={idioma} pecaId={obra.pecaId} titulo={d.titulo} />}
 
-    {d.fontes.length > 0 && (
-      <section aria-labelledby="fontes">
-        <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>
-        <ol>
-          {ordenarFontes(d.fontes).map((f) => (
-            <li class="obra__fonte"><a href={f.url || undefined}>{f.titulo}</a> · {f.instituicao} <span class="maquina">· {t(idioma, 'edicao.acessadaEm')} {formatarData(f.acessadaEm, idioma)}</span></li>
-          ))}
-        </ol>
-      </section>
-    )}
+    <FimMateria idioma={idioma} pecaId={obra.pecaId} titulo={d.titulo} fontes={d.fontes} />
 
-    <p class="maquina"><a href={prefixar('/cultura', idioma)}>{t(idioma, 'cultura.todas')}</a></p>
+    <p class="maquina obra__todas"><a href={prefixar('/cultura', idioma)}>{t(idioma, 'cultura.todas')}</a></p>
   </article>
 </Base>
 
 <style>
-  .obra__carimbo {
-    margin: var(--esp-4) 0 var(--esp-5);
-  }
-  .obra__tipo {
-    font-size: 13px;
-    letter-spacing: 0.12em;
-  }
-  .obra__titulo {
-    margin: var(--esp-3) 0 var(--esp-6);
-  }
   .obra__aviso {
     padding: var(--esp-3) var(--esp-4);
     border: 3px solid currentColor;
@@ -93,12 +77,25 @@ const capa = d.capa?.arquivo as string | undefined;
     margin-top: var(--esp-2);
     font-size: 12px;
   }
-  /* Poema: respeita as quebras de linha do autor. */
+  /* Poema: respeita as quebras do autor, com versos juntos e estrofes separadas; sem capitular. */
   .corpo--poema :global(p) {
     white-space: pre-line;
+    font-size: clamp(19px, 1rem + 0.4vw, 21px);
+    line-height: 1.5;
   }
-  .obra__fonte {
-    margin-bottom: var(--esp-2);
-    overflow-wrap: anywhere;
+  .corpo--poema :global(p + p) {
+    margin-top: 1.4em;
+  }
+  .corpo--poema :global(p:first-child::first-letter) {
+    float: none;
+    font: inherit;
+    color: inherit;
+    margin: 0;
+  }
+  .obra__todas {
+    margin-top: var(--esp-6);
+    padding-top: var(--esp-3);
+    border-top: 2px solid currentColor;
+    font-size: 13px;
   }
 </style>

@@ -1,0 +1,49 @@
+---
+// Cabeça de toda matéria (notícia, newsletter, cultura): chapéu, título, linha fina e a faixa de metadados.
+// Uma hierarquia só para o site inteiro: quem abre sabe na hora o que é título, o que é subtítulo e o que é dado.
+import Manchete from './identidade/Manchete.astro';
+
+interface Props {
+  chapeu: string;
+  titulo: string;
+  linhaFina?: string;
+  meta: string[];
+}
+const { chapeu, titulo, linhaFina, meta } = Astro.props;
+---
+<header class="materia__cabeca">
+  <p class="chapeu materia__chapeu">{chapeu}</p>
+  <div class="materia__titulo"><Manchete titulo={titulo} tamanho="m" /></div>
+  {linhaFina && <p class="materia__linhafina">{linhaFina}</p>}
+  <p class="maquina materia__meta">{meta.filter(Boolean).map((m, i) => <span>{i > 0 && <span aria-hidden="true"> · </span>}{m}</span>)}</p>
+</header>
+
+<style>
+  .materia__cabeca {
+    margin: var(--esp-6) 0 var(--esp-5);
+  }
+  .materia__chapeu {
+    margin: 0 0 var(--esp-3);
+  }
+  .materia__titulo {
+    margin: 0 0 var(--esp-4);
+  }
+  /* Linha fina: o subtítulo. Maior que o texto, mais leve que o título. */
+  .materia__linhafina {
+    margin: 0 0 var(--esp-5);
+    font-size: clamp(20px, 1rem + 0.6vw, 24px);
+    font-weight: 500;
+    line-height: 1.4;
+    max-width: 60ch;
+  }
+  .materia__meta {
+    text-transform: uppercase;
+    margin: 0;
+    padding: var(--esp-3) 0;
+    border-top: 2px solid currentColor;
+    border-bottom: 1px solid var(--fio);
+    font-size: var(--tipo-meta);
+    letter-spacing: 0.1em;
+    color: var(--suave);
+  }
+</style>
