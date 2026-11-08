@@ -13,7 +13,7 @@ import type { Fonte } from './edicoes';
 import type { Casa, Proposicao } from './votacoes/congresso';
 
 export type EdicaoIdioma = Edicao & MarcaTraducao & { body?: string; pecaId?: string };
-export type ObraIdioma = Obra & MarcaTraducao & { body?: string };
+export type ObraIdioma = Obra & MarcaTraducao & { body?: string; pecaId?: string };
 export interface Pagina {
   id: string;
   titulo: string;
