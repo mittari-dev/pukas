@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { caminhoCurto, caminhoEdicao, formatarData, formatarNumero } from './formato';
+import { caminhoCurto, caminhoEdicao, formatarData, formatarNumero, minutosDeLeitura } from './formato';
 
 describe('formatarNumero', () => {
   it.each([
@@ -30,5 +30,20 @@ describe('formatarData', () => {
   // new Date('AAAA-MM-DD') é meia-noite UTC; no fuso de Brasília cairia no dia anterior.
   it('usa UTC e não volta um dia no Brasil', () => {
     expect(formatarData(new Date('2026-01-01'))).toBe('01 JAN 2026');
+  });
+});
+
+describe('minutosDeLeitura', () => {
+  it('200 palavras por minuto, arredondado, nunca menos de 1', () => {
+    expect(minutosDeLeitura('')).toBe(1);
+    expect(minutosDeLeitura('palavra '.repeat(150))).toBe(1);
+    expect(minutosDeLeitura('palavra '.repeat(700))).toBe(4);
+  });
+  it('não conta a marcação do Markdown nem endereços de imagem', () => {
+    expect(minutosDeLeitura(`## Título
+
+![foto](https://x.com/${'a/'.repeat(500)}b.jpg)
+
+Uma frase.`)).toBe(1);
   });
 });

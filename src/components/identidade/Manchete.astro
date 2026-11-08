@@ -8,12 +8,14 @@ interface Props {
   tamanho?: 'g' | 'm';
   nivel?: 1 | 2;
   id?: string;
+  // Texto corrido: ignora as quebras do | e deixa o navegador quebrar a linha. 'celular' só em tela estreita.
+  corrida?: 'celular' | 'sempre';
 }
-const { titulo, tamanho = 'g', nivel = 1, id } = Astro.props;
+const { titulo, tamanho = 'g', nivel = 1, id, corrida } = Astro.props;
 const linhas = linhasManchete(titulo);
 const Tag = nivel === 1 ? 'h1' : 'h2';
 ---
-<Tag id={id} class:list={['manchete', `manchete--${tamanho}`]}>
+<Tag id={id} class:list={['manchete', `manchete--${tamanho}`, corrida && `manchete--corrida-${corrida}`]}>
   {linhas.map((linha) => (
     <span class="manchete__linha">
       {linha.map((t) => (t.destaque ? <span class="manchete__destaque">{t.texto}</span> : t.texto))}
@@ -32,6 +34,20 @@ const Tag = nivel === 1 ? 'h1' : 'h2';
   }
   .manchete--m {
     font-size: var(--tipo-titulo);
+  }
+  .manchete--corrida-sempre .manchete__linha {
+    display: inline;
+  }
+  .manchete--corrida-sempre .manchete__linha + .manchete__linha::before {
+    content: ' ';
+  }
+  @media (max-width: 899px) {
+    .manchete--corrida-celular .manchete__linha {
+      display: inline;
+    }
+    .manchete--corrida-celular .manchete__linha + .manchete__linha::before {
+      content: ' ';
+    }
   }
   /* inline-block: o fundo fica do tamanho da linha e não cobre a linha de cima. */
   .manchete__destaque {

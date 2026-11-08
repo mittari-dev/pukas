@@ -203,17 +203,20 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
     color: var(--cal);
   }
 
+  /* Fila no mesmo padrão das listas do site: abre na linha grossa, fio fino entre as peças, sem linha sobrando no fim. */
   .fila {
     list-style: none;
     padding: 0;
     margin: 0;
-    border-top: 1px solid var(--tinta);
+    border-top: 2px solid var(--tinta);
+  }
+  .fila li + li {
+    border-top: 1px solid var(--fio);
   }
   .fila a {
     display: grid;
-    gap: var(--esp-1);
+    gap: var(--esp-2);
     padding: var(--esp-4) 0;
-    border-bottom: 1px solid var(--tinta);
     text-decoration: none;
     color: inherit;
   }
@@ -223,13 +226,12 @@ const quando = (s: string) => new Date(s).toLocaleString('pt-BR', { dateStyle: '
   .fila__meta {
     font-size: 12px;
     letter-spacing: 0.06em;
+    color: var(--suave);
   }
   .fila__titulo {
     font-weight: 700;
-    font-size: 20px;
+    font-size: clamp(18px, 4.5vw, 21px);
     line-height: 1.25;
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
 
   .vazio {

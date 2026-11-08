@@ -24,3 +24,9 @@ export function caminhoCurto(n: number): string {
 export function formatarData(d: Date, idioma: Idioma = 'pt'): string {
   return `${String(d.getUTCDate()).padStart(2, '0')} ${MESES[idioma][d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
+
+// Tempo de leitura para a faixa de metadados da matéria: 200 palavras por minuto, sem contar marcação nem links.
+export function minutosDeLeitura(markdown: string): number {
+  const texto = markdown.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[#*_>`|-]/g, ' ');
+  return Math.max(1, Math.round(texto.split(/\s+/).filter(Boolean).length / 200));
+}

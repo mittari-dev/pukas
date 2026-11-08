@@ -1,11 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
-import Manchete from '../components/identidade/Manchete.astro';
+import CabecaMateria from '../components/CabecaMateria.astro';
+import FimMateria from '../components/FimMateria.astro';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
-import { votacaoDaNoticia, type EdicaoIdioma } from '../lib/carregar';
-import Reacoes from '../components/Reacoes.astro';
-import { ordenarFontes } from '../lib/edicoes';
-import { formatarData } from '../lib/formato';
+import { carregarEdicoes, carregarNoticias, votacaoDaNoticia, type EdicaoIdioma } from '../lib/carregar';
+import { caminhoEdicao, formatarData, formatarNumero, minutosDeLeitura } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
 import { renderizarMarkdown } from '../lib/markdown';
@@ -20,13 +19,18 @@ const { idioma, noticia, alternativa } = Astro.props;
 const d = noticia.data;
 const corpo = await renderizarMarkdown(noticia.body ?? '');
 const foto = d.foto.arquivo as string;
-const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
+const [votacao, todas, [edicao]] = await Promise.all([votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma), carregarNoticias(idioma), carregarEdicoes(idioma)]);
+// Leia também: as duas notícias mais novas (menos esta) e a última Memória Operária.
+const outras = todas.filter((n) => n.id !== noticia.id).slice(0, 2);
 ---
 <Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" imagem={foto || undefined} idioma={idioma} alternativa={alternativa}>
   <article class="leitura">
-    <p class="chapeu edicao__chapeu">{t(idioma, 'capa.noticias')} · <time datetime={d.publicadaEm.toISOString().slice(0, 10)}>{formatarData(d.publicadaEm, idioma)}</time></p>
-    <div class="edicao__manchete"><Manchete titulo={d.titulo} tamanho="m" /></div>
-    <p class="edicao__resumo">{d.resumo}</p>
+    <CabecaMateria
+      chapeu={t(idioma, 'capa.noticias')}
+      titulo={d.titulo}
+      linhaFina={d.resumo}
+      meta={[formatarData(d.publicadaEm, idioma), t(idioma, 'materia.minutos').replace('{n}', String(minutosDeLeitura(noticia.body ?? '')))]}
+    />
 
     <AvisoTraducao idioma={idioma} traducao={noticia.traducao} original={`/noticias/${noticia.id}`} />
 
@@ -40,47 +44,39 @@ const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
     )}
 
     <div class="corpo" set:html={corpo} />
-    <Reacoes idioma={idioma} pecaId={noticia.pecaId ?? noticia.id} titulo={d.titulo} />
 
-    {votacao && (
-      <a class="votacao-ligada" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>
-        <span class="maquina">{t(idioma, 'noticia.vote')}</span>
-        <span class="votacao-ligada__titulo">{textoManchete(votacao.titulo)}</span>
-      </a>
-    )}
+    <FimMateria idioma={idioma} pecaId={noticia.pecaId ?? noticia.id} titulo={d.titulo} fontes={d.fontes} checagem={d.checagem} correcoes={d.correcoes}>
+      {votacao && (
+        <a class="votacao-ligada" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>
+          <span class="maquina">{t(idioma, 'noticia.vote')}</span>
+          <span class="votacao-ligada__titulo">{textoManchete(votacao.titulo)}</span>
+        </a>
+      )}
+    </FimMateria>
 
-    <section aria-labelledby="fontes">
-      <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>
-      <ol class="fontes">
-        {ordenarFontes(d.fontes).map((f) => (
-          <li>
-            <a href={f.url || undefined}>{f.titulo}</a> · {f.instituicao}
-            <span class="maquina fontes__meta">
-              {f.tipo === 'primaria' ? t(idioma, 'edicao.primaria') : t(idioma, 'edicao.secundaria')} · {t(idioma, 'edicao.acessadaEm')} {formatarData(f.acessadaEm, idioma)}
-            </span>
-          </li>
-        ))}
-      </ol>
-    </section>
-
-    {d.checagem && (
-      <p class="maquina edicao__checagem">
-        {t(idioma, 'edicao.checadoPor')} {d.checagem.por.toUpperCase()} {t(idioma, 'edicao.em')} {formatarData(d.checagem.em, idioma)}
-      </p>
-    )}
-
-    {d.correcoes.length > 0 && (
-      <section aria-labelledby="correcoes">
-        <h2 id="correcoes" class="secao-titulo maquina">{t(idioma, 'edicao.correcoes')}</h2>
-        <ul class="correcoes">
-          {d.correcoes.map((c) => (
-            <li><time class="maquina" datetime={c.em.toISOString().slice(0, 10)}>{formatarData(c.em, idioma)}</time> {c.texto}</li>
+    {(outras.length > 0 || edicao) && (
+      <section aria-labelledby="leia-tambem">
+        <h2 id="leia-tambem" class="secao-titulo maquina">{t(idioma, 'noticia.leiaTambem')}</h2>
+        <ul class="lista leia">
+          {outras.map((n) => (
+            <li>
+              <a href={prefixar(`/noticias/${n.id}`, idioma)}>
+                <span class="maquina lista__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
+                <span class="lista__titulo">{textoManchete(n.data.titulo)}</span>
+              </a>
+            </li>
           ))}
+          {edicao && (
+            <li>
+              <a href={caminhoEdicao(edicao.data.serie, edicao.data.numero, idioma)}>
+                <span class="maquina lista__meta">{t(idioma, 'capa.memoria')} · {formatarNumero(edicao.data.numero)}</span>
+                <span class="lista__titulo">{textoManchete(edicao.data.titulo)}</span>
+              </a>
+            </li>
+          )}
         </ul>
       </section>
     )}
-
-    <p class="edicao__chamada manchete">{t(idioma, 'edicao.chamada')}</p>
 
   </article>
 </Base>
@@ -91,7 +87,7 @@ const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
     gap: var(--esp-1);
     border: 3px solid var(--acento);
     padding: var(--esp-4);
-    margin: var(--esp-5) 0;
+    margin: 0 0 var(--esp-5);
     text-decoration: none;
   }
   .votacao-ligada__titulo {
@@ -114,54 +110,8 @@ const votacao = await votacaoDaNoticia(noticia.pecaId ?? noticia.id, idioma);
     font-size: 12px;
     letter-spacing: 0.06em;
   }
-  .edicao__manchete {
-    margin: var(--esp-3) 0 var(--esp-4);
-  }
-  /* Resumo logo abaixo da manchete: é o que a pessoa lê antes de decidir seguir. */
-  .edicao__resumo {
-    margin: 0 0 var(--esp-5);
-    font-size: clamp(19px, 1rem + 0.5vw, 22px);
-    font-weight: 700;
-    line-height: 1.45;
-  }
-  /* Fontes: lista limpa, sem número; o fio fino separa e a linha grossa fecha. */
-  .fontes {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    border-bottom: 2px solid currentColor;
-  }
-  .fontes li {
-    padding: var(--esp-3) 0;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.4;
-    overflow-wrap: anywhere;
-  }
-  .fontes li + li {
-    border-top: 1px solid var(--fio);
-  }
-  .fontes__meta {
-    display: block;
-    margin-top: var(--esp-1);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--suave);
-  }
-  .edicao__checagem {
-    margin-top: var(--esp-3);
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    color: var(--suave);
-  }
-  .correcoes {
-    padding-left: var(--esp-4);
-  }
-  .edicao__chamada {
-    margin: var(--esp-8) 0 var(--esp-5);
-    text-align: center;
-    font-size: clamp(28px, 7vw, 48px);
-    color: var(--acento);
+  /* O título da seção já abre com a linha grossa: a lista não repete a dela. */
+  .leia {
+    border-top: 0;
   }
 </style>
