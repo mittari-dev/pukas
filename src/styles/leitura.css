@@ -81,13 +81,13 @@
 }
 
 /* Lista de matérias (notícias, edições, cultura, votações). Uma só para o site inteiro:
-   abre e fecha na linha grossa; entre os itens, só o fio fino. */
+   abre na linha grossa e, entre os itens, só o fio fino. Quem fecha é a linha grossa seguinte
+   (o próximo título de seção ou o rodapé), sem linha sobrando no fim. */
 .lista {
   list-style: none;
   margin: 0;
   padding: 0;
   border-top: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
 }
 .lista li + li {
   border-top: 1px solid var(--fio);
