@@ -27,6 +27,8 @@ const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] 
 <style>
   .assinar {
     display: grid;
+    /* Numa coluna estreita (capa), o campo não pode empurrar a largura: o botão desce se faltar espaço. */
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--esp-2);
     margin: var(--esp-3) 0;
   }
@@ -36,10 +38,11 @@ const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] 
   }
   .assinar__linha {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--esp-2);
   }
   .assinar__linha input {
-    flex: 1;
+    flex: 1 1 140px;
     min-width: 0;
     padding: var(--esp-2);
     border: 1px solid currentColor;

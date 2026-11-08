@@ -1,9 +1,12 @@
 ---
-// Página da bio do Instagram. Receita Agitação; a última edição e a última obra entram sozinhas no topo.
+// Página da bio (Instagram, YouTube, X). Quem chega veio de um vídeo ou post: primeiro o que tem prazo (votação aberta)
+// e a última edição, depois assinar por e-mail, as notícias e a cultura mais novas, e por fim os links fixos.
+// Tudo entra sozinho conforme se publica. Receita Agitação.
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
-import { carregarEdicoes, carregarObras } from '../lib/carregar';
-import { caminhoEdicao, formatarNumero } from '../lib/formato';
+import FormAssinar from '../components/FormAssinar.astro';
+import { carregarEdicoes, carregarNoticias, carregarObras, carregarVotacoes } from '../lib/carregar';
+import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
 import { links } from '../data/links';
@@ -13,24 +16,48 @@ interface Props {
 }
 const { idioma } = Astro.props;
 // O botão diz "Última Memória Operária": a última edição dessa série, não de qualquer uma.
-const [ultima] = await carregarEdicoes(idioma, 'memoria-operaria');
-const [obra] = await carregarObras(idioma);
-const botoes: { rotulo: string; href: string; frase?: string }[] = [
+const [[ultima], [obra], noticias, { abertas }] = await Promise.all([carregarEdicoes(idioma, 'memoria-operaria'), carregarObras(idioma), carregarNoticias(idioma), carregarVotacoes(idioma)]);
+const votacao = abertas[0];
+type Botao = { rotulo: string; href: string; frase?: string };
+const antes: Botao[] = [
+  ...(votacao
+    ? [{ rotulo: `${t(idioma, 'links.votacaoAberta')}${votacao.fechaEm ? ` · ${t(idioma, 'votacao.fecha')} ${formatarData(votacao.fechaEm, idioma)}` : ''}`, href: prefixar(`/votacoes/${votacao.id}`, idioma), frase: textoManchete(votacao.titulo) }]
+    : []),
   ...(ultima
     ? [{ rotulo: `${t(idioma, 'links.ultimaEdicao')} ${formatarNumero(ultima.data.numero)}`, href: caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma), frase: textoManchete(ultima.data.titulo) }]
     : []),
+];
+const depois: Botao[] = [
+  ...noticias.slice(0, 3).map((n) => ({ rotulo: `${t(idioma, 'links.noticia')} · ${formatarData(n.data.publicadaEm, idioma)}`, href: prefixar(`/noticias/${n.id}`, idioma), frase: textoManchete(n.data.titulo) })),
   ...(obra ? [{ rotulo: t(idioma, 'links.novoCultura'), href: prefixar(`/cultura/${obra.id}`, idioma), frase: textoManchete(obra.data.titulo) }] : []),
   ...links.map((l) => ({ rotulo: t(idioma, l.chave), href: prefixar(l.href, idioma) })),
 ];
+const numero = (i: number) => String(i + 1).padStart(2, '0');
 ---
 <Base titulo={t(idioma, 'links.titulo')} descricao={t(idioma, 'links.descricao')} receita="agitacao" idioma={idioma}>
   <div class="links">
     <div class="links__manchete"><Manchete titulo={t(idioma, 'links.manchete')} /></div>
+    {antes.length > 0 && (
+      <ul class="links__lista">
+        {antes.map((b, i) => (
+          <li>
+            <a class="botao" href={b.href}>
+              <span class="maquina botao__n">{numero(i)}</span>
+              <span class="botao__texto">
+                <span class="botao__rotulo">{b.rotulo}</span>
+                {b.frase && <span class="botao__frase">{b.frase}</span>}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+    <div class="links__assinar"><FormAssinar idioma={idioma} /></div>
     <ul class="links__lista">
-      {botoes.map((b, i) => (
+      {depois.map((b, i) => (
         <li>
           <a class="botao" href={b.href}>
-            <span class="maquina botao__n">{String(i + 1).padStart(2, '0')}</span>
+            <span class="maquina botao__n">{numero(antes.length + i)}</span>
             <span class="botao__texto">
               <span class="botao__rotulo">{b.rotulo}</span>
               {b.frase && <span class="botao__frase">{b.frase}</span>}
@@ -50,6 +77,11 @@ const botoes: { rotulo: string; href: string; frase?: string }[] = [
   }
   .links__manchete {
     margin: var(--esp-5) 0 var(--esp-6);
+  }
+  .links__assinar {
+    margin: var(--esp-5) 0;
+    padding: var(--esp-4);
+    border: 3px solid currentColor;
   }
   .links__lista {
     list-style: none;

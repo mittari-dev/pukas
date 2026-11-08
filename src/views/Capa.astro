@@ -79,7 +79,7 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
             {edicoes.slice(0, 5).map((e) => (
               <li>
                 <a href={caminhoEdicao(e.data.serie, e.data.numero, idioma)}>
-                  <span class="maquina chamada__meta">Nº {formatarNumero(e.data.numero)} · {formatarData(e.data.publicadaEm, idioma)}</span>
+                  <span class="maquina chamada__meta">{formatarNumero(e.data.numero)} · {formatarData(e.data.publicadaEm, idioma)}</span>
                   <span class="chamada__titulo">{textoManchete(e.data.titulo)}</span>
                 </a>
               </li>
