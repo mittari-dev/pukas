@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import CabecaMateria from '../components/CabecaMateria.astro';
 import FimMateria from '../components/FimMateria.astro';
+import { imagem, srcset } from '../lib/imagem';
 import AvisoTraducao from '../components/AvisoTraducao.astro';
 import type { ObraIdioma } from '../lib/carregar';
 import { formatarData, minutosDeLeitura } from '../lib/formato';
@@ -43,7 +44,7 @@ const capa = d.capa?.arquivo as string | undefined;
 
     {capa && d.capa && (
       <figure class="obra__capa">
-        <img src={capa} alt={d.capa.descricao} width="680" loading="lazy" decoding="async" />
+        <img src={imagem(capa, 800)} srcset={srcset(capa)} sizes="(min-width: 720px) 680px, 100vw" alt={d.capa.descricao} width="800" height="450" loading="eager" decoding="async" />
         <figcaption class="maquina">{t(idioma, 'cultura.imagem')}: {d.capa.credito} · {d.capa.licenca}</figcaption>
       </figure>
     )}

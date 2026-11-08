@@ -5,6 +5,8 @@
 import Base from '../layouts/Base.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import FormAssinar from '../components/FormAssinar.astro';
+import CartaoNoticia from '../components/CartaoNoticia.astro';
+import { imagem, srcset } from '../lib/imagem';
 import { carregarEdicoes, carregarNoticias, carregarSeries, carregarVotacoes } from '../lib/carregar';
 import { caminhoEdicao, formatarData, formatarNumero } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
@@ -32,7 +34,7 @@ const ICONE: Record<Opcao, string> = { a_favor: 'M4 12.5l5 5L20 6.5', contra: 'M
       {ultima ? (
         <a class="ultima" href={caminhoEdicao(ultima.data.serie, ultima.data.numero, idioma)}>
           <span class="maquina ultima__chapeu">{nomeSerie ? `${nomeSerie} · ` : ''}{t(idioma, 'capa.ultimaEdicao')}</span>
-          {ultima.data.foto.arquivo && <img class="ultima__foto" src={ultima.data.foto.arquivo as string} alt={ultima.data.foto.descricao} width="560" height="315" loading="eager" decoding="async" />}
+          {ultima.data.foto.arquivo && <img class="ultima__foto" src={imagem(ultima.data.foto.arquivo as string, 800)} srcset={srcset(ultima.data.foto.arquivo as string)} sizes="(min-width: 900px) 460px, 100vw" alt={ultima.data.foto.descricao} width="800" height="450" loading="eager" decoding="async" fetchpriority="high" />}
           <span class="maquina ultima__meta">{formatarNumero(ultima.data.numero)} · {formatarData(ultima.data.publicadaEm, idioma)}</span>
           <span class="ultima__titulo">{textoManchete(ultima.data.titulo)}</span>
           <span class="ultima__resumo">{ultima.data.resumo}</span>
@@ -71,15 +73,10 @@ const ICONE: Record<Opcao, string> = { a_favor: 'M4 12.5l5 5L20 6.5', contra: 'M
       {noticias.length === 0 ? (
         <p class="secao__vazio">{t(idioma, 'capa.semNoticias')}</p>
       ) : (
-        <ul class="cartoes">
+        <ul class="cartoes cartoes--3">
           {noticias.slice(0, 6).map((n) => (
             <li>
-              <a class="cartao" href={prefixar(`/noticias/${n.id}`, idioma)}>
-                {n.data.foto.arquivo && <img class="cartao__foto" src={n.data.foto.arquivo as string} alt="" width="400" height="225" loading="lazy" decoding="async" />}
-                <span class="maquina item__meta">{formatarData(n.data.publicadaEm, idioma)}</span>
-                <span class="item__titulo">{textoManchete(n.data.titulo)}</span>
-                <span class="item__resumo">{n.data.resumo}</span>
-              </a>
+              <CartaoNoticia href={prefixar(`/noticias/${n.id}`, idioma)} foto={(n.data.foto.arquivo as string) || undefined} meta={formatarData(n.data.publicadaEm, idioma)} titulo={textoManchete(n.data.titulo)} resumo={n.data.resumo} />
             </li>
           ))}
         </ul>
@@ -286,56 +283,6 @@ const ICONE: Record<Opcao, string> = { a_favor: 'M4 12.5l5 5L20 6.5', contra: 'M
   }
   .secao__vazio {
     margin: var(--esp-4) 0 0;
-  }
-  .cartoes {
-    list-style: none;
-    margin: 0;
-    padding: var(--esp-5) 0 0;
-    display: grid;
-    gap: var(--esp-6);
-  }
-  @media (min-width: 600px) {
-    .cartoes {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--esp-6) var(--esp-5);
-    }
-  }
-  @media (min-width: 900px) {
-    .cartoes {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-  .cartao {
-    display: flex;
-    flex-direction: column;
-    gap: var(--esp-2);
-    text-decoration: none;
-  }
-  .cartao__foto {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    margin-bottom: var(--esp-2);
-  }
-  .item__meta {
-    text-transform: uppercase;
-    font-size: var(--tipo-meta);
-    letter-spacing: 0.08em;
-    color: var(--suave);
-  }
-  .item__titulo {
-    font-weight: 700;
-    font-size: var(--tipo-item);
-    line-height: 1.2;
-  }
-  .item__resumo {
-    font-size: var(--tipo-resumo);
-    line-height: 1.5;
-    color: var(--suave);
-  }
-  .cartao:hover .item__titulo,
-  .cartao:focus-visible .item__titulo {
-    color: var(--acento);
   }
 
   /* Assinar: bloco próprio, separado das listas. */

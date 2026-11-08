@@ -156,3 +156,23 @@
 .edicao__chapeu {
   margin: var(--esp-5) 0 var(--esp-2);
 }
+
+/* Grade de cartões (src/components/CartaoNoticia.astro): uma coluna no celular, duas e três conforme a tela. */
+.cartoes {
+  list-style: none;
+  margin: 0;
+  padding: var(--esp-5) 0 0;
+  display: grid;
+  gap: var(--esp-6);
+}
+@media (min-width: 600px) {
+  .cartoes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--esp-6) var(--esp-5);
+  }
+}
+@media (min-width: 900px) {
+  .cartoes--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
