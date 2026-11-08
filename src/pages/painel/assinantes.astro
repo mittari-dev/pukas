@@ -1,0 +1,74 @@
+---
+// Assinantes da newsletter por e-mail: só números (a lista de e-mails não sai do banco) e o histórico de envios.
+import Painel from '../../layouts/Painel.astro';
+
+const { cliente } = Astro.locals.painel!;
+const [{ data: numeros }, { data: envios }] = await Promise.all([
+  cliente.rpc('painel_assinantes'),
+  cliente.from('envios_newsletter').select('enviado_em, enviados, falhas, pecas(id, titulo, numero)').order('enviado_em', { ascending: false }).limit(50),
+]);
+const n = (numeros as { confirmados: number; pendentes: number; entraram_30: number; sairam_30: number }[] | null)?.[0];
+const data = (d: string) => new Date(d).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' });
+type Envio = { enviado_em: string; enviados: number; falhas: number; pecas: { id: string; titulo: string; numero: number | null } | null };
+const lista = (envios ?? []) as unknown as Envio[];
+---
+<Painel titulo="Assinantes">
+  <h1>Assinantes</h1>
+  <p class="sub">Quem assinou a newsletter por e-mail. Aqui aparecem só os números: os e-mails ficam guardados no banco e ninguém da equipe vê a lista.</p>
+  {n ? (
+    <dl class="numeros">
+      <div><dt class="maquina">Confirmados</dt><dd>{n.confirmados}</dd></div>
+      <div><dt class="maquina">Esperando confirmar</dt><dd>{n.pendentes}</dd></div>
+      <div><dt class="maquina">Entraram (30 dias)</dt><dd>{n.entraram_30}</dd></div>
+      <div><dt class="maquina">Saíram (30 dias)</dt><dd>{n.sairam_30}</dd></div>
+    </dl>
+  ) : <p class="mensagem" role="alert">Não deu para ler os números agora. Recarregue a página.</p>}
+  <p class="ajuda">Quem assina recebe um e-mail para confirmar; sem confirmar em 7 dias, o pedido é apagado. Depois de confirmar, chegam 3 e-mails de boas-vindas (na hora, 2 dias depois e 5 dias depois). Para mandar uma edição, abra a edição publicada no Estúdio e use "Enviar por e-mail".</p>
+
+  <h2>Envios</h2>
+  {lista.length ? (
+    <ul class="envios">
+      {lista.map((e) => (
+        <li>
+          <a href={`/painel/peca/${e.pecas?.id}`}>{e.pecas?.numero ? `Nº ${e.pecas.numero} · ` : ''}{e.pecas?.titulo.replace(/[|*]/g, ' ')}</a>
+          <span class="maquina">{data(e.enviado_em)} · {e.enviados} enviados{e.falhas ? ` · ${e.falhas} falharam` : ''}</span>
+        </li>
+      ))}
+    </ul>
+  ) : <p>Nenhuma edição foi enviada por e-mail ainda.</p>}
+</Painel>
+
+<style>
+  .numeros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--esp-4);
+    margin: var(--esp-5) 0;
+  }
+  .numeros div {
+    border-top: 3px solid currentColor;
+    padding-top: var(--esp-2);
+  }
+  .numeros dt {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .numeros dd {
+    margin: var(--esp-1) 0 0;
+    font-size: 40px;
+    font-weight: 900;
+  }
+  .envios {
+    list-style: none;
+    padding: 0;
+  }
+  .envios li {
+    display: grid;
+    gap: var(--esp-1);
+    padding: var(--esp-3) 0;
+    border-top: 1px solid currentColor;
+  }
+  .envios span {
+    font-size: 12px;
+  }
+</style>

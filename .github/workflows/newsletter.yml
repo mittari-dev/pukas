@@ -1,0 +1,21 @@
+name: Robô da newsletter
+
+# Uma vez por dia (9h em Brasília): e-mails de boas-vindas que venceram e limpeza de pedidos não confirmados.
+# O envio roda no site (/api/robo-newsletter), onde está a chave do Resend; aqui só se chama a rota.
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+jobs:
+  newsletter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RENOVAR_SEGREDO: ${{ secrets.RENOVAR_SEGREDO }}
+      SITE_URL: ${{ secrets.SITE_URL }}
+    steps:
+      - name: Chamar o robô
+        run: |
+          if [ -z "$RENOVAR_SEGREDO" ] || [ -z "$SITE_URL" ]; then echo "Segredos ainda não configurados; nada a fazer."; exit 0; fi
+          curl -fsS -X POST "$SITE_URL/api/robo-newsletter" -H "Authorization: Bearer $RENOVAR_SEGREDO"

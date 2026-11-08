@@ -16,6 +16,7 @@ import { ligarPeca } from '../../../../lib/banco/agenda';
 import { buscarProposicao, ErroCongresso, type Casa } from '../../../../lib/votacoes/congresso';
 import { montarRascunho } from '../../../../lib/votacoes/rascunho';
 import { porcentagens, OPCOES, type Opcao } from '../../../../lib/votacoes/voto';
+import { contarConfirmados, enviarEdicao } from '../../../../lib/newsletter/fluxo';
 import { apagarRelato, ligarNoticias, noticiasLigadas, noticiasParaLigar, plenarioMaisRecente, relatos, resultadoNoPainel } from '../../../../lib/banco/votacoesPainel';
 
 const { cliente, usuario } = Astro.locals.painel!;
@@ -67,6 +68,13 @@ if (Astro.request.method === 'POST') {
     else {
       await ligarNoticias(cliente, linha.id, [...(await noticiasLigadas(cliente, linha.id)), r.valor]);
       return Astro.redirect(`/painel/peca/${r.valor}?ok=1`, 303);
+    }
+  } else if (linha?.tipo === 'newsletter' && acao === 'enviar_email') {
+    if (usuario!.papel !== 'editor' || estadoAtual !== 'publicada') erro = 'Só o editor manda por e-mail, e só edição publicada.';
+    else {
+      const r = await enviarEdicao(linha.id, usuario!.id, Astro.site!.origin);
+      if (r.ok) aviso = `Edição enviada para ${r.enviados} assinante${r.enviados === 1 ? '' : 's'}${r.falhas ? `; ${r.falhas} não saíram (veja em Assinantes)` : ''}.`;
+      else erro = r.erro;
     }
   } else if (linha?.tipo === 'votacao' && acao === 'apagar_relato') {
     if (await apagarRelato(cliente, String(form.get('comprovante') ?? ''))) aviso = 'Relato apagado.';
@@ -121,6 +129,12 @@ if (Astro.request.method === 'POST') {
   }
   if (id) linha = await buscarPeca(cliente, id);
 }
+
+// Edição publicada da newsletter: já foi por e-mail? Para quantos iria?
+const porEmail = linha?.tipo === 'newsletter' && linha.estado === 'publicada' && usuario!.papel === 'editor';
+const [envioFeito, assinantes] = porEmail
+  ? await Promise.all([cliente.from('envios_newsletter').select('enviado_em, enviados, falhas').eq('peca_id', linha!.id).maybeSingle().then((r) => r.data), contarConfirmados()])
+  : [null, 0];
 
 // O que aparece no formulário: o que acabou de ser enviado (se deu erro) ou o que está no banco.
 const base = urlBanco();
@@ -327,6 +341,23 @@ const traducao = linha?.traducoes?.[0];
       {pode(papel, 'publicar', estadoAtual) && <button class="botao botao--marca" name="acao" value="publicar" disabled={!pronta}>Publicar</button>}
     </div>
   </form>
+
+  {porEmail && (
+    <section class="por-email" aria-labelledby="por-email">
+      <h2 id="por-email" class="maquina">Enviar por e-mail</h2>
+      {envioFeito ? (
+        <p>Esta edição já foi por e-mail em {new Date(envioFeito.enviado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' })}, para {envioFeito.enviados} assinante{envioFeito.enviados === 1 ? '' : 's'}{envioFeito.falhas ? ` (${envioFeito.falhas} não saíram)` : ''}. Cada edição vai uma vez só.</p>
+      ) : assinantes === 0 ? (
+        <p>Ainda não tem ninguém confirmado na lista. Veja em <a href="/painel/assinantes">Assinantes</a>.</p>
+      ) : (
+        <form method="post">
+          <p>Manda esta edição para {assinantes} assinante{assinantes === 1 ? '' : 's'}. Quem assinou em espanhol recebe a tradução, se ela estiver pronta. Cada edição vai uma vez só.</p>
+          <label class="confirma"><input type="checkbox" required /> Sim, mandar agora para {assinantes} pessoa{assinantes === 1 ? '' : 's'}</label>
+          <button class="botao botao--marca" name="acao" value="enviar_email">Enviar por e-mail</button>
+        </form>
+      )}
+    </section>
+  )}
 
   {publicadaVotacao && resultadoVotacao && pctVotacao && (
     <section class="resultado-votacao" aria-labelledby="res">
