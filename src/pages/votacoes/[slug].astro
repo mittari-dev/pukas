@@ -1,0 +1,8 @@
+---
+import Votacao from '../../views/Votacao.astro';
+import { carregarVotacao } from '../../lib/carregar';
+
+const votacao = await carregarVotacao(Astro.params.slug ?? '', 'pt');
+if (!votacao) return Astro.rewrite('/404');
+---
+<Votacao idioma="pt" votacao={votacao} />

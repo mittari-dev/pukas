@@ -24,7 +24,7 @@ Cada subprojeto segue o ciclo **spec → plano → implementação**, com milest
 | 3.3 | **Radar e pistas** | Acompanhar figuras públicas e guardar pistas privadas (bucket `arquivos`); pista nunca é publicada como acusação | ⚪ |
 | 4 | **Newsletter por e-mail** | Inscrição e envio de cada edição pelo Resend | ⚪ |
 | 5 | **Gerador do carrossel e do vídeo** | Slides PNG 1080×1350 e vídeo de 60 a 90 s gerados a partir da edição | ⚪ |
-| 6 | **Votações auditáveis** | Consulta à base sobre medidas do Congresso, com antibot, metodologia aberta e comprovante de voto | ⚪ |
+| 6 | **Votações auditáveis** | PL, PLP e PEC da Câmara e do Senado, com antibot, metodologia aberta, comprovante de voto e placar do plenário ([spec](specs/2026-11-08-consultas-design.md)) | 🟡 em andamento |
 | 7 | **Raio-X de Classe** | Perfilador socioeconômico com card compartilhável (~mês 3) | ⚪ |
 | 8 | **Investigação (quintas)** | Seção de jornalismo investigativo do presente | ⚪ |
 | 9 | **Dossiês · Documentários · Loja** | `/dossies`, `/documentarios`, `/loja` | ⚪ |

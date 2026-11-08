@@ -14,6 +14,12 @@ describe.skipIf(!base)('retrato', () => {
     for (const a of antes) expect(depois.find((d) => d.url === a.url), a.url).toEqual(a);
   });
 
+  // Roda antes de tests/retrato/vot*.test.ts, que publicam votações.
+  test('/votacoes sem votação mostra o aviso de vazio', async () => {
+    const html = await (await fetch(new URL('/votacoes', base))).text();
+    expect(html).toContain('Ainda não há votações abertas.');
+  });
+
   test('rascunho não aparece no site', async () => {
     expect((await fetch(new URL('/newsletter/memoria-operaria/999', base))).status).toBe(404);
   });

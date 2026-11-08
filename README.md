@@ -52,6 +52,16 @@ Em `/painel/busca`, o robô entrega uma **pauta** de até 10 candidatas na segun
 - **Teto:** o gasto do mês aparece em reais no painel. Antes de cada rodada o robô confere se ainda cabe uma; se não couber, registra "teto atingido". O teto, o câmbio, os dias, a hora, os temas, as fontes fixas e a busca livre ficam em `/painel/busca/config`, só para o editor.
 - **Linha editorial do robô:** `src/lib/busca/instrucoes.ts`.
 
+## Votações
+
+Em `/votacoes`, a base diz se é a favor, contra ou não sabe de um PL, PLP ou PEC da Câmara ou do Senado ([spec](docs/specs/2026-11-08-consultas-design.md)). A redação cria a votação no Estúdio (tipo **Votação**): escolhe a casa, o tipo, o número e o ano, e o "Buscar" traz a ementa e o link oficiais. Ela passa pela mesma revisão de qualquer peça e fecha na primeira votação nominal do plenário ou 30 dias depois de publicada.
+
+- **Voto:** só entra por `POST /api/votar`, com a chave de serviço (nenhuma política do banco deixa o público ler ou gravar voto). Anti-robô Cloudflare Turnstile, um voto por aparelho (cookie aleatório, guardado só como HMAC), campo escondido que descarta robô em silêncio e, a partir do 31º voto da mesma rede na mesma hora, descarte marcado. Nada é apagado: os descartes aparecem na metodologia.
+- **Comprovante:** `#PK-XXXXXX`, conferível na lista pública da votação.
+- **Alto impacto:** a votação pede login com Google. O banco guarda só o HMAC do id do Google, e a conta temporária é apagada do Supabase depois do voto.
+- **Plenário:** o workflow `plenario.yml` (todo dia, 7h40) com `scripts/plenario.ts` lê as votações nominais nas APIs abertas da Câmara e do Senado, grava o placar e fecha a votação.
+- **Na redação:** a votação publicada mostra no painel os votos, os relatos agrupados por opção (só editor e revisor) e o botão "Virar rascunho de notícia". O texto sempre diz "de quem votou no PUKAS".
+
 ## Português e espanhol
 
 O site inteiro existe em `/es/...`, em espanhol neutro latino-americano. O idioma é escolhido no servidor, nesta ordem: a escolha da pessoa no seletor PT | ES, o idioma do aparelho e o país.
@@ -65,14 +75,23 @@ Ao publicar, a peça vai para a tradução automática pela API de lotes do Clau
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY` | Vercel e GitHub | ler o banco (a chave anon é pública por natureza) |
 | `ANTHROPIC_API_KEY` | Vercel e GitHub | enviar e recolher as traduções |
 | `RENOVAR_SEGREDO` | Vercel e GitHub | autorizar o `POST /api/renovar` do recolhimento |
-| `SUPABASE_SERVICE_ROLE_KEY`, `SITE_URL` | só GitHub | gravar as traduções recolhidas |
+| `SUPABASE_SERVICE_ROLE_KEY`, `SITE_URL` | só GitHub | gravar as traduções recolhidas e o placar do plenário |
+| `SUPABASE_SERVICE_ROLE_KEY` | Vercel | convites da equipe e gravar votos |
+| `PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` | Vercel | anti-robô das votações (Cloudflare Turnstile) |
+| `VOTO_SEGREDO` | Vercel | HMAC do aparelho, da rede e da conta nas votações |
+
+O `VOTO_SEGREDO` é gerado no próprio computador e colado na Vercel. Trocar esse segredo faz todo aparelho poder votar de novo nas votações abertas:
+
+```
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
 Cada segredo é colado direto no painel de cada serviço. Nunca vai para o repositório nem para o chat.
 
 - **`arquivo-diario.yml`** (todo dia): exporta tudo o que está publicado para [`arquivo/publicado.json`](arquivo/publicado.json), com commit só quando muda. É o backup público, e a consulta diária impede o plano grátis do Supabase de pausar o projeto.
 - **`recolher-traducoes.yml`** (a cada 15 min): grava as traduções prontas.
 - Sem os segredos, os dois workflows não fazem nada.
-- Não existe cadastro aberto. Uma conta nova é criada no painel do Supabase e recebe um papel (`editor`, `revisor` ou `redator`) na tabela `perfis`.
+- A equipe entra por convite (`/painel/equipe`) e recebe um papel (`editor`, `revisor` ou `redator`) na tabela `perfis`. O único cadastro aberto é o login Google das votações de alto impacto: essa conta não tem papel, não abre o painel e é apagada depois do voto.
 
 ## Rodando localmente
 

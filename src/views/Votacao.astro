@@ -1,0 +1,368 @@
+---
+// A página da votação, na ordem do §3 da spec: proposição, explicação, fontes e notícias, voto, comprovante,
+// resultado e metodologia, plenário e lista de comprovantes. Nunca vai para o cache da borda (src/lib/cache.ts).
+import Base from '../layouts/Base.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import { noticiasDaVotacao, plenarioDaVotacao, type VotacaoPublica } from '../lib/carregar';
+import { comprovantes, resultado, votoDoAparelho } from '../lib/banco/votos';
+import { clienteDaRequisicao, googleLigado } from '../lib/banco/cliente';
+import { sessaoGoogle } from '../lib/votacoes/conta';
+import { ordenarFontes } from '../lib/edicoes';
+import { formatarData } from '../lib/formato';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import { textoManchete } from '../lib/manchete';
+import { hashSecreto, oQueMostrar, OPCOES, porcentagens, type Opcao } from '../lib/votacoes/voto';
+import type { Chave } from '../i18n/textos';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+  votacao: VotacaoPublica;
+}
+const { idioma, votacao: v } = Astro.props;
+const p = v.proposicao;
+
+const segredo = process.env.VOTO_SEGREDO ?? import.meta.env.VOTO_SEGREDO;
+const aparelho = Astro.cookies.get('pk_aparelho')?.value ?? '';
+const meu = segredo && /^[0-9a-f]{64}$/.test(aparelho) ? await votoDoAparelho(v.pecaId, await hashSecreto(segredo, aparelho)) : null;
+const aviso = Astro.cookies.get('pk_voto')?.value;
+if (aviso) Astro.cookies.delete('pk_voto', { path: '/' });
+
+const [r, noticias, plenario, lista] = await Promise.all([resultado(v.pecaId), noticiasDaVotacao(v.pecaId), plenarioDaVotacao(v.pecaId), comprovantes(v.pecaId)]);
+const contagem = { a_favor: r?.a_favor ?? 0, contra: r?.contra ?? 0, nao_sei: r?.nao_sei ?? 0 };
+const pct = porcentagens(contagem);
+const descartes = Object.entries(r?.descartes ?? {});
+const totalDescartados = descartes.reduce((s, [, n]) => s + n, 0);
+const visao = oQueMostrar({ votou: Boolean(meu), fechada: v.fechada });
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? process.env.PUBLIC_TURNSTILE_SITE_KEY;
+// Alto impacto: só vota quem entrou com o Google. Sem o provedor ligado no Supabase, a votação não abre.
+const pedeGoogle = v.altoImpacto && !v.fechada && !meu;
+const googleOk = pedeGoogle ? await googleLigado() : false;
+const sessao = pedeGoogle && googleOk ? sessaoGoogle((await clienteDaRequisicao(Astro).auth.getUser()).data.user) : null;
+const podeVotar = !v.fechada && !meu && Boolean(siteKey) && (!v.altoImpacto || sessao !== null);
+
+const ROTULO: Record<Opcao, Chave> = { a_favor: 'votacao.afavor', contra: 'votacao.contra', nao_sei: 'votacao.naosei' };
+const MOTIVO: Record<string, Chave> = { 'campo escondido preenchido': 'votacao.motivoHoneypot', 'muitos votos da mesma rede': 'votacao.motivoRede' };
+const AVISO: Record<string, Chave> = { ja: 'votacao.ja', fechada: 'votacao.fechada', robo: 'votacao.robo', erro: 'votacao.erro' };
+const casa = t(idioma, p.casa === 'camara' ? 'votacao.camara' : 'votacao.senado');
+
+// Filtro do plenário por estado e partido, pela URL (a página não tem JavaScript para isso).
+const uf = Astro.url.searchParams.get('uf') ?? '';
+const partido = Astro.url.searchParams.get('partido') ?? '';
+const ufs = [...new Set(plenario.flatMap((x) => x.votos.map((y) => y.uf)))].filter(Boolean).sort();
+const partidos = [...new Set(plenario.flatMap((x) => x.votos.map((y) => y.partido)))].filter(Boolean).sort();
+const filtrar = (votos: (typeof plenario)[number]['votos']) => votos.filter((x) => (!uf || x.uf === uf) && (!partido || x.partido === partido));
+const lingua = idioma === 'es' ? 'es' : 'pt-BR';
+---
+<Base titulo={textoManchete(v.titulo)} descricao={v.resumo} receita="leitura" idioma={idioma}>
+  <article class="leitura votacao" data-visao={visao}>
+    <p class="maquina votacao__proposicao"><a href={p.url}>{p.sigla} {p.numero}/{p.ano}, {casa}</a></p>
+    <div class="votacao__manchete"><Manchete titulo={v.titulo} tamanho="m" /></div>
+    <p class="votacao__ementa">{p.ementa}</p>
+    <p class="votacao__explicacao">{v.resumo}</p>
+    {v.fechaEm && (
+      <p class="maquina votacao__prazo">{t(idioma, v.fechada ? 'votacao.fechou' : 'votacao.fecha')} {formatarData(v.fechaEm, idioma)}</p>
+    )}
+
+    {noticias.length > 0 && (
+      <ul class="votacao__noticias">
+        {noticias.map((n) => (
+          <li><a class="maquina" href={prefixar(`/noticias/${n.slug}`, idioma)}>{t(idioma, 'votacao.leiaNoticia')}: {textoManchete(n.titulo)}</a></li>
+        ))}
+      </ul>
+    )}
+
+    <section aria-labelledby="fontes">
+      <h2 id="fontes" class="secao-titulo maquina">{t(idioma, 'edicao.fontes')}</h2>
+      <ol class="fontes">
+        {ordenarFontes(v.fontes).map((f) => (
+          <li><a href={f.url || undefined}>{f.titulo}</a> · {f.instituicao}</li>
+        ))}
+      </ol>
+    </section>
+
+    {aviso && AVISO[aviso] && <p class="votacao__aviso" role="status">{t(idioma, AVISO[aviso])}</p>}
+
+    {meu && (
+      <section class="comprovante" aria-labelledby="meu-comprovante">
+        <h2 id="meu-comprovante" class="maquina">{t(idioma, 'votacao.comprovante')}</h2>
+        <p class="comprovante__codigo"><code id="comprovante">#{meu.comprovante}</code></p>
+        <button type="button" class="maquina comprovante__copiar" data-copiar="comprovante">{t(idioma, 'votacao.copiar')}</button>
+      </section>
+    )}
+
+    {pedeGoogle && !googleOk && <p class="votacao__aviso">{t(idioma, 'votacao.altoImpactoIndisponivel')}</p>}
+    {pedeGoogle && googleOk && !sessao && (
+      <div class="votacao__google">
+        <p>{t(idioma, 'votacao.altoImpacto')}</p>
+        <a class="maquina voto__enviar" href={`/api/entrar-google?votacao=${v.id}${idioma === 'es' ? '&idioma=es' : ''}`}>{t(idioma, 'votacao.entrarGoogle')}</a>
+      </div>
+    )}
+
+    {podeVotar && (
+      <form class="voto" method="post" action="/api/votar">
+        <input type="hidden" name="votacao" value={v.id} />
+        <fieldset class="voto__opcoes">
+          <legend class="sr-only">{textoManchete(v.titulo)}</legend>
+          {OPCOES.map((o) => (
+            <label class="voto__opcao">
+              <input type="radio" name="opcao" value={o} required />
+              <span>{t(idioma, ROTULO[o])}</span>
+            </label>
+          ))}
+        </fieldset>
+        <label class="voto__campo">
+          <span>{t(idioma, 'votacao.relato')}</span>
+          <textarea name="relato" maxlength="1000" rows="4"></textarea>
+        </label>
+        <label class="voto__citar"><input type="checkbox" name="citar" /> {t(idioma, 'votacao.citar')}</label>
+        {/* Campo escondido: gente não vê nem preenche; robô preenche e o voto é descartado em silêncio. */}
+        <div class="voto__isca" aria-hidden="true">
+          <label>Site <input type="text" name="site" tabindex="-1" autocomplete="off" /></label>
+        </div>
+        <div class="cf-turnstile" data-sitekey={siteKey} data-language={lingua}></div>
+        <button class="maquina voto__enviar" type="submit">{t(idioma, 'votacao.votar')}</button>
+      </form>
+    )}
+
+    <section class="resultado" aria-labelledby="resultado">
+      <h2 id="resultado" class="secao-titulo maquina">{t(idioma, 'votacao.registrados')}</h2>
+      <p class="resultado__total">{t(idioma, 'votacao.total').replace('{n}', String(pct.total))}</p>
+      {visao !== 'so_total' && (
+        <>
+          <ul class="resultado__barras">
+            {OPCOES.map((o) => (
+              <li>
+                <span class="resultado__rotulo">{t(idioma, ROTULO[o])}</span>
+                <span class="resultado__barra" style={`--pct: ${pct[o]}%`}></span>
+                <span class="maquina resultado__numero">{pct[o]}% ({contagem[o]})</span>
+              </li>
+            ))}
+          </ul>
+          <p class="maquina resultado__descartes">
+            {t(idioma, 'votacao.descartados')}: {totalDescartados}
+            {descartes.map(([m, n]) => <span> · {MOTIVO[m] ? t(idioma, MOTIVO[m]) : m}: {n}</span>)}
+          </p>
+        </>
+      )}
+      <p class="resultado__metodologia">{t(idioma, 'votacao.metodologia')}</p>
+    </section>
+
+    {plenario.length > 0 && (
+      <section aria-labelledby="plenario">
+        <h2 id="plenario" class="secao-titulo maquina">{t(idioma, 'votacao.plenario')}</h2>
+        <form class="plenario__filtro maquina" method="get">
+          <label>{t(idioma, 'votacao.uf')} <select name="uf"><option value="">{t(idioma, 'votacao.todos')}</option>{ufs.map((x) => <option selected={x === uf}>{x}</option>)}</select></label>
+          <label>{t(idioma, 'votacao.partido')} <select name="partido"><option value="">{t(idioma, 'votacao.todos')}</option>{partidos.map((x) => <option selected={x === partido}>{x}</option>)}</select></label>
+          <button type="submit">{t(idioma, 'votacao.filtrar')}</button>
+        </form>
+        {plenario.map((pl, i) => (
+          <details class="plenario" open={i === 0}>
+            <summary>
+              <span class="maquina">{formatarData(pl.data, idioma)}</span> {pl.descricao}
+            </summary>
+            <p class="maquina plenario__placar">
+              {t(idioma, 'votacao.sim')} {pl.sim} · {t(idioma, 'votacao.nao')} {pl.nao} · {t(idioma, 'votacao.abstencao')} {pl.abstencao} · {t(idioma, 'votacao.outros')} {pl.outros}
+            </p>
+            <ul class="plenario__lista">
+              {filtrar(pl.votos).map((x) => <li><span>{x.nome}</span> <span class="maquina">{x.partido}-{x.uf}</span> <strong>{x.voto}</strong></li>)}
+            </ul>
+            <p class="maquina plenario__fonte">{t(idioma, 'votacao.fonte')}: <a href={p.url}>{casa}</a></p>
+          </details>
+        ))}
+      </section>
+    )}
+
+    {/* A lista mostra a opção de cada comprovante: antes de votar ela revelaria a parcial, então espera como o resultado. */}
+    {visao !== 'so_total' && lista.length > 0 && (
+      <section aria-labelledby="conferir">
+        <h2 id="conferir" class="secao-titulo maquina">{t(idioma, 'votacao.conferir')}</h2>
+        <ol class="comprovantes maquina">
+          {lista.map((c) => <li><code>#{c.comprovante}</code> {t(idioma, ROTULO[c.opcao])} {formatarData(new Date(`${c.dia}T12:00:00`), idioma)}</li>)}
+        </ol>
+      </section>
+    )}
+  </article>
+  {podeVotar && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+  {meu && <script is:inline src="/votacao.js" defer></script>}
+</Base>
+
+<style>
+  .votacao__proposicao {
+    margin-top: var(--esp-5);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .votacao__manchete {
+    margin: var(--esp-3) 0 var(--esp-4);
+  }
+  .votacao__ementa {
+    font-weight: 700;
+  }
+  .votacao__prazo,
+  .resultado__descartes,
+  .plenario__placar,
+  .plenario__fonte {
+    font-size: 13px;
+  }
+  .votacao__noticias {
+    list-style: none;
+    padding: 0;
+  }
+  .votacao__aviso {
+    border: 3px solid var(--acento);
+    padding: var(--esp-3) var(--esp-4);
+    font-weight: 700;
+  }
+  .comprovante {
+    border: 3px solid currentColor;
+    padding: var(--esp-4);
+    margin: var(--esp-5) 0;
+  }
+  .comprovante h2 {
+    font-size: 13px;
+    margin: 0;
+  }
+  .comprovante__codigo {
+    font-size: clamp(32px, 10vw, 48px);
+    font-weight: 900;
+    margin: var(--esp-2) 0;
+  }
+  .comprovante__copiar,
+  .voto__enviar {
+    min-height: 48px;
+    padding: 0 var(--esp-4);
+    border: 3px solid currentColor;
+    background: var(--tinta);
+    color: var(--cal);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .votacao__google {
+    margin: var(--esp-5) 0;
+  }
+  .votacao__google a {
+    display: inline-grid;
+    place-items: center;
+    text-decoration: none;
+  }
+  .voto {
+    display: grid;
+    gap: var(--esp-4);
+    margin: var(--esp-5) 0;
+  }
+  .voto__opcoes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--esp-2);
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .voto__opcao {
+    position: relative;
+  }
+  .voto__opcao input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+  }
+  .voto__opcao span {
+    display: grid;
+    place-items: center;
+    min-height: 56px;
+    border: 3px solid currentColor;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-align: center;
+    font-size: clamp(14px, 4vw, 18px);
+    cursor: pointer;
+  }
+  .voto__opcao input:checked + span {
+    background: var(--tinta);
+    color: var(--cal);
+  }
+  .voto__opcao input:focus-visible + span {
+    outline: 3px solid var(--acento);
+    outline-offset: 2px;
+  }
+  .voto__campo {
+    display: grid;
+    gap: var(--esp-2);
+  }
+  .voto__campo textarea {
+    font: inherit;
+    padding: var(--esp-3);
+    border: 3px solid currentColor;
+    background: transparent;
+    color: inherit;
+  }
+  .voto__citar {
+    display: flex;
+    gap: var(--esp-2);
+    align-items: center;
+    min-height: 44px;
+  }
+  .voto__isca {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .resultado__total {
+    font-weight: 700;
+  }
+  .resultado__barras {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--esp-2);
+  }
+  .resultado__barras li {
+    display: grid;
+    grid-template-columns: 7em 1fr auto;
+    gap: var(--esp-2);
+    align-items: center;
+  }
+  .resultado__barra {
+    height: 16px;
+    background: linear-gradient(to right, var(--acento) var(--pct), transparent var(--pct));
+    border: 1px solid currentColor;
+  }
+  .resultado__metodologia {
+    font-size: 14px;
+  }
+  .plenario__filtro {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-3);
+    font-size: 13px;
+    margin-bottom: var(--esp-3);
+  }
+  .plenario__filtro select,
+  .plenario__filtro button {
+    min-height: 44px;
+    font: inherit;
+  }
+  .plenario {
+    border-top: 1px solid currentColor;
+    padding: var(--esp-3) 0;
+  }
+  .plenario summary {
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .plenario__lista {
+    list-style: none;
+    padding: 0;
+    columns: 2 16em;
+    font-size: 14px;
+  }
+  .comprovantes {
+    font-size: 13px;
+    padding-left: 0;
+    list-style: none;
+    columns: 2 14em;
+  }
+</style>

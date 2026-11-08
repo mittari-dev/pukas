@@ -2,8 +2,9 @@
 // (supabase/migrations) e de validarPublicavel/validarObra: o banco é a autoridade, isto só mostra.
 import type { Fonte } from '../edicoes';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../edicoes';
+import type { Proposicao } from '../votacoes/congresso';
 
-export type TipoPeca = 'newsletter' | 'cultura' | 'noticia' | 'pagina';
+export type TipoPeca = 'newsletter' | 'cultura' | 'noticia' | 'pagina' | 'votacao';
 export type EstadoPeca = 'rascunho' | 'em_revisao' | 'publicada' | 'rejeitada';
 export type Papel = 'editor' | 'revisor' | 'redator';
 
@@ -33,6 +34,10 @@ export interface PecaEntrada {
   checagem?: { por: string; em: Date };
   traduzir: boolean;
   estado: EstadoPeca;
+  // Só na votação; as notícias ligadas vão para votacao_noticias, não para a linha da peça.
+  proposicao?: Proposicao;
+  altoImpacto?: boolean;
+  noticias?: string[];
 }
 
 export interface Trava {
@@ -49,7 +54,8 @@ export function travasDaPeca(p: PecaEntrada): Trava[] {
   const trava = (chave: string, ok: boolean, rotulo: string, mensagem: string) => travas.push({ chave, ok, rotulo, mensagem });
 
   if (p.tipo === 'newsletter') trava('fonte', p.fontes.some((f) => f.tipo === 'primaria'), 'Fonte primária', 'sem fonte primária');
-  if (p.tipo === 'noticia') trava('fonte', p.fontes.length > 0, 'Fonte', 'sem fonte');
+  if (p.tipo === 'noticia' || p.tipo === 'votacao') trava('fonte', p.fontes.length > 0, 'Fonte', 'sem fonte');
+  if (p.tipo === 'votacao') trava('proposicao', Boolean(p.proposicao), 'Proposição', 'sem proposição');
 
   const prefixo = p.tipo === 'cultura' ? 'capa' : 'foto';
   const olhaFoto = p.tipo === 'newsletter' || ((p.tipo === 'noticia' || p.tipo === 'cultura') && p.foto);
@@ -62,7 +68,7 @@ export function travasDaPeca(p: PecaEntrada): Trava[] {
     trava(`${prefixo}_credito`, !vazio(p.foto?.credito), `Crédito da ${prefixo}`, `${prefixo} sem crédito`);
   }
 
-  if (p.tipo === 'newsletter' || p.tipo === 'noticia') {
+  if (p.tipo === 'newsletter' || p.tipo === 'noticia' || p.tipo === 'votacao') {
     trava('checagem', Boolean(p.checagem), 'Checagem', 'sem checagem');
     const n = contarPalavras(p.titulo);
     trava('manchete', n <= MAX_PALAVRAS_MANCHETE, `Manchete com até ${MAX_PALAVRAS_MANCHETE} palavras`, `manchete com ${n} palavras (máx. ${MAX_PALAVRAS_MANCHETE})`);

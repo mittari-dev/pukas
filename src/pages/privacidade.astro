@@ -1,0 +1,8 @@
+---
+import Manifesto from '../views/Manifesto.astro';
+import { carregarPagina } from '../lib/carregar';
+
+// Em rascunho (ou apagada), a página não existe para o público.
+if (!(await carregarPagina('privacidade', 'pt'))) return Astro.rewrite('/404');
+---
+<Manifesto idioma="pt" slug="privacidade" />

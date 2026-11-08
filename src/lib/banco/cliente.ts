@@ -29,3 +29,17 @@ export function clienteDaRequisicao(contexto: { request: Request; cookies: Astro
     },
   });
 }
+
+// O login Google do alto impacto está ligado no Supabase? A resposta pública de /auth/v1/settings diz. Guarda 5 minutos.
+let google: { ligado: boolean; ate: number } | undefined;
+export async function googleLigado(): Promise<boolean> {
+  if (google && google.ate > Date.now()) return google.ligado;
+  try {
+    const r = await fetch(`${urlBanco()}/auth/v1/settings`, { headers: { apikey: ambiente('SUPABASE_ANON_KEY') } });
+    const ligado = r.ok && Boolean(((await r.json()) as { external?: { google?: boolean } }).external?.google);
+    google = { ligado, ate: Date.now() + 5 * 60_000 };
+    return ligado;
+  } catch {
+    return false;
+  }
+}

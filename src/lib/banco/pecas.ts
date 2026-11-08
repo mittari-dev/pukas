@@ -4,6 +4,7 @@ import type { Obra, TipoObra } from '../cultura';
 import type { MarcaTraducao } from '../traducao';
 import type { EstadoPeca, TipoPeca } from '../painel/travas';
 import { linkWeb } from '../link';
+import type { Proposicao } from '../votacoes/congresso';
 
 export interface LinhaTraducao {
   idioma: string;
@@ -42,6 +43,10 @@ export interface LinhaPeca {
   traduzir: boolean;
   estado: EstadoPeca;
   publicada_em: string | null;
+  // Só nas votações.
+  proposicao?: Proposicao | null;
+  fecha_em?: string | null;
+  alto_impacto?: boolean;
   correcoes?: { data: string; texto: string }[];
   traducoes?: LinhaTraducao[];
 }

@@ -36,6 +36,8 @@ jobs:
         run: |
           eval "$(npx supabase status -o env | sed 's/^/export /')"
           export SUPABASE_URL="$API_URL" SUPABASE_ANON_KEY="$ANON_KEY" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          # Votações: chaves de teste da Cloudflare (a secreta aceita qualquer token) e um segredo só do CI.
+          export TURNSTILE_SECRET=1x0000000000000000000000000000000AA PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA VOTO_SEGREDO=segredo-de-teste-do-ci
           # Banco limpo (sem as peças dos testes acima) e só o conteúdo migrado.
           npx supabase db reset
           node scripts/migrar-para-banco.ts

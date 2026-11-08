@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 import Carimbo from '../components/identidade/Carimbo.astro';
 import Manchete from '../components/identidade/Manchete.astro';
 import ListaEdicoes from '../components/ListaEdicoes.astro';
-import { carregarEdicoes, carregarNoticias, carregarObras, carregarSeries } from '../lib/carregar';
+import { carregarEdicoes, carregarNoticias, carregarObras, carregarSeries, carregarVotacoes } from '../lib/carregar';
 import { caminhoEdicao, formatarData } from '../lib/formato';
 import { prefixar, t, type Idioma } from '../lib/idioma';
 import { textoManchete } from '../lib/manchete';
@@ -14,7 +14,9 @@ interface Props {
   idioma: Idioma;
 }
 const { idioma } = Astro.props;
-const [edicoes, noticias, obras] = await Promise.all([carregarEdicoes(idioma), carregarNoticias(idioma), carregarObras(idioma)]);
+const [edicoes, noticias, obras, { abertas }] = await Promise.all([carregarEdicoes(idioma), carregarNoticias(idioma), carregarObras(idioma), carregarVotacoes(idioma)]);
+// A votação aberta mais recente abre a coluna, acima de Notícias.
+const votacao = abertas[0];
 const ultima = edicoes[0];
 const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slug === ultima.data.serie)?.selo.replace('*', '') ?? '') : '';
 ---
@@ -37,6 +39,16 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
       )}
 
       <aside class="colunas">
+        {votacao && (
+          <section aria-labelledby="col-votacao">
+            <h2 id="col-votacao" class="coluna__titulo maquina">{t(idioma, 'capa.votacao')}</h2>
+            <a class="chamada" href={prefixar(`/votacoes/${votacao.id}`, idioma)}>
+              <span class="maquina chamada__meta">{votacao.proposicao.sigla} {votacao.proposicao.numero}/{votacao.proposicao.ano}</span>
+              <span class="chamada__titulo">{textoManchete(votacao.titulo)}</span>
+              <span class="chamada__resumo">{votacao.resumo}</span>
+            </a>
+          </section>
+        )}
         <section aria-labelledby="col-noticias">
           <h2 id="col-noticias" class="coluna__titulo maquina">{t(idioma, 'capa.noticias')}</h2>
           {noticias.length === 0 ? (
