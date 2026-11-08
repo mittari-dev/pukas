@@ -103,6 +103,9 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
       </section>
     </div>
 
+    <p class="expediente">
+      {t(idioma, 'site.institucional')} <a href={prefixar('/manifesto', idioma)}>{t(idioma, 'site.leiaManifesto')}</a>.
+    </p>
   </div>
 </Base>
 
@@ -204,4 +207,11 @@ const chapeuMemoria = ultima ? ((await carregarSeries(idioma)).find((s) => s.slu
     letter-spacing: 0.08em;
   }
 
+  .expediente {
+    max-width: 68ch;
+    margin: var(--esp-7) 0 0;
+    padding-top: var(--esp-3);
+    border-top: 1px solid currentColor;
+    font-size: 15px;
+  }
 </style>
