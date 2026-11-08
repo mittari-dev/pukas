@@ -2,7 +2,9 @@
 // nenhuma política deixa público ou equipe ler os e-mails (supabase/migrations/20261108000007_assinantes.sql).
 import { mestre } from '../banco/equipe';
 import { renderizarMarkdown } from '../markdown';
-import { caminhoEdicao } from '../formato';
+import { caminhoEdicao, formatarData } from '../formato';
+import { urlBanco } from '../banco/cliente';
+import { urlFoto } from '../banco/pecas';
 import { prefixar, type Idioma } from '../idioma';
 import { emailConfirmacao, emailEdicao, montarBoasVindas, proximoEm, type Email } from './emails';
 import { enviarLote, type Mensagem } from './resend';
@@ -128,7 +130,7 @@ export type Envio = { ok: true; enviados: number; falhas: number } | { ok: false
 // Manda uma edição publicada para todos os confirmados, uma vez só. Em espanhol vai a tradução pronta; sem ela, o original.
 export async function enviarEdicao(pecaId: string, por: string, site: string): Promise<Envio> {
   const db = mestre();
-  const { data: p } = await db.from('pecas').select('id, tipo, estado, titulo, resumo, corpo, serie, numero, traducoes(idioma, estado, titulo, resumo, corpo)').eq('id', pecaId).maybeSingle();
+  const { data: p } = await db.from('pecas').select('id, tipo, estado, titulo, resumo, corpo, serie, numero, publicada_em, foto_caminho, foto_descricao, foto_credito, traducoes(idioma, estado, titulo, resumo, corpo)').eq('id', pecaId).maybeSingle();
   if (!p || p.tipo !== 'newsletter' || p.estado !== 'publicada' || !p.serie || !p.numero) return { ok: false, erro: 'Só edição da newsletter publicada vai por e-mail.' };
   // A linha em envios_newsletter é a trava: se já existe, essa edição já saiu.
   const trava = await db.from('envios_newsletter').insert({ peca_id: pecaId, por });
@@ -139,12 +141,16 @@ export async function enviarEdicao(pecaId: string, por: string, site: string): P
     pt: { titulo: p.titulo, resumo: p.resumo, corpo: p.corpo, idioma: 'pt' },
     es: es ? { titulo: es.titulo ?? p.titulo, resumo: es.resumo ?? p.resumo, corpo: es.corpo ?? p.corpo, idioma: 'es' } : { titulo: p.titulo, resumo: p.resumo, corpo: p.corpo, idioma: 'pt' },
   };
+  const { data: serie } = await db.from('series').select('nome, nome_es').eq('slug', p.serie).maybeSingle();
+  const foto = p.foto_caminho ? { url: urlFoto(urlBanco(), p.foto_caminho), descricao: p.foto_descricao ?? '', credito: p.foto_credito ?? undefined } : undefined;
   const emails = {} as Record<Idioma, (sair: string) => Email>;
   for (const i of ['pt', 'es'] as Idioma[]) {
     const v = versoes[i];
     const corpoHtml = (await renderizarMarkdown(v.corpo)).replace(/<(video|audio)[^>]*src="([^"]*)"[^>]*>.*?<\/\1>/g, '<p><a href="$2">$2</a></p>');
     const link = `${site}${caminhoEdicao(p.serie, p.numero, v.idioma)}`;
-    emails[i] = (s) => emailEdicao(v.idioma, { titulo: v.titulo.replace(/[|*]/g, ' ').replace(/\s+/g, ' ').trim(), resumo: v.resumo, corpoHtml, link }, s);
+    const nomeSerie = (v.idioma === 'es' ? serie?.nome_es : serie?.nome) || serie?.nome;
+    const data = p.publicada_em ? formatarData(new Date(p.publicada_em), v.idioma) : undefined;
+    emails[i] = (s) => emailEdicao(v.idioma, { titulo: v.titulo.replace(/[|*]/g, ' ').replace(/\s+/g, ' ').trim(), resumo: v.resumo, corpoHtml, link, serie: nomeSerie, numero: p.numero, data, foto }, s);
   }
 
   const { data: lista, error } = await db.from('assinantes').select('email, idioma, token').not('confirmado_em', 'is', null);
