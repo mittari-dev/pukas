@@ -31,7 +31,7 @@ grant execute on function resultado_votacao(uuid), comprovantes_votacao(uuid) to
 
 -- Link curto: a mesma regra do código (src/lib/links.ts); espaço e caractere de controle viram outro domínio no navegador.
 alter table links_curtos drop constraint if exists links_curtos_destino_check;
-alter table links_curtos add constraint links_curtos_destino_check check (destino ~ '^/([^/\[:space:][:cntrl:]][^[:space:][:cntrl:]]*)?$');
+alter table links_curtos add constraint links_curtos_destino_check check (destino ~ '^/(?![/\\])[^[:space:][:cntrl:]]*$');
 
 -- Confirmação da newsletter: no máximo 3 envios por endereço, contados à parte (o pedido não "rejuvenesce").
 alter table assinantes add column envios int not null default 1, add column ultimo_envio timestamptz not null default now();
