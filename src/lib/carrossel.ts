@@ -3,6 +3,9 @@
 export interface SlideTexto {
   titulo: string;
   texto: string;
+  // Citação (bloco `>`): slide próprio; o autor é a linha que começa com travessão.
+  citacao?: boolean;
+  autor?: string;
 }
 
 const MAX_PALAVRAS = 45;
@@ -25,6 +28,12 @@ export function slidesDoTexto(corpo: string): SlideTexto[] {
     const sub = bloco.match(/^#{2,3}\s+(.+)/);
     if (sub) {
       titulo = limpar(sub[1]);
+      continue;
+    }
+    if (/^\s*>/.test(bloco)) {
+      const linhas = bloco.split('\n').map((l) => l.replace(/^\s*>\s?/, '').trim()).filter(Boolean);
+      const autor = linhas.length > 1 && /^[—–-]\s*/.test(linhas.at(-1)!) ? linhas.pop()!.replace(/^[—–-]\s*/, '') : '';
+      slides.push({ titulo: '', texto: limpar(linhas.join(' ')), citacao: true, autor: limpar(autor) });
       continue;
     }
     const palavras = limpar(bloco).split(' ').filter(Boolean);

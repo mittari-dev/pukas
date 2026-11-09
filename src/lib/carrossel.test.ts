@@ -21,4 +21,12 @@ describe('slidesDoTexto', () => {
     expect(slidesDoTexto(muitos)).toHaveLength(6);
   });
   test('sem texto, nenhum slide', () => expect(slidesDoTexto('')).toEqual([]));
+  test('citação (>) vira slide próprio, com o autor da linha que começa com travessão', () => {
+    const s = slidesDoTexto('Antes.\n\n> "Robô não faz greve."\n> — João, 34, operador de telemarketing\n\n> Sem autor.');
+    expect(s).toEqual([
+      { titulo: '', texto: 'Antes.' },
+      { titulo: '', texto: '"Robô não faz greve."', citacao: true, autor: 'João, 34, operador de telemarketing' },
+      { titulo: '', texto: 'Sem autor.', citacao: true, autor: '' },
+    ]);
+  });
 });

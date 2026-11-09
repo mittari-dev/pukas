@@ -382,15 +382,14 @@ const traducao = linha?.traducoes?.[0];
       </div>
       <div class="compartilhar__redes">
         <button type="button" class="botao botao--marca compartilhar__story" data-story>Story do Instagram</button>
-        <button type="button" class="botao botao--linha" data-carrossel>Carrossel (imagens)</button>
-        <button type="button" class="botao botao--linha" data-video>Vídeo vertical (Reels)</button>
+        <button type="button" class="botao botao--marca" data-carrossel>Carrossel</button>
         <a class="botao botao--linha" href={redes!.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
         <a class="botao botao--linha" href={redes!.x} target="_blank" rel="noopener">X (Twitter)</a>
         <a class="botao botao--linha" href={redes!.threads} target="_blank" rel="noopener">Threads</a>
         <a class="botao botao--linha" href={redes!.facebook} target="_blank" rel="noopener">Facebook</a>
         <a class="botao botao--linha" href={redes!.telegram} target="_blank" rel="noopener">Telegram</a>
       </div>
-      <p class="ajuda" data-compartilhar-aviso aria-live="polite">Story: no celular abre o menu de compartilhar (escolha Instagram → Story); no computador baixa a imagem. Cole o link no adesivo de link do story. Carrossel: 1080×1350, uma imagem por slide. Vídeo: os mesmos slides em sequência, sem som (ponha a música no próprio app).</p>
+      <p class="ajuda" data-compartilhar-aviso aria-live="polite">Story: no celular abre o menu de compartilhar (escolha Instagram → Story); no computador baixa a imagem. Cole o link no adesivo de link do story. Carrossel: imagens 1080×1350 na ordem certa, para postar no feed.</p>
       <form method="dialog"><button class="botao botao--linha compartilhar__fechar">Fechar</button></form>
     </dialog>
     <script is:inline src="/compartilhar.js" defer></script>
@@ -596,7 +595,8 @@ const traducao = linha?.traducoes?.[0];
     text-align: center;
     text-decoration: none;
   }
-  .compartilhar__story {
+  /* Sobrou um botão sozinho na última linha: ocupa a largura toda. */
+  .compartilhar__redes .botao:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
   .compartilhar__fechar {
