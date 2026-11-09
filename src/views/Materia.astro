@@ -1,0 +1,109 @@
+---
+// Página da matéria: cabeça, o vídeo do YouTube (só carrega no clique, sem cookie; antes disso é só a miniatura),
+// o texto com as fontes e o fim de matéria. O vídeo é o centro; o texto resume e dá as fontes.
+import Base from '../layouts/Base.astro';
+import CabecaMateria from '../components/CabecaMateria.astro';
+import FimMateria from '../components/FimMateria.astro';
+import AvisoTraducao from '../components/AvisoTraducao.astro';
+import type { MateriaIdioma } from '../lib/carregar';
+import { formatarData } from '../lib/formato';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import { imagem, srcset } from '../lib/imagem';
+import { textoManchete } from '../lib/manchete';
+import { renderizarMarkdown } from '../lib/markdown';
+import { embedDoYoutube, idDoYoutube, miniaturaDoYoutube } from '../lib/youtube';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+  materia: MateriaIdioma;
+  alternativa: { href: string; equivalente: boolean };
+}
+const { idioma, materia, alternativa } = Astro.props;
+const d = materia.data;
+const corpo = await renderizarMarkdown(materia.body ?? '');
+const id = idDoYoutube(materia.video);
+const capa = (d.foto.arquivo as string) || (id ? miniaturaDoYoutube(id) : '');
+---
+<Base titulo={textoManchete(d.titulo)} descricao={d.resumo} receita="leitura" imagem={(d.foto.arquivo as string) || undefined} idioma={idioma} alternativa={alternativa}>
+  <article class="leitura">
+    <CabecaMateria chapeu={t(idioma, `materia.${materia.formato}`)} titulo={d.titulo} linhaFina={d.resumo} meta={[formatarData(d.publicadaEm, idioma), t(idioma, 'materia.minutosVideo')]} />
+
+    <AvisoTraducao idioma={idioma} traducao={materia.traducao} original={`/materias/${materia.id}`} />
+
+    {id && (
+      <figure class="player" data-player data-embed={embedDoYoutube(id)}>
+        <a class="player__abrir" href={materia.video} rel="noopener" data-astro-prefetch="false">
+          {capa && <img class="player__capa" src={imagem(capa, 1200)} srcset={srcset(capa)} sizes="(min-width: 720px) 680px, 100vw" alt="" width="1200" height="675" loading="eager" decoding="async" fetchpriority="high" />}
+          <span class="maquina player__botao">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>
+            {t(idioma, 'materia.assistir')}
+          </span>
+        </a>
+        <figcaption class="maquina player__legenda"><a href={materia.video} rel="noopener">{t(idioma, 'materia.youtube')}</a></figcaption>
+      </figure>
+    )}
+
+    <div class="corpo" set:html={corpo} />
+
+    <FimMateria idioma={idioma} pecaId={materia.pecaId} titulo={d.titulo} fontes={d.fontes} checagem={d.checagem} correcoes={d.correcoes} />
+
+    <p class="maquina materia__todas"><a href={prefixar('/materias', idioma)}>{t(idioma, 'materias.titulo')}</a></p>
+  </article>
+</Base>
+<script is:inline src="/player.js" defer></script>
+
+<style>
+  .player {
+    margin: 0 0 var(--esp-6);
+  }
+  .player__abrir,
+  .player :global(iframe) {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--tinta);
+    border: 0;
+  }
+  .player__capa {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .player__botao {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--esp-2);
+    padding: var(--esp-3) var(--esp-4);
+    background: var(--pau-brasil);
+    color: var(--cal);
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .player__botao svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+  }
+  .player__abrir:hover .player__botao,
+  .player__abrir:focus-visible .player__botao {
+    background: var(--tinta);
+  }
+  .player__legenda {
+    margin-top: var(--esp-2);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .materia__todas {
+    margin-top: var(--esp-6);
+    padding-top: var(--esp-3);
+    border-top: 2px solid currentColor;
+    font-size: 13px;
+  }
+</style>

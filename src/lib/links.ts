@@ -22,5 +22,5 @@ export function caminhoPublico(p: { tipo: string; id: string; slug: string | nul
   const s = p.slug ?? p.id;
   if (p.tipo === 'newsletter' && p.serie && p.numero) return caminhoEdicao(p.serie, p.numero);
   if (p.tipo === 'pagina') return `/${s}`;
-  return `/${{ noticia: 'noticias', cultura: 'cultura', votacao: 'votacoes' }[p.tipo] ?? 'noticias'}/${s}`;
+  return `/${{ noticia: 'noticias', cultura: 'cultura', votacao: 'votacoes', materia: 'materias' }[p.tipo] ?? 'noticias'}/${s}`;
 }

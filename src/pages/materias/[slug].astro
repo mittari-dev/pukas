@@ -1,0 +1,15 @@
+---
+import Materia from '../../views/Materia.astro';
+import { carregarMaterias } from '../../lib/carregar';
+import { prefixar } from '../../lib/idioma';
+import { etiquetasDaPeca } from '../../lib/cache';
+
+const materia = (await carregarMaterias('pt')).find((m) => m.id === Astro.params.slug);
+if (!materia) return Astro.rewrite('/404');
+Astro.locals.etiquetas = etiquetasDaPeca(materia);
+const traduzida = (await carregarMaterias('es')).some((m) => m.id === materia.id);
+const alternativa = traduzida
+  ? { href: prefixar(`/materias/${materia.id}`, 'es'), equivalente: true }
+  : { href: prefixar('/materias', 'es'), equivalente: false };
+---
+<Materia idioma="pt" materia={materia} alternativa={alternativa} />

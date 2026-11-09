@@ -49,7 +49,7 @@ const fontePrimaria = {
 };
 
 // Uma peça completa e válida para publicar, por tipo. Números e slugs únicos a cada chamada.
-export function pecaValida(tipo: 'newsletter' | 'cultura' | 'noticia' | 'pagina' | 'votacao'): Record<string, unknown> {
+export function pecaValida(tipo: 'newsletter' | 'cultura' | 'noticia' | 'pagina' | 'votacao' | 'materia'): Record<string, unknown> {
   const u = unico();
   const base = { tipo, titulo: 'Direito | nenhum caiu | do céu.', resumo: 'Resumo.', corpo: 'Texto.', estado: 'publicada' };
   const foto = { foto_caminho: 'teste.jpg', foto_descricao: 'Operários', foto_credito: 'Arquivo', foto_licenca: 'Domínio público' };
@@ -59,6 +59,8 @@ export function pecaValida(tipo: 'newsletter' | 'cultura' | 'noticia' | 'pagina'
       return { ...base, ...foto, serie: 'memoria-operaria', numero: Number(u.slice(-6)), fontes: [fontePrimaria], checagem };
     case 'noticia':
       return { ...base, slug: `noticia-${u}`, fontes: [{ ...fontePrimaria, tipo: 'secundaria' }], checagem };
+    case 'materia':
+      return { ...base, slug: `materia-${u}`, subtipo: 'quinta', video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', fontes: [{ ...fontePrimaria, tipo: 'secundaria' }], checagem };
     case 'cultura':
       return { ...base, subtipo: 'conto', numero: Number(u.slice(-6)), slug: `obra-${u}`, fontes: [] };
     case 'pagina':

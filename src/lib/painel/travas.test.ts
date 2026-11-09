@@ -25,6 +25,18 @@ describe('travas da votação', () => {
   });
 });
 
+describe('travas da matéria (vídeo de quinta e dossiê)', () => {
+  const materia = (extra: Partial<PecaEntrada> = {}) =>
+    newsletter({ tipo: 'materia', serie: undefined, numero: undefined, slug: 'a-greve', subtipo: 'quinta', foto: undefined, video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', ...extra });
+  test('completa passa', () => expect(falhas(materia())).toEqual([]));
+  test('sem vídeo do YouTube, sem fonte e sem checagem', () => {
+    expect(falhas(materia({ video: undefined, fontes: [], checagem: undefined }))).toEqual(['sem fonte', 'sem vídeo do YouTube', 'sem checagem']);
+  });
+  test('link que não é do YouTube não serve', () => {
+    expect(falhas(materia({ video: 'https://vimeo.com/123' }))).toEqual(['sem vídeo do YouTube']);
+  });
+});
+
 describe('travasDaPeca', () => {
   test('newsletter completa passa em tudo', () => {
     expect(falhas(newsletter())).toEqual([]);

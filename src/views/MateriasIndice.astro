@@ -1,0 +1,45 @@
+---
+// /materias: a investigação de quinta e o dossiê do mês. Cartão com a miniatura do vídeo (foto da matéria ou a do YouTube).
+import Base from '../layouts/Base.astro';
+import CartaoNoticia from '../components/CartaoNoticia.astro';
+import Manchete from '../components/identidade/Manchete.astro';
+import { carregarMaterias } from '../lib/carregar';
+import { formatarData } from '../lib/formato';
+import { prefixar, t, type Idioma } from '../lib/idioma';
+import { textoManchete } from '../lib/manchete';
+import { idDoYoutube, miniaturaDoYoutube } from '../lib/youtube';
+import '../styles/leitura.css';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const materias = await carregarMaterias(idioma);
+const capa = (m: (typeof materias)[number]) => (m.data.foto.arquivo as string) || (idDoYoutube(m.video) ? miniaturaDoYoutube(idDoYoutube(m.video)!) : undefined);
+---
+<Base titulo={t(idioma, 'materias.titulo')} descricao={t(idioma, 'materias.descricao')} receita="leitura" idioma={idioma}>
+  <div class="leitura">
+    <div class="titulo"><Manchete titulo={t(idioma, 'materias.titulo')} tamanho="m" /></div>
+    <p class="sub">{t(idioma, 'materias.sub')}</p>
+    {materias.length === 0 ? (
+      <p class="vazio">{t(idioma, 'materias.vazio')}</p>
+    ) : (
+      <ul class="cartoes">
+        {materias.map((m, i) => (
+          <li>
+            <CartaoNoticia href={prefixar(`/materias/${m.id}`, idioma)} foto={capa(m)} meta={`${t(idioma, `materia.${m.formato}`)} · ${formatarData(m.data.publicadaEm, idioma)}`} titulo={textoManchete(m.data.titulo)} resumo={m.data.resumo} primeiro={i === 0} />
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</Base>
+
+<style>
+  .titulo {
+    margin-top: var(--esp-5);
+  }
+  .sub {
+    margin: var(--esp-4) 0 var(--esp-6);
+  }
+</style>
