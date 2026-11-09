@@ -1,10 +1,11 @@
 // A lista "pronto para publicar?" do painel. Mesmas regras e mensagens do gatilho pecas_travas
 // (supabase/migrations) e de validarPublicavel/validarObra: o banco é a autoridade, isto só mostra.
 import type { Fonte } from '../edicoes';
+import { idDoYoutube } from '../youtube';
 import { MAX_PALAVRAS_MANCHETE, contarPalavras } from '../edicoes';
 import type { Proposicao } from '../votacoes/congresso';
 
-export type TipoPeca = 'newsletter' | 'cultura' | 'noticia' | 'pagina' | 'votacao';
+export type TipoPeca = 'newsletter' | 'cultura' | 'noticia' | 'pagina' | 'votacao' | 'materia';
 export type EstadoPeca = 'rascunho' | 'em_revisao' | 'publicada' | 'rejeitada';
 export type Papel = 'editor' | 'revisor' | 'redator';
 
@@ -21,7 +22,7 @@ export interface PecaEntrada {
   serie?: string;
   numero?: number;
   slug?: string;
-  subtipo?: 'conto' | 'cena' | 'poema' | 'ensaio';
+  subtipo?: 'conto' | 'cena' | 'poema' | 'ensaio' | 'quinta' | 'dossie';
   autoria: string;
   titulo: string;
   resumo: string;
@@ -54,11 +55,12 @@ export function travasDaPeca(p: PecaEntrada): Trava[] {
   const trava = (chave: string, ok: boolean, rotulo: string, mensagem: string) => travas.push({ chave, ok, rotulo, mensagem });
 
   if (p.tipo === 'newsletter') trava('fonte', p.fontes.some((f) => f.tipo === 'primaria'), 'Fonte primária', 'sem fonte primária');
-  if (p.tipo === 'noticia' || p.tipo === 'votacao') trava('fonte', p.fontes.length > 0, 'Fonte', 'sem fonte');
+  if (p.tipo === 'noticia' || p.tipo === 'votacao' || p.tipo === 'materia') trava('fonte', p.fontes.length > 0, 'Fonte', 'sem fonte');
+  if (p.tipo === 'materia') trava('video', Boolean(p.video && idDoYoutube(p.video)), 'Vídeo do YouTube', 'sem vídeo do YouTube');
   if (p.tipo === 'votacao') trava('proposicao', Boolean(p.proposicao), 'Proposição', 'sem proposição');
 
   const prefixo = p.tipo === 'cultura' ? 'capa' : 'foto';
-  const olhaFoto = p.tipo === 'newsletter' || ((p.tipo === 'noticia' || p.tipo === 'cultura') && p.foto);
+  const olhaFoto = p.tipo === 'newsletter' || ((p.tipo === 'noticia' || p.tipo === 'cultura' || p.tipo === 'materia') && p.foto);
   if (p.tipo === 'newsletter') {
     trava('foto', Boolean(p.foto?.caminho), 'Foto', 'sem foto');
     if (p.foto?.caminho) trava('foto_descricao', !vazio(p.foto.descricao), 'Descrição da foto', 'foto sem descrição');
@@ -68,7 +70,7 @@ export function travasDaPeca(p: PecaEntrada): Trava[] {
     trava(`${prefixo}_credito`, !vazio(p.foto?.credito), `Crédito da ${prefixo}`, `${prefixo} sem crédito`);
   }
 
-  if (p.tipo === 'newsletter' || p.tipo === 'noticia' || p.tipo === 'votacao') {
+  if (p.tipo === 'newsletter' || p.tipo === 'noticia' || p.tipo === 'votacao' || p.tipo === 'materia') {
     trava('checagem', Boolean(p.checagem), 'Checagem', 'sem checagem');
     const n = contarPalavras(p.titulo);
     trava('manchete', n <= MAX_PALAVRAS_MANCHETE, `Manchete com até ${MAX_PALAVRAS_MANCHETE} palavras`, `manchete com ${n} palavras (máx. ${MAX_PALAVRAS_MANCHETE})`);

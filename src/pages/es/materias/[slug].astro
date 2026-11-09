@@ -1,0 +1,15 @@
+---
+import Materia from '../../../views/Materia.astro';
+import { carregarMaterias, pendente } from '../../../lib/carregar';
+import { etiquetasDaPeca } from '../../../lib/cache';
+
+let materia = (await carregarMaterias('es')).find((m) => m.id === Astro.params.slug);
+if (!materia) {
+  const original = (await carregarMaterias('pt')).find((m) => m.id === Astro.params.slug);
+  if (!original) return Astro.rewrite('/es/404');
+  materia = { ...pendente(original), video: original.video, formato: original.formato };
+}
+Astro.locals.etiquetas = etiquetasDaPeca(materia);
+const alternativa = { href: `/materias/${materia.id}`, equivalente: true };
+---
+<Materia idioma="es" materia={materia} alternativa={alternativa} />

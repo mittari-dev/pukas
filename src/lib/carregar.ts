@@ -14,6 +14,8 @@ import type { Casa, Proposicao } from './votacoes/congresso';
 
 export type EdicaoIdioma = Edicao & MarcaTraducao & { body?: string; pecaId?: string };
 export type ObraIdioma = Obra & MarcaTraducao & { body?: string; pecaId?: string };
+// Matéria: a forma da notícia (fontes, checagem, foto) mais o vídeo do YouTube e o formato (quinta ou dossiê).
+export type MateriaIdioma = EdicaoIdioma & { video: string; formato: 'quinta' | 'dossie' };
 export interface Pagina {
   id: string;
   titulo: string;
@@ -62,6 +64,13 @@ export async function carregarObras(idioma: Idioma = 'pt'): Promise<ObraIdioma[]
 export async function carregarNoticias(idioma: Idioma = 'pt'): Promise<EdicaoIdioma[]> {
   const base = urlBanco();
   return noIdioma(await publicadas('noticia'), idioma, (l) => ({ ...paraEdicao(l, base), id: l.slug ?? l.id }));
+}
+
+export async function carregarMaterias(idioma: Idioma = 'pt'): Promise<MateriaIdioma[]> {
+  const base = urlBanco();
+  const linhas = await publicadas('materia');
+  const extra = new Map(linhas.map((l) => [l.slug ?? l.id, { video: l.video ?? '', formato: (l.subtipo === 'dossie' ? 'dossie' : 'quinta') as 'quinta' | 'dossie' }]));
+  return noIdioma(linhas, idioma, (l) => ({ ...paraEdicao(l, base), id: l.slug ?? l.id })).map((m) => ({ ...m, ...extra.get(m.id)! }));
 }
 
 export async function carregarPagina(slug: string, idioma: Idioma = 'pt'): Promise<Pagina | null> {

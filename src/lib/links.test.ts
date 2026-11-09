@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { caminhoPublico, codigoValido, destinoValido, sugerirCodigo } from './links';
+import { caminhoPublico, codigoValido, destinoValido, linksDeCompartilhar, sugerirCodigo, variantesCodigo } from './links';
 
 describe('links curtos', () => {
   test('código: minúsculas, números e hífen, até 40', () => {
@@ -26,5 +26,20 @@ describe('links curtos', () => {
     expect(caminhoPublico({ tipo: 'pagina', id: 'u', slug: 'manifesto' })).toBe('/manifesto');
     expect(caminhoPublico({ tipo: 'newsletter', id: 'u', slug: null, serie: 'memoria-operaria', numero: 7 })).toBe('/newsletter/memoria-operaria/007');
     expect(caminhoPublico({ tipo: 'noticia', id: 'uuid-1', slug: null })).toBe('/noticias/uuid-1');
+  });
+
+  test('variantes do código para achar um livre: o próprio, depois -2, -3…, sempre válidos e até 40', () => {
+    expect(variantesCodigo('greve').slice(0, 3)).toEqual(['greve', 'greve-2', 'greve-3']);
+    for (const c of variantesCodigo('x'.repeat(40))) expect(codigoValido(c), c).toBe(true);
+    expect(variantesCodigo('')[0]).toBe('pukas');
+  });
+
+  test('links de compartilhar com o link curto e o título', () => {
+    const l = linksDeCompartilhar('https://pukas.lat/ir/greve', 'A greve & a luta');
+    expect(l.whatsapp).toBe(`https://wa.me/?text=${encodeURIComponent('A greve & a luta https://pukas.lat/ir/greve')}`);
+    expect(l.x).toContain('twitter.com/intent/tweet?text=A%20greve%20%26%20a%20luta&url=https%3A%2F%2Fpukas.lat%2Fir%2Fgreve');
+    expect(l.facebook).toContain('sharer.php?u=https%3A%2F%2Fpukas.lat%2Fir%2Fgreve');
+    expect(l.telegram).toContain('t.me/share/url?url=');
+    expect(l.threads).toContain('threads.net/intent/post?text=');
   });
 });
