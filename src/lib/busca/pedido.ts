@@ -4,6 +4,7 @@ import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { z } from 'zod';
 import { ehLinkWeb } from '../link';
 import { INSTRUCOES_PAUTA, INSTRUCOES_RASCUNHO } from './instrucoes';
+import { normalizarUrl } from './robo';
 
 export const MODELO_BUSCA = 'claude-sonnet-5-5';
 
@@ -29,7 +30,8 @@ export function ferramentas(fontesAtivas: string[], buscaLivre: boolean): Anthro
   const dominios = buscaLivre ? {} : { allowed_domains: fontesAtivas };
   return [
     { type: 'web_search_20260209', name: 'web_search', max_uses: 15, ...dominios },
-    { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 20, ...dominios },
+    // Teto de tamanho por leitura: o robô precisa ler cada candidata, e 12 matérias inteiras estourariam o custo.
+    { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 12, max_content_tokens: 6000, ...dominios },
   ];
 }
 
@@ -42,10 +44,19 @@ interface Config {
 
 const lista = (t: string[]) => (t.length ? t.map((x) => `- ${x}`).join('\n') : '- (nenhum)');
 
-export function pedidoPauta(cfg: Config, fontes: string[], descartes: { titulo: string; motivo: string }[]): Anthropic.Messages.MessageCreateParamsStreaming {
-  const texto = `Monte a pauta de hoje com até ${cfg.max_candidatas} candidatas.
+const dia = (d: Date, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', ...o }).format(d);
 
-Fontes fixas da casa (domínios):
+// O modelo não sabe que dia é hoje: a data e a janela vão no pedido. Na segunda, a janela pega o fim de semana.
+function quando(agora: Date): string {
+  const segunda = dia(agora, { weekday: 'long' }) === 'segunda-feira';
+  const desde = new Date(agora.getTime() - (segunda ? 3 : 2) * 86_400_000);
+  return `Hoje é ${dia(agora, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}. Vale o que saiu de ${dia(desde, { day: 'numeric', month: 'long' })} até hoje.`;
+}
+
+export function pedidoPauta(cfg: Config, fontes: string[], descartes: { titulo: string; motivo: string }[], agora = new Date()): Anthropic.Messages.MessageCreateParamsStreaming {
+  const texto = `Monte a pauta de hoje com até ${cfg.max_candidatas} candidatas. ${quando(agora)}
+
+Fontes fixas da casa (domínios). Busque nelas primeiro, com o operador site:, por exemplo "site:${fontes[0] ?? 'agenciabrasil.ebc.com.br'} greve":
 ${lista(fontes)}
 
 Temas que interessam:
@@ -86,9 +97,19 @@ ${c.fontes.map((f) => `- ${f.veiculo}: ${f.titulo} (${f.url})`).join('\n')}`;
   };
 }
 
+const NAO_LEU = 'O robô não leu nenhuma fonte inteira, só o trecho da busca.';
+
 // O que volta da API: JSON fora do formato lança (a rodada vira erro); candidata sem fonte web cai.
-export function validarPauta(json: unknown, max: number): { candidatas: CandidataPauta[]; descartadas: number } {
+// Com `vistos` (o que o robô viu nesta rodada), cai a fonte que ele não viu (link inventado) e, se nenhuma foi lida
+// inteira, o aviso vai para o "falta confirmar".
+export function validarPauta(json: unknown, max: number, vistos?: { vistas: Set<string>; lidas: Set<string> }): { candidatas: CandidataPauta[]; descartadas: number } {
   const { candidatas } = Pauta.parse(json);
-  const boas = candidatas.filter((c) => c.fontes.length > 0 && c.fontes.every((f) => ehLinkWeb(f.url)));
+  const conferidas = candidatas.map((c) => {
+    if (!vistos) return c;
+    const fontes = c.fontes.filter((f) => vistos.vistas.has(normalizarUrl(f.url)));
+    const leu = fontes.some((f) => vistos.lidas.has(normalizarUrl(f.url)));
+    return leu ? { ...c, fontes } : { ...c, fontes, falta_confirmar: [c.falta_confirmar, NAO_LEU].filter(Boolean).join(' ') };
+  });
+  const boas = conferidas.filter((c) => c.fontes.length > 0 && c.fontes.every((f) => ehLinkWeb(f.url)));
   return { candidatas: boas.slice(0, max), descartadas: candidatas.length - boas.length };
 }

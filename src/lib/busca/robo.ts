@@ -41,7 +41,8 @@ export async function conversar(api: Api, pedido: Anthropic.Messages.MessageCrea
 export function diario(blocos: Anthropic.Messages.ContentBlock[]): string[] {
   const linhas: string[] = [];
   for (const b of blocos as unknown as { type: string; name?: string; input?: { query?: string; url?: string }; content?: unknown }[]) {
-    if (b.type === 'server_tool_use') linhas.push(b.name === 'web_search' ? `busca: ${b.input?.query}` : `leitura: ${b.input?.url}`);
+    // code_execution é o filtro interno da busca (dynamic filtering): não entra no diário.
+    if (b.type === 'server_tool_use' && b.name !== 'code_execution') linhas.push(b.name === 'web_search' ? `busca: ${b.input?.query}` : `leitura: ${b.input?.url}`);
     else if (b.type === 'web_search_tool_result' || b.type === 'web_fetch_tool_result') {
       const c = b.content as { error_code?: string } | unknown[];
       if (Array.isArray(c)) linhas.push(`  → ${c.length} resultado(s)`);
@@ -49,6 +50,26 @@ export function diario(blocos: Anthropic.Messages.ContentBlock[]): string[] {
     }
   }
   return linhas;
+}
+
+// Endereço sem âncora e sem barra no fim, para comparar o que o robô citou com o que ele viu.
+export const normalizarUrl = (u: string) => u.replace(/#.*$/, '').replace(/\/+$/, '');
+
+// O que o robô viu de verdade: links que vieram da busca ou da leitura, e os que ele leu inteiros.
+export function urlsVistas(blocos: Anthropic.Messages.ContentBlock[]): { vistas: Set<string>; lidas: Set<string> } {
+  const vistas = new Set<string>();
+  const lidas = new Set<string>();
+  for (const b of blocos as unknown as { type: string; content?: unknown }[]) {
+    if (b.type === 'web_search_tool_result' && Array.isArray(b.content)) for (const r of b.content as { url?: string }[]) if (r.url) vistas.add(normalizarUrl(r.url));
+    if (b.type === 'web_fetch_tool_result') {
+      const c = b.content as { type?: string; url?: string };
+      if (c?.type === 'web_fetch_result' && c.url) {
+        vistas.add(normalizarUrl(c.url));
+        lidas.add(normalizarUrl(c.url));
+      }
+    }
+  }
+  return { vistas, lidas };
 }
 
 // O texto final (o JSON do output_config) é o último bloco de texto da resposta.
