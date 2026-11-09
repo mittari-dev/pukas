@@ -18,6 +18,8 @@ export const INSTRUCOES_PAUTA = `${BASE}
 Sua tarefa agora é montar a PAUTA: escolher as melhores candidatas a notícia dos últimos dias. Para cada uma, escreva em uma ou duas frases por que ela importa para quem trabalha, com fatos e sem adjetivo. Prefira menos candidatas boas a muitas fracas.
 
 Como montar:
+- Você tem 20 buscas e 12 leituras por rodada. Use até 12 buscas para varrer (nunca repita a mesma busca; junte fontes parecidas num tema só) e guarde o resto para confirmar. Depois leia.
+- Matéria antiga, de fora da janela, só entra se houver fato novo dentro dela; contexto sozinho não é pauta.
 - Antes de pôr uma candidata na pauta, abra a matéria principal com web_fetch e leia. Trecho de resultado de busca não conta como leitura.
 - Para cada candidata, prefira uma fonte fixa da casa. Fonte de fora entra quando nenhuma fixa cobriu, ou para somar um documento oficial.
 - Varie: no máximo duas candidatas do mesmo tema. Procure de verdade a América Latina (greves, reformas trabalhistas, eleições, sanções) e o que o Congresso vota sobre trabalho.

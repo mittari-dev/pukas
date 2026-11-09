@@ -29,7 +29,7 @@ export const formatoRascunho = zodOutputFormat(Rascunho);
 export function ferramentas(fontesAtivas: string[], buscaLivre: boolean): Anthropic.Messages.ToolUnion[] {
   const dominios = buscaLivre ? {} : { allowed_domains: fontesAtivas };
   return [
-    { type: 'web_search_20260209', name: 'web_search', max_uses: 15, ...dominios },
+    { type: 'web_search_20260209', name: 'web_search', max_uses: 20, ...dominios },
     // Teto de tamanho por leitura: o robô precisa ler cada candidata, e 12 matérias inteiras estourariam o custo.
     { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 12, max_content_tokens: 6000, ...dominios },
   ];

@@ -9,7 +9,7 @@ const candidata = (titulo: string, extra = {}) => ({ titulo, porque: 'Pesa no sa
 describe('ferramentas', () => {
   test('busca livre desligada: busca e leitura presas às fontes fixas', () => {
     const [busca, leitura] = ferramentas(fontes, false) as { type: string; allowed_domains?: string[]; max_uses?: number }[];
-    expect(busca).toMatchObject({ type: 'web_search_20260209', allowed_domains: fontes, max_uses: 15 });
+    expect(busca).toMatchObject({ type: 'web_search_20260209', allowed_domains: fontes, max_uses: 20 });
     expect(leitura).toMatchObject({ type: 'web_fetch_20260209', allowed_domains: fontes, max_uses: 12 });
   });
 
@@ -49,6 +49,7 @@ describe('pedidos', () => {
     const p = pedidoPauta(cfg, fontes, []);
     expect(JSON.stringify(p.messages)).toContain('site:agenciabrasil.ebc.com.br');
     expect(String(p.system)).toContain('web_fetch');
+    expect(String(p.system)).toContain('20 buscas e 12 leituras');
   });
 
   test('rascunho: relê as fontes da candidata', () => {
