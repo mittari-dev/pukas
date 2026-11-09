@@ -9,8 +9,8 @@ const candidata = (titulo: string, extra = {}) => ({ titulo, porque: 'Pesa no sa
 describe('ferramentas', () => {
   test('busca livre desligada: busca e leitura presas às fontes fixas', () => {
     const [busca, leitura] = ferramentas(fontes, false) as { type: string; allowed_domains?: string[]; max_uses?: number }[];
-    expect(busca).toMatchObject({ type: 'web_search_20260209', allowed_domains: fontes, max_uses: 20 });
-    expect(leitura).toMatchObject({ type: 'web_fetch_20260209', allowed_domains: fontes, max_uses: 12 });
+    expect(busca).toMatchObject({ type: 'web_search_20250305', allowed_domains: fontes, max_uses: 15 });
+    expect(leitura).toMatchObject({ type: 'web_fetch_20250910', allowed_domains: fontes, max_uses: 10 });
   });
 
   test('busca livre ligada: sem lista de domínios', () => {
@@ -19,7 +19,7 @@ describe('ferramentas', () => {
 
   test('leitura com teto de tamanho, para a leitura obrigatória não estourar o custo', () => {
     const [, leitura] = ferramentas(fontes, true) as { max_content_tokens?: number; max_uses?: number }[];
-    expect(leitura).toMatchObject({ max_content_tokens: 6000, max_uses: 12 });
+    expect(leitura).toMatchObject({ max_content_tokens: 5000, max_uses: 10 });
   });
 });
 
@@ -49,7 +49,7 @@ describe('pedidos', () => {
     const p = pedidoPauta(cfg, fontes, []);
     expect(JSON.stringify(p.messages)).toContain('site:agenciabrasil.ebc.com.br');
     expect(String(p.system)).toContain('web_fetch');
-    expect(String(p.system)).toContain('20 buscas e 12 leituras');
+    expect(String(p.system)).toContain('15 buscas e 10 leituras');
   });
 
   test('rascunho: relê as fontes da candidata', () => {
