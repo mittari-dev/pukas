@@ -14,7 +14,7 @@ export default defineConfig({
   adapter: vercel({
     // Contagem de visitas da Vercel: sem cookie e sem dado pessoal, só números agregados (está na /privacidade).
     webAnalytics: { enabled: true },
-    imagesConfig: { sizes: [400, 800, 1200, 1600], domains: [banco], formats: ['image/avif', 'image/webp'] },
+    imagesConfig: { sizes: [400, 800, 1200, 1600], domains: [banco, 'i.ytimg.com'], formats: ['image/avif', 'image/webp'] },
   }),
   // A página começa a carregar quando o dedo encosta no link (ou o mouse passa por cima), antes do clique terminar.
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },

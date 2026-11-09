@@ -6,6 +6,7 @@ export const navegacao: { chave: Chave; href: string }[] = [
   { chave: 'nav.inicio', href: '/' },
   { chave: 'nav.memoria', href: '/newsletter' },
   { chave: 'nav.noticias', href: '/noticias' },
+  { chave: 'nav.materias', href: '/materias' },
   { chave: 'nav.votacoes', href: '/votacoes' },
   { chave: 'nav.cultura', href: '/cultura' },
   { chave: 'nav.manifesto', href: '/manifesto' },

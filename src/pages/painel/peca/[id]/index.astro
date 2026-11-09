@@ -24,8 +24,8 @@ import { textoManchete } from '../../../../lib/manchete';
 import { apagarRelato, ligarNoticias, noticiasLigadas, noticiasParaLigar, plenarioMaisRecente, relatos, resultadoNoPainel } from '../../../../lib/banco/votacoesPainel';
 
 const { cliente, usuario } = Astro.locals.painel!;
-const TIPOS: TipoPeca[] = ['newsletter', 'noticia', 'cultura', 'pagina', 'votacao'];
-const NOME: Record<TipoPeca, string> = { newsletter: 'Newsletter', noticia: 'Notícia', cultura: 'Cultura', pagina: 'Página', votacao: 'Votação' };
+const TIPOS: TipoPeca[] = ['newsletter', 'noticia', 'materia', 'cultura', 'pagina', 'votacao'];
+const NOME: Record<TipoPeca, string> = { newsletter: 'Newsletter', noticia: 'Notícia', materia: 'Matéria', cultura: 'Cultura', pagina: 'Página', votacao: 'Votação' };
 const ESTADO: Record<EstadoPeca, string> = { rascunho: 'Rascunho', em_revisao: 'Em revisão', publicada: 'Publicada', rejeitada: 'Rejeitada' };
 const DESTINO: Record<Exclude<Acao, 'editar' | 'corrigir'>, EstadoPeca> = { enviar_revisao: 'em_revisao', rejeitar: 'rejeitada', publicar: 'publicada' };
 
@@ -219,11 +219,20 @@ const traducao = linha?.traducoes?.[0];
         </div>
       </div>
     )}
+    {tipo === 'materia' && (
+      <div class="linha">
+        <div class="campo">
+          <label for="subtipo">Formato</label>
+          <select id="subtipo" name="subtipo"><option value="quinta" selected={v.subtipo !== 'dossie'}>Matéria de quinta</option><option value="dossie" selected={v.subtipo === 'dossie'}>Dossiê do mês</option></select>
+        </div>
+        <div class="campo"><label for="video">Vídeo do YouTube (link)</label><input id="video" name="video" type="url" value={v.video} required placeholder="https://www.youtube.com/watch?v=..." /></div>
+      </div>
+    )}
     {tipo !== 'newsletter' && (
       <div class="campo">
         <label for="slug">Endereço</label>
         <input id="slug" name="slug" value={v.slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
-        <p class="ajuda">Só letras minúsculas, números e hífen. Vira {tipo === 'cultura' ? '/cultura/' : tipo === 'noticia' ? '/noticias/' : tipo === 'votacao' ? '/votacoes/' : '/'}<strong>endereço</strong>.</p>
+        <p class="ajuda">Só letras minúsculas, números e hífen. Vira {tipo === 'cultura' ? '/cultura/' : tipo === 'noticia' ? '/noticias/' : tipo === 'materia' ? '/materias/' : tipo === 'votacao' ? '/votacoes/' : '/'}<strong>endereço</strong>.</p>
       </div>
     )}
 
