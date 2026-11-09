@@ -3,10 +3,14 @@
 import Painel from '../../layouts/Painel.astro';
 
 const { cliente } = Astro.locals.painel!;
-const [{ data: numeros }, { data: envios }] = await Promise.all([
+const [{ data: numeros }, { data: envios }, { data: porSerie }, { data: nomes }] = await Promise.all([
   cliente.rpc('painel_assinantes'),
   cliente.from('envios_newsletter').select('enviado_em, enviados, falhas, pecas(id, titulo, numero)').order('enviado_em', { ascending: false }).limit(50),
+  cliente.rpc('painel_assinantes_por_serie'),
+  cliente.from('series').select('slug, nome'),
 ]);
+const nomeSerie = (slug: string) => (nomes ?? []).find((x) => x.slug === slug)?.nome ?? slug;
+const series = (porSerie ?? []) as { serie: string; confirmados: number }[];
 const n = (numeros as { confirmados: number; pendentes: number; entraram_30: number; sairam_30: number }[] | null)?.[0];
 const data = (d: string) => new Date(d).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' });
 type Envio = { enviado_em: string; enviados: number; falhas: number; pecas: { id: string; titulo: string; numero: number | null } | null };
@@ -23,6 +27,14 @@ const lista = (envios ?? []) as unknown as Envio[];
       <div><dt class="maquina">Saíram (30 dias)</dt><dd>{n.sairam_30}</dd></div>
     </dl>
   ) : <p class="mensagem" role="alert">Não deu para ler os números agora. Recarregue a página.</p>}
+  {series.length > 1 && (
+    <>
+      <h2>Por newsletter</h2>
+      <dl class="numeros">
+        {series.map((x) => <div><dt class="maquina">{nomeSerie(x.serie)}</dt><dd>{x.confirmados}</dd></div>)}
+      </dl>
+    </>
+  )}
   <p class="ajuda">Quem assina recebe um e-mail para confirmar; sem confirmar em 7 dias, o pedido é apagado. Depois de confirmar, chegam 3 e-mails de boas-vindas (na hora, 2 dias depois e 5 dias depois). Para mandar uma edição, abra a edição publicada no Estúdio e use "Enviar por e-mail".</p>
 
   <h2>Envios</h2>

@@ -2,6 +2,7 @@
 // Formulário de assinar a newsletter por e-mail (POST /api/assinar). O anti-robô só carrega quando a pessoa
 // mexe no formulário (public/assinar.js): quem só lê a capa não passa pela Cloudflare.
 import { prefixar, t, type Idioma } from '../lib/idioma';
+import { carregarSeries } from '../lib/carregar';
 
 interface Props {
   idioma: Idioma;
@@ -11,6 +12,8 @@ interface Props {
 const { idioma, escuro = false } = Astro.props;
 const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? process.env.PUBLIC_TURNSTILE_SITE_KEY;
 const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] as const;
+// Uma série só: nada a escolher. Mais de uma: caixas marcadas, a pessoa desmarca o que não quer.
+const series = await carregarSeries(idioma);
 ---
 <form class:list={['assinar', { 'assinar--escuro': escuro }]} method="post" action="/api/assinar" data-assinar>
   {SITUACOES.map((s) => <p class="assinar__aviso" data-situacao={s} role="status" hidden>{t(idioma, `assinar.${s}`)}</p>)}
@@ -19,6 +22,12 @@ const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] 
     <input id={`assinar-email-${idioma}`} name="email" type="email" autocomplete="email" required maxlength="254" />
     <button class="maquina">{t(idioma, 'assinar.botao')}</button>
   </div>
+  {series.length > 1 && (
+    <fieldset class="assinar__series">
+      <legend class="maquina assinar__rotulo">{t(idioma, 'assinar.quais')}</legend>
+      {series.map((s) => <label class="assinar__serie"><input type="checkbox" name="serie" value={s.slug} checked /> {s.nome}</label>)}
+    </fieldset>
+  )}
   <input type="hidden" name="idioma" value={idioma} />
   <div class="assinar__escondido" aria-hidden="true"><input name="site" tabindex="-1" autocomplete="off" /></div>
   <div class="assinar__robo" data-sitekey={siteKey} data-language={idioma === 'es' ? 'es' : 'pt-br'} data-appearance="interaction-only"></div>
@@ -80,6 +89,25 @@ const SITUACOES = ['enviada', 'confirmada', 'saiu', 'invalida', 'robo', 'erro'] 
   }
   .assinar--escuro .assinar__aviso {
     border-left-color: var(--cal);
+  }
+  .assinar__series {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--esp-2) var(--esp-4);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .assinar__series legend {
+    width: 100%;
+    margin-bottom: var(--esp-1);
+  }
+  .assinar__serie {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--esp-2);
+    min-height: 44px;
+    font-size: 15px;
   }
   .assinar__escondido {
     position: absolute;

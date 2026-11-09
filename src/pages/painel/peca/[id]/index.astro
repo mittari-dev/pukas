@@ -134,7 +134,7 @@ if (Astro.request.method === 'POST') {
 // Edição publicada da newsletter: já foi por e-mail? Para quantos iria?
 const porEmail = linha?.tipo === 'newsletter' && linha.estado === 'publicada' && usuario!.papel === 'editor';
 const [envioFeito, assinantes] = porEmail
-  ? await Promise.all([cliente.from('envios_newsletter').select('enviado_em, enviados, falhas').eq('peca_id', linha!.id).maybeSingle().then((r) => r.data), contarConfirmados()])
+  ? await Promise.all([cliente.from('envios_newsletter').select('enviado_em, enviados, falhas').eq('peca_id', linha!.id).maybeSingle().then((r) => r.data), contarConfirmados(linha!.serie)])
   : [null, 0];
 
 // Peça no ar: curtidas (só a equipe vê) e atalho para o link curto.

@@ -37,3 +37,24 @@ describe('assinantes', () => {
     expect((await anon.rpc('painel_assinantes')).error).not.toBeNull();
   });
 });
+
+describe('assinatura por série', () => {
+  test('o envio de uma série pega quem escolheu essa série e quem recebe todas; o painel conta por série', async () => {
+    const u = crypto.randomUUID();
+    const todas = `todas-${u}@x.com`;
+    const so = `so-${u}@x.com`;
+    const outra = `outra-${u}@x.com`;
+    const agora = new Date().toISOString();
+    const { error } = await servico.from('assinantes').insert([
+      { email: todas, idioma: 'pt', confirmado_em: agora },
+      { email: so, idioma: 'pt', confirmado_em: agora, series: ['memoria-operaria'] },
+      { email: outra, idioma: 'pt', confirmado_em: agora, series: ['outra-serie'] },
+    ]);
+    expect(error).toBeNull();
+    const { data } = await servico.from('assinantes').select('email').in('email', [todas, so, outra]).or('series.eq.{},series.cs.{memoria-operaria}');
+    expect((data ?? []).map((a) => a.email).sort()).toEqual([so, todas].sort());
+    const { data: porSerie } = await editor.rpc('painel_assinantes_por_serie');
+    expect(Array.isArray(porSerie)).toBe(true);
+    expect((await anon.rpc('painel_assinantes_por_serie')).error).not.toBeNull();
+  });
+});
