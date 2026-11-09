@@ -32,18 +32,24 @@ export type Pedido = 'enviado' | 'ja_assinante' | 'espera';
 
 // Pedido repetido não manda e-mail sem limite: ninguém usa o formulário para lotar a caixa de alguém.
 // email já vem limpo e em minúsculas (emailValido).
-export async function pedirAssinatura(email: string, idioma: Idioma, site: string): Promise<Pedido> {
+export async function pedirAssinatura(email: string, idioma: Idioma, site: string, series: string[] = []): Promise<Pedido> {
   const db = mestre();
-  const { data: existente, error } = await db.from('assinantes').select('token, confirmado_em, envios, ultimo_envio').eq('email', email).maybeSingle();
+  const { data: existente, error } = await db.from('assinantes').select('token, confirmado_em, envios, ultimo_envio, series').eq('email', email).maybeSingle();
   if (error) throw new Error(error.message);
-  if (existente?.confirmado_em) return 'ja_assinante';
+  if (existente?.confirmado_em) {
+    // Já assina e marcou outra série: soma (quem já recebe todas continua com todas). Sem e-mail, sem revelar nada.
+    const atuais = existente.series as string[];
+    if (atuais.length > 0 && series.length > 0) await db.from('assinantes').update({ series: [...new Set([...atuais, ...series])] }).eq('token', existente.token);
+    if (atuais.length > 0 && series.length === 0) await db.from('assinantes').update({ series: [] }).eq('token', existente.token);
+    return 'ja_assinante';
+  }
   let token = existente?.token as string | undefined;
   if (existente) {
     // No máximo 3 e-mails de confirmação por endereço, com 10 minutos entre eles; o pedido some em 7 dias de qualquer jeito.
     if (existente.envios >= 3 || Date.now() - new Date(existente.ultimo_envio).getTime() < 10 * 60_000) return 'espera';
-    await db.from('assinantes').update({ envios: existente.envios + 1, ultimo_envio: new Date().toISOString(), idioma }).eq('token', token!);
+    await db.from('assinantes').update({ envios: existente.envios + 1, ultimo_envio: new Date().toISOString(), idioma, series }).eq('token', token!);
   } else {
-    const r = await db.from('assinantes').insert({ email, idioma }).select('token').single();
+    const r = await db.from('assinantes').insert({ email, idioma, series }).select('token').single();
     if (r.error) {
       // Dois envios do mesmo formulário ao mesmo tempo: o primeiro já mandou.
       if (r.error.code === '23505') return 'espera';
@@ -121,8 +127,11 @@ export async function sair(token: string): Promise<boolean> {
   return true;
 }
 
-export async function contarConfirmados(): Promise<number> {
-  const { count } = await mestre().from('assinantes').select('id', { count: 'exact', head: true }).not('confirmado_em', 'is', null);
+// Confirmados que recebem esta série (sem série: todos os confirmados).
+export async function contarConfirmados(serie?: string | null): Promise<number> {
+  let q = mestre().from('assinantes').select('id', { count: 'exact', head: true }).not('confirmado_em', 'is', null);
+  if (serie) q = q.or(`series.eq.{},series.cs.{${serie}}`);
+  const { count } = await q;
   return count ?? 0;
 }
 
@@ -154,7 +163,8 @@ export async function enviarEdicao(pecaId: string, por: string, site: string): P
     emails[i] = (s) => emailEdicao(v.idioma, { titulo: v.titulo.replace(/[|*]/g, ' ').replace(/\s+/g, ' ').trim(), resumo: v.resumo, corpoHtml, link, serie: nomeSerie, numero: p.numero, data, foto }, s);
   }
 
-  const { data: lista, error } = await db.from('assinantes').select('email, idioma, token').not('confirmado_em', 'is', null);
+  // Só quem assinou esta série (lista vazia = todas).
+  const { data: lista, error } = await db.from('assinantes').select('email, idioma, token').not('confirmado_em', 'is', null).or(`series.eq.{},series.cs.{${p.serie}}`);
   if (error) return { ok: false, erro: error.message };
   const r = await mandar((lista ?? []).map((a) => mensagem(a.email, emails[a.idioma as Idioma](linkSair(site, a.token)), linkSair(site, a.token))));
   await db.from('envios_newsletter').update({ enviados: r.enviados, falhas: r.falhas }).eq('peca_id', pecaId);
