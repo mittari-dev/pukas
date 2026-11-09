@@ -3,8 +3,9 @@ import { caminhoEdicao } from './formato';
 
 export const codigoValido = (c: string) => /^[a-z0-9][a-z0-9-]{0,39}$/.test(c);
 
-// Caminho do próprio site. "//x" e "/\x" o navegador lê como outro domínio.
-export const destinoValido = (d: string) => /^\/(?![/\\])/.test(d) || d === '/';
+// Caminho do próprio site. "//x" e "/\x" o navegador lê como outro domínio; espaço e caractere de controle
+// também ficam de fora, porque o navegador apaga TAB e quebra de linha e "/<TAB>/x" viraria "//x".
+export const destinoValido = (d: string) => /^\/(?![/\\])[^\s\x00-\x1f]*$/.test(d);
 
 export function sugerirCodigo(titulo: string): string {
   return titulo
