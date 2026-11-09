@@ -30,17 +30,18 @@ const mensagem = (para: string, e: Email, sair: string | null): Mensagem => ({ p
 
 export type Pedido = 'enviado' | 'ja_assinante' | 'espera';
 
-// Pedido repetido em menos de 10 minutos não manda outro e-mail: ninguém usa o formulário para lotar a caixa de alguém.
+// Pedido repetido não manda e-mail sem limite: ninguém usa o formulário para lotar a caixa de alguém.
 // email já vem limpo e em minúsculas (emailValido).
 export async function pedirAssinatura(email: string, idioma: Idioma, site: string): Promise<Pedido> {
   const db = mestre();
-  const { data: existente, error } = await db.from('assinantes').select('token, confirmado_em, criado_em').eq('email', email).maybeSingle();
+  const { data: existente, error } = await db.from('assinantes').select('token, confirmado_em, envios, ultimo_envio').eq('email', email).maybeSingle();
   if (error) throw new Error(error.message);
   if (existente?.confirmado_em) return 'ja_assinante';
   let token = existente?.token as string | undefined;
   if (existente) {
-    if (Date.now() - new Date(existente.criado_em).getTime() < 10 * 60_000) return 'espera';
-    await db.from('assinantes').update({ criado_em: new Date().toISOString(), idioma }).eq('token', token!);
+    // No máximo 3 e-mails de confirmação por endereço, com 10 minutos entre eles; o pedido some em 7 dias de qualquer jeito.
+    if (existente.envios >= 3 || Date.now() - new Date(existente.ultimo_envio).getTime() < 10 * 60_000) return 'espera';
+    await db.from('assinantes').update({ envios: existente.envios + 1, ultimo_envio: new Date().toISOString(), idioma }).eq('token', token!);
   } else {
     const r = await db.from('assinantes').insert({ email, idioma }).select('token').single();
     if (r.error) {

@@ -40,11 +40,16 @@ describe('IP da requisição', () => {
 
 describe('descarte', () => {
   test('honeypot preenchido', () => {
-    expect(motivoDescarte({ honeypot: 'x', validosDaRedeNaHora: 0 })).toBe('campo escondido preenchido');
+    expect(motivoDescarte({ honeypot: 'x', validosDaRedeNaHora: 0, validosDaRedeNaVotacao: 0 })).toBe('campo escondido preenchido');
   });
   test('o 31º da mesma rede na hora', () => {
-    expect(motivoDescarte({ honeypot: '', validosDaRedeNaHora: 29 })).toBeNull();
-    expect(motivoDescarte({ honeypot: '', validosDaRedeNaHora: 30 })).toBe('muitos votos da mesma rede');
+    expect(motivoDescarte({ honeypot: '', validosDaRedeNaHora: 29, validosDaRedeNaVotacao: 29 })).toBeNull();
+    expect(motivoDescarte({ honeypot: '', validosDaRedeNaHora: 30, validosDaRedeNaVotacao: 30 })).toBe('muitos votos da mesma rede');
+  });
+  // Revisão de segurança 08/11: sem teto na votação inteira, 30 por hora davam ~21 mil por IP em 30 dias.
+  test('o 101º da mesma rede na votação inteira, mesmo espalhado em horas diferentes', () => {
+    expect(motivoDescarte({ honeypot: '', validosDaRedeNaHora: 0, validosDaRedeNaVotacao: 99 })).toBeNull();
+    expect(motivoDescarte({ honeypot: '', validosDaRedeNaHora: 0, validosDaRedeNaVotacao: 100 })).toBe('muitos votos da mesma rede');
   });
 });
 

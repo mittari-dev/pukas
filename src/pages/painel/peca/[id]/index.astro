@@ -17,7 +17,10 @@ import { buscarProposicao, ErroCongresso, type Casa } from '../../../../lib/vota
 import { montarRascunho } from '../../../../lib/votacoes/rascunho';
 import { porcentagens, OPCOES, type Opcao } from '../../../../lib/votacoes/voto';
 import { contarConfirmados, enviarEdicao } from '../../../../lib/newsletter/fluxo';
-import { caminhoPublico, sugerirCodigo } from '../../../../lib/links';
+import { caminhoPublico, linksDeCompartilhar } from '../../../../lib/links';
+import { garantirLinkCurto } from '../../../../lib/banco/links';
+import { slidesDoTexto } from '../../../../lib/carrossel';
+import { textoManchete } from '../../../../lib/manchete';
 import { apagarRelato, ligarNoticias, noticiasLigadas, noticiasParaLigar, plenarioMaisRecente, relatos, resultadoNoPainel } from '../../../../lib/banco/votacoesPainel';
 
 const { cliente, usuario } = Astro.locals.painel!;
@@ -124,7 +127,7 @@ if (Astro.request.method === 'POST') {
         const l = await ligarPeca(cliente, agenda, r.valor);
         if (!l.ok) return Astro.redirect(`/painel/peca/${r.valor}?ok=1&aviso=${encodeURIComponent(l.erro)}`, 303);
       }
-      if (!erro) return Astro.redirect(`/painel/peca/${r.valor}?ok=1`, 303);
+      if (!erro) return Astro.redirect(`/painel/peca/${r.valor}?ok=1${acao === 'publicar' ? '&compartilhar=1' : ''}`, 303);
     }
   }
   }
@@ -137,10 +140,23 @@ const [envioFeito, assinantes] = porEmail
   ? await Promise.all([cliente.from('envios_newsletter').select('enviado_em, enviados, falhas').eq('peca_id', linha!.id).maybeSingle().then((r) => r.data), contarConfirmados()])
   : [null, 0];
 
-// Peça no ar: curtidas (só a equipe vê) e atalho para o link curto.
+// Peça no ar: curtidas (só a equipe vê) e o link curto, criado sozinho na primeira vez (pedido do fundador, 09/11).
 const noAr = linha?.estado === 'publicada' ? linha : null;
 const curtidas = noAr ? ((await cliente.rpc('curtidas_da_peca', { p: noAr.id })).data as number | null) ?? 0 : 0;
 const caminho = noAr ? caminhoPublico(noAr) : '';
+const codigoCurto = noAr ? await garantirLinkCurto(cliente, caminho, textoManchete(noAr.titulo)) : null;
+const linkCurto = codigoCurto ? `${Astro.site!.origin.replace(/^https?:\/\//, '')}/ir/${codigoCurto}` : '';
+const linkCompartilhar = codigoCurto ? `${Astro.site!.origin}/ir/${codigoCurto}` : noAr ? `${Astro.site!.origin}${caminho}` : '';
+const redes = noAr ? linksDeCompartilhar(linkCompartilhar, textoManchete(noAr.titulo)) : null;
+const abrirCompartilhar = Boolean(noAr && Astro.url.searchParams.get('compartilhar'));
+const CHAPEU: Record<string, string> = { newsletter: 'NEWSLETTER', noticia: 'NOTÍCIA', cultura: 'CULTURA', votacao: 'VOTAÇÃO', materia: 'MATÉRIA', pagina: 'PUKAS' };
+// Carrossel e vídeo (public/carrossel.js): o texto já cortado em slides, num atributo do modal (CSP sem script embutido).
+const dadosCarrossel = noAr
+  ? JSON.stringify({
+      chapeu: CHAPEU[noAr.tipo] ?? 'PUKAS', titulo: textoManchete(noAr.titulo), resumo: noAr.resumo, link: linkCompartilhar,
+      foto: noAr.foto_caminho ? urlFoto(urlBanco(), noAr.foto_caminho) : null, slides: slidesDoTexto(noAr.corpo),
+    })
+  : '';
 
 // O que aparece no formulário: o que acabou de ser enviado (se deu erro) ou o que está no banco.
 const base = urlBanco();
@@ -361,8 +377,32 @@ const traducao = linha?.traducoes?.[0];
     <section class="no-ar" aria-labelledby="no-ar">
       <h2 id="no-ar" class="maquina">No ar</h2>
       <p><a href={caminho}>{caminho}</a> · {curtidas} curtida{curtidas === 1 ? '' : 's'} (o público não vê esse número)</p>
-      <p><a class="botao botao--linha" href={`/painel/links?destino=${encodeURIComponent(caminho)}&codigo=${encodeURIComponent(sugerirCodigo(noAr.titulo))}`}>Criar link curto</a></p>
+      {linkCurto && <p>Link curto: <strong>{linkCurto}</strong></p>}
+      <p><button type="button" class="botao botao--marca" data-abrir-compartilhar>Compartilhar</button></p>
     </section>
+
+    <dialog id="compartilhar" class="compartilhar" aria-labelledby="compartilhar-titulo" data-abrir={abrirCompartilhar ? '1' : undefined}
+      data-link={linkCompartilhar} data-titulo={textoManchete(noAr.titulo)} data-chapeu={CHAPEU[noAr.tipo] ?? 'PUKAS'}
+      data-foto={noAr.foto_caminho ? urlFoto(urlBanco(), noAr.foto_caminho) : undefined} data-slides={dadosCarrossel}>
+      <h2 id="compartilhar-titulo" class="compartilhar__titulo">{abrirCompartilhar ? 'Publicado. Agora espalha.' : 'Compartilhar'}</h2>
+      <div class="compartilhar__link">
+        <span class="maquina">{linkCurto || linkCompartilhar}</span>
+        <button type="button" class="botao botao--linha" data-copiar-link>Copiar link</button>
+      </div>
+      <div class="compartilhar__redes">
+        <button type="button" class="botao botao--marca compartilhar__story" data-story>Story do Instagram</button>
+        <button type="button" class="botao botao--marca" data-carrossel>Carrossel</button>
+        <a class="botao botao--linha" href={redes!.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
+        <a class="botao botao--linha" href={redes!.x} target="_blank" rel="noopener">X (Twitter)</a>
+        <a class="botao botao--linha" href={redes!.threads} target="_blank" rel="noopener">Threads</a>
+        <a class="botao botao--linha" href={redes!.facebook} target="_blank" rel="noopener">Facebook</a>
+        <a class="botao botao--linha" href={redes!.telegram} target="_blank" rel="noopener">Telegram</a>
+      </div>
+      <p class="ajuda" data-compartilhar-aviso aria-live="polite">Story: no celular abre o menu de compartilhar (escolha Instagram → Story); no computador baixa a imagem. Cole o link no adesivo de link do story. Carrossel: imagens 1080×1350 na ordem certa, para postar no feed.</p>
+      <form method="dialog"><button class="botao botao--linha compartilhar__fechar">Fechar</button></form>
+    </dialog>
+    <script is:inline src="/compartilhar.js" defer></script>
+    <script is:inline src="/carrossel.js" defer></script>
   )}
 
   {porEmail && (
@@ -519,5 +559,57 @@ const traducao = linha?.traducoes?.[0];
     margin-top: var(--esp-7);
     border-top: 3px solid var(--tinta);
     padding-top: var(--esp-4);
+  }
+  .compartilhar {
+    width: min(520px, calc(100vw - 2 * var(--esp-4)));
+    max-height: calc(100dvh - 2 * var(--esp-4));
+    padding: var(--esp-5);
+    border: 3px solid var(--tinta);
+    background: var(--fundo);
+    color: var(--texto);
+  }
+  .compartilhar::backdrop {
+    background: color-mix(in srgb, var(--tinta) 60%, transparent);
+  }
+  .compartilhar__titulo {
+    margin: 0 0 var(--esp-4);
+    font-family: var(--fonte-manchete);
+    font-stretch: var(--largura-manchete);
+    font-weight: 900;
+    font-size: 32px;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .compartilhar__link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--esp-2);
+    padding: var(--esp-3);
+    margin-bottom: var(--esp-4);
+    border: 2px solid var(--tinta);
+    overflow-wrap: anywhere;
+  }
+  .compartilhar__redes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--esp-2);
+    margin-bottom: var(--esp-3);
+  }
+  .compartilhar__redes .botao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+  }
+  /* Sobrou um botão sozinho na última linha: ocupa a largura toda. */
+  .compartilhar__redes .botao:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .compartilhar__fechar {
+    width: 100%;
+    margin-top: var(--esp-3);
   }
 </style>
