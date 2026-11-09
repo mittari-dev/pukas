@@ -37,6 +37,18 @@ export async function entrarComo(papel: 'editor' | 'revisor' | 'redator', { aal2
   return cliente;
 }
 
+// Conta qualquer, sem perfil da equipe (como quem se cadastra pelo Supabase com o cadastro aberto).
+export async function entrarSemPapel(): Promise<SupabaseClient> {
+  const email = `qualquer-${unico()}@teste.pukas`;
+  const senha = `senha-${unico()}-forte`;
+  const { error } = await clienteServico().auth.admin.createUser({ email, password: senha, email_confirm: true });
+  if (error) throw error;
+  const cliente = clienteAnonimo();
+  const { error: erroLogin } = await cliente.auth.signInWithPassword({ email, password: senha });
+  if (erroLogin) throw erroLogin;
+  return cliente;
+}
+
 let contador = 0;
 const unico = () => `${Date.now()}${contador++}`;
 

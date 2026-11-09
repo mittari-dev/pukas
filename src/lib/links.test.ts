@@ -10,6 +10,8 @@ describe('links curtos', () => {
   test('destino só dentro do site (nada de mandar para fora pelo PUKAS)', () => {
     for (const bom of ['/', '/votacoes/pec-45', '/es/newsletter/memoria-operaria/001', '/noticias/x?y=1']) expect(destinoValido(bom), bom).toBe(true);
     for (const ruim of ['https://golpe.com', '//golpe.com', '/\\golpe.com', 'javascript:alert(1)', 'votacoes', '']) expect(destinoValido(ruim), ruim).toBe(false);
+    // Revisão de segurança 08/11: o navegador apaga TAB e quebra de linha do endereço; "/<TAB>/golpe.com" virava "//golpe.com".
+    for (const ruim of ['/\t/golpe.com', '/\n/golpe.com', '/ /golpe.com', '/a b']) expect(destinoValido(ruim), JSON.stringify(ruim)).toBe(false);
   });
 
   test('sugestão de código vem do título, sem acento nem marcação de manchete', () => {

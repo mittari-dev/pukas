@@ -42,7 +42,7 @@ async function votacao(extra: Record<string, unknown> = {}) {
   return data as { id: string; slug: string };
 }
 
-const comprovantes = async (v: string) => ((await anon.rpc('comprovantes_votacao', { v })).data ?? []) as unknown[];
+const comprovantes = async (v: string) => ((await clienteServico().rpc('comprovantes_votacao', { v })).data ?? []) as unknown[];
 
 describe.skipIf(!base)('/api/votar', () => {
   test('sem token do anti-robô, recusa e não grava', async () => {

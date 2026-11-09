@@ -1,7 +1,7 @@
 // Votações (spec consultas §4 e §5): o público nunca toca em `votos`; só a rota, com a chave de serviço, grava.
 import { beforeAll, describe, expect, test } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { clienteAnonimo, clienteServico, entrarComo, pecaValida } from './ajuda';
+import { clienteAnonimo, clienteServico, entrarComo, entrarSemPapel, pecaValida } from './ajuda';
 
 const servico = clienteServico();
 const anon = clienteAnonimo();
@@ -88,7 +88,7 @@ describe('funções públicas', () => {
       voto(v, { descartado: true, motivo: 'muitos votos da mesma rede' }),
     ]);
     expect(erroLote).toBeNull();
-    const { data, error } = await anon.rpc('resultado_votacao', { v });
+    const { data, error } = await servico.rpc('resultado_votacao', { v });
     expect(error).toBeNull();
     expect(data[0]).toMatchObject({ a_favor: 2, contra: 1, nao_sei: 0, descartes: { 'muitos votos da mesma rede': 1 } });
   });
@@ -102,12 +102,25 @@ describe('funções públicas', () => {
       voto(v, { comprovante: descartado, descartado: true, motivo: 'campo escondido preenchido' }),
     ]);
     expect(erroLote).toBeNull();
-    const { data } = await anon.rpc('comprovantes_votacao', { v });
+    const { data } = await servico.rpc('comprovantes_votacao', { v });
     expect(data.map((l: { comprovante: string }) => l.comprovante)).toEqual([valido]);
     expect(Object.keys(data[0]).sort()).toEqual(['comprovante', 'dia', 'opcao']);
 
     await servico.from('pecas').update({ estado: 'rascunho' }).eq('id', v);
-    expect((await anon.rpc('comprovantes_votacao', { v })).data).toEqual([]);
+    expect((await servico.rpc('comprovantes_votacao', { v })).data).toEqual([]);
+  });
+
+  // Revisão de segurança 08/11: a parcial e os comprovantes só saem pelo site (chave de serviço), que esconde a parcial
+  // de quem ainda não votou. Pela API pública, nem anônimo nem conta sem papel conseguem ler.
+  test('parcial e comprovantes: anônimo é barrado; conta sem papel não vê nada; equipe com 2FA vê', async () => {
+    const v = await votacao();
+    await servico.from('votos').insert(voto(v));
+    expect((await anon.rpc('resultado_votacao', { v })).error).not.toBeNull();
+    expect((await anon.rpc('comprovantes_votacao', { v })).error).not.toBeNull();
+    const semPapel = await entrarSemPapel();
+    expect((await semPapel.rpc('resultado_votacao', { v })).data ?? []).toEqual([]);
+    expect((await semPapel.rpc('comprovantes_votacao', { v })).data ?? []).toEqual([]);
+    expect((await revisor.rpc('resultado_votacao', { v })).data[0]).toMatchObject({ a_favor: 1 });
   });
 
   test('apagar_relato: editor apaga, revisor não', async () => {
