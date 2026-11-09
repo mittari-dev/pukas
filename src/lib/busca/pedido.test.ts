@@ -1,9 +1,16 @@
 import { describe, expect, test } from 'vitest';
-import { ferramentas, pedidoPauta, pedidoRascunho, validarPauta } from './pedido';
+import { ferramentas, inicioDaJanela, pedidoPauta, pedidoRascunho, validarPauta } from './pedido';
+
+describe('inicioDaJanela', () => {
+  test('na segunda volta à sexta; nos outros dias, dois dias', () => {
+    expect(inicioDaJanela(new Date('2026-11-09T10:00:00-03:00'))).toBe('2026-11-06');
+    expect(inicioDaJanela(new Date('2026-11-11T10:00:00-03:00'))).toBe('2026-11-09');
+  });
+});
 
 const cfg = { busca_livre: false, max_candidatas: 10, temas_interessa: ['trabalho por aplicativo'], temas_evita: ['futebol'] };
 const fontes = ['agenciabrasil.ebc.com.br', 'reuters.com'];
-const fonte = { veiculo: 'Agência Brasil', titulo: 'Greve', url: 'https://agenciabrasil.ebc.com.br/x', fixa: true };
+const fonte = { veiculo: 'Agência Brasil', titulo: 'Greve', url: 'https://agenciabrasil.ebc.com.br/x', fixa: true, publicada_em: '2026-11-07' };
 const candidata = (titulo: string, extra = {}) => ({ titulo, porque: 'Pesa no salário.', regiao: 'brasil', tema: 'trabalho', fontes: [fonte], ...extra });
 
 describe('ferramentas', () => {
@@ -71,21 +78,27 @@ describe('validarPauta', () => {
     expect(r.descartadas).toBe(2);
   });
 
-  test('fonte que o robô não viu na busca nem leu cai; sem nenhuma lida, avisa no "falta confirmar"', () => {
-    const vista = { ...fonte, url: 'https://agenciabrasil.ebc.com.br/vista/' };
-    const lida = { ...fonte, url: 'https://reuters.com/lida' };
+  test('conferência: link inventado sai; sem leitura ou sem fonte lida dentro da janela, a candidata cai; "fixa" vem do domínio', () => {
+    const lida = { ...fonte, url: 'https://www.reuters.com/lida', fixa: false };
     const inventada = { ...fonte, url: 'https://reuters.com/inventada' };
-    const vistos = { vistas: new Set(['https://agenciabrasil.ebc.com.br/vista', 'https://reuters.com/lida']), lidas: new Set(['https://reuters.com/lida']) };
+    const vista = { ...fonte, url: 'https://agenciabrasil.ebc.com.br/vista/' };
+    const velha = { ...fonte, url: 'https://agenciabrasil.ebc.com.br/velha', publicada_em: '2026-10-16' };
+    const deFora = { ...fonte, url: 'https://diarioesp.com.br/z', fixa: true };
+    const conf = {
+      vistas: new Set(['https://www.reuters.com/lida', 'https://agenciabrasil.ebc.com.br/vista', 'https://agenciabrasil.ebc.com.br/velha', 'https://diarioesp.com.br/z']),
+      lidas: new Set(['https://www.reuters.com/lida', 'https://agenciabrasil.ebc.com.br/velha', 'https://diarioesp.com.br/z']),
+      desde: '2026-11-06',
+      fixas: fontes,
+    };
     const r = validarPauta(
-      { candidatas: [candidata('Lida', { fontes: [lida, inventada] }), candidata('Só vista', { fontes: [vista], falta_confirmar: 'O valor.' }), candidata('Inventada', { fontes: [inventada] })] },
+      { candidatas: [candidata('Lida', { fontes: [lida, inventada] }), candidata('Só vista', { fontes: [vista] }), candidata('Velha', { fontes: [velha] }), candidata('De fora', { fontes: [deFora] }), candidata('Inventada', { fontes: [inventada] })] },
       10,
-      vistos,
+      conf,
     );
-    expect(r.candidatas.map((c) => c.titulo)).toEqual(['Lida', 'Só vista']);
-    expect(r.candidatas[0].fontes).toEqual([lida]);
-    expect(r.candidatas[0].falta_confirmar).toBeUndefined();
-    expect(r.candidatas[1].falta_confirmar).toBe('O valor. O robô não leu nenhuma fonte inteira, só o trecho da busca.');
-    expect(r.descartadas).toBe(1);
+    expect(r.candidatas.map((c) => c.titulo)).toEqual(['Lida', 'De fora']);
+    expect(r.candidatas[0].fontes).toEqual([{ ...lida, fixa: true }]);
+    expect(r.candidatas[1].fontes[0].fixa).toBe(false);
+    expect(r.descartadas).toBe(3);
   });
 
   test('JSON fora do formato lança erro (a rodada vira "erro", nada entra pela metade)', () => {

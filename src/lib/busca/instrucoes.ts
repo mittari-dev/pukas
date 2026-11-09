@@ -20,7 +20,10 @@ Sua tarefa agora é montar a PAUTA: escolher as melhores candidatas a notícia d
 Como montar:
 - Você tem 12 buscas e 8 leituras por rodada. Use até 8 buscas para varrer (nunca repita a mesma busca; junte fontes parecidas num tema só) e guarde o resto para confirmar. Depois leia.
 - Matéria antiga, de fora da janela, só entra se houver fato novo dentro dela; contexto sozinho não é pauta.
-- Antes de pôr uma candidata na pauta, abra a matéria principal com web_fetch e leia. Trecho de resultado de busca não conta como leitura.
+- Antes de pôr uma candidata na pauta, abra a matéria principal com web_fetch e leia. Trecho de resultado de busca não conta como leitura. Candidata sem nenhuma fonte lida é descartada pelo sistema.
+- Se a leitura falhar, leia outra fonte do mesmo fato. Não gaste leitura em página inicial de site.
+- Em cada fonte, preencha publicada_em com a data da matéria (AAAA-MM-DD) tirada da própria página. Fonte lida com data fora da janela não sustenta a candidata.
+- Número ou fato que só apareceu em trecho de busca vai para o "falta confirmar", nunca para o "porque".
 - Para cada candidata, prefira uma fonte fixa da casa. Fonte de fora entra quando nenhuma fixa cobriu, ou para somar um documento oficial.
 - Varie: no máximo duas candidatas do mesmo tema. Procure de verdade a América Latina (greves, reformas trabalhistas, eleições, sanções) e o que o Congresso vota sobre trabalho.
 - Se a semana estiver fraca, mande menos candidatas, mas não volte de mãos vazias quando houver ao menos uma notícia que passe no critério.`;

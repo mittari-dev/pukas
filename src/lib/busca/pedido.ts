@@ -8,7 +8,8 @@ import { normalizarUrl } from './robo';
 
 export const MODELO_BUSCA = 'claude-sonnet-5-5';
 
-const Fonte = z.object({ veiculo: z.string(), titulo: z.string(), url: z.string(), fixa: z.boolean() });
+// publicada_em: data da matéria (AAAA-MM-DD), lida na própria página; o código confere a janela com ela.
+const Fonte = z.object({ veiculo: z.string(), titulo: z.string(), url: z.string(), fixa: z.boolean(), publicada_em: z.string() });
 const Candidata = z.object({
   titulo: z.string(),
   porque: z.string(),
@@ -18,7 +19,7 @@ const Candidata = z.object({
   falta_confirmar: z.string().optional(),
 });
 export const Pauta = z.object({ candidatas: z.array(Candidata) });
-export const Rascunho = z.object({ titulo: z.string(), resumo: z.string(), corpo: z.string(), fontes: z.array(Fonte.omit({ fixa: true })) });
+export const Rascunho = z.object({ titulo: z.string(), resumo: z.string(), corpo: z.string(), fontes: z.array(Fonte.omit({ fixa: true, publicada_em: true })) });
 export type CandidataPauta = z.infer<typeof Candidata>;
 export type RascunhoRobo = z.infer<typeof Rascunho>;
 
@@ -48,10 +49,14 @@ const lista = (t: string[]) => (t.length ? t.map((x) => `- ${x}`).join('\n') : '
 
 const dia = (d: Date, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', ...o }).format(d);
 
+const desdeQuando = (agora: Date) => new Date(agora.getTime() - (dia(agora, { weekday: 'long' }) === 'segunda-feira' ? 3 : 2) * 86_400_000);
+
+// Primeiro dia da janela (AAAA-MM-DD, horário de São Paulo), para conferir a data das fontes.
+export const inicioDaJanela = (agora: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(desdeQuando(agora));
+
 // O modelo não sabe que dia é hoje: a data e a janela vão no pedido. Na segunda, a janela pega o fim de semana.
 function quando(agora: Date): string {
-  const segunda = dia(agora, { weekday: 'long' }) === 'segunda-feira';
-  const desde = new Date(agora.getTime() - (segunda ? 3 : 2) * 86_400_000);
+  const desde = desdeQuando(agora);
   return `Hoje é ${dia(agora, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}. Vale o que saiu de ${dia(desde, { day: 'numeric', month: 'long' })} até hoje.`;
 }
 
@@ -101,18 +106,27 @@ ${c.fontes.map((f) => `- ${f.veiculo}: ${f.titulo} (${f.url})`).join('\n')}`;
   };
 }
 
-const NAO_LEU = 'O robô não leu nenhuma fonte inteira, só o trecho da busca.';
+interface Conferencia {
+  vistas: Set<string>; // links que vieram da busca ou da leitura nesta rodada
+  lidas: Set<string>; // links lidos inteiros
+  desde: string; // início da janela, AAAA-MM-DD
+  fixas: string[]; // domínios das fontes fixas
+}
+
+const dominio = (url: string) => new URL(url).hostname.replace(/^www\./, '');
+const ehFixa = (url: string, fixas: string[]) => fixas.some((d) => dominio(url) === d || dominio(url).endsWith(`.${d}`));
 
 // O que volta da API: JSON fora do formato lança (a rodada vira erro); candidata sem fonte web cai.
-// Com `vistos` (o que o robô viu nesta rodada), cai a fonte que ele não viu (link inventado) e, se nenhuma foi lida
-// inteira, o aviso vai para o "falta confirmar".
-export function validarPauta(json: unknown, max: number, vistos?: { vistas: Set<string>; lidas: Set<string> }): { candidatas: CandidataPauta[]; descartadas: number } {
+// Com a conferência (avaliação de 09/11): sai o link que o robô não viu; "fixa" vem do domínio, não do que o robô
+// declarou; e cai a candidata sem nenhuma fonte lida inteira com data dentro da janela (trecho de busca e
+// matéria antiga não são pauta).
+export function validarPauta(json: unknown, max: number, conf?: Conferencia): { candidatas: CandidataPauta[]; descartadas: number } {
   const { candidatas } = Pauta.parse(json);
   const conferidas = candidatas.map((c) => {
-    if (!vistos) return c;
-    const fontes = c.fontes.filter((f) => vistos.vistas.has(normalizarUrl(f.url)));
-    const leu = fontes.some((f) => vistos.lidas.has(normalizarUrl(f.url)));
-    return leu ? { ...c, fontes } : { ...c, fontes, falta_confirmar: [c.falta_confirmar, NAO_LEU].filter(Boolean).join(' ') };
+    if (!conf) return c;
+    const fontes = c.fontes.filter((f) => ehLinkWeb(f.url) && conf.vistas.has(normalizarUrl(f.url))).map((f) => ({ ...f, fixa: ehFixa(f.url, conf.fixas) }));
+    const vale = fontes.some((f) => conf.lidas.has(normalizarUrl(f.url)) && f.publicada_em >= conf.desde);
+    return vale ? { ...c, fontes } : { ...c, fontes: [] };
   });
   const boas = conferidas.filter((c) => c.fontes.length > 0 && c.fontes.every((f) => ehLinkWeb(f.url)));
   return { candidatas: boas.slice(0, max), descartadas: candidatas.length - boas.length };

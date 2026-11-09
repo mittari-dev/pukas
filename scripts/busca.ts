@@ -3,7 +3,7 @@
 // Uso: SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... ANTHROPIC_API_KEY=... npx tsx scripts/busca.ts
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
-import { formatoPauta, formatoRascunho, pedidoPauta, pedidoRascunho, validarPauta, type CandidataPauta } from '../src/lib/busca/pedido';
+import { formatoPauta, formatoRascunho, inicioDaJanela, pedidoPauta, pedidoRascunho, validarPauta, type CandidataPauta } from '../src/lib/busca/pedido';
 import { custoBrl, custoMedio, horaDeRodar, inicioDoMes, podeRodar } from '../src/lib/busca/regras';
 import { ErroDoRobo, conversar, diario, slugDoRobo, textoFinal, urlsVistas, type Uso } from '../src/lib/busca/robo';
 
@@ -53,7 +53,8 @@ if (fila) {
         uso = r.uso;
         console.log(diario(r.blocos).join('\n'));
         console.log(`fim: ${r.mensagem.stop_reason}\n${textoFinal(r.mensagem).slice(0, 3000)}`);
-        const { candidatas, descartadas } = validarPauta(formatoPauta.parse(textoFinal(r.mensagem)), cfg.max_candidatas, urlsVistas(r.blocos));
+        const conf = { ...urlsVistas(r.blocos), desde: inicioDaJanela(agora), fixas: (fontes ?? []).map((f) => f.dominio) };
+        const { candidatas, descartadas } = validarPauta(formatoPauta.parse(textoFinal(r.mensagem)), cfg.max_candidatas, conf);
         if (candidatas.length) {
           const { error } = await db.from('busca_candidatas').insert(candidatas.map((c) => ({ rodada_id: fila.id, ...c, falta_confirmar: c.falta_confirmar ?? null })));
           if (error) throw new Error(error.message);
