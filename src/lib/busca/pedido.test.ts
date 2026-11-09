@@ -2,13 +2,18 @@ import { describe, expect, test } from 'vitest';
 import { ferramentas, inicioDaJanela, pedidoPauta, pedidoRascunho, validarPauta } from './pedido';
 
 describe('inicioDaJanela', () => {
-  test('na segunda volta à sexta; nos outros dias, dois dias', () => {
-    expect(inicioDaJanela(new Date('2026-11-09T10:00:00-03:00'))).toBe('2026-11-06');
-    expect(inicioDaJanela(new Date('2026-11-11T10:00:00-03:00'))).toBe('2026-11-09');
+  test('começa no dia da rodada agendada anterior', () => {
+    expect(inicioDaJanela(new Date('2026-11-09T10:00:00-03:00'), [1, 3, 5])).toBe('2026-11-06');
+    expect(inicioDaJanela(new Date('2026-11-11T10:00:00-03:00'), [1, 3, 5])).toBe('2026-11-09');
+    // Duas vezes por semana (segunda e quinta): segunda volta à quinta, quinta volta à segunda.
+    expect(inicioDaJanela(new Date('2026-11-09T10:00:00-03:00'), [1, 4])).toBe('2026-11-05');
+    expect(inicioDaJanela(new Date('2026-11-12T10:00:00-03:00'), [1, 4])).toBe('2026-11-09');
+    // Sem dia marcado ("rodar agora" com o agendamento vazio): dois dias.
+    expect(inicioDaJanela(new Date('2026-11-12T10:00:00-03:00'), [])).toBe('2026-11-10');
   });
 });
 
-const cfg = { busca_livre: false, max_candidatas: 10, temas_interessa: ['trabalho por aplicativo'], temas_evita: ['futebol'] };
+const cfg = { dias: [1, 3, 5], busca_livre: false, max_candidatas: 10, temas_interessa: ['trabalho por aplicativo'], temas_evita: ['futebol'] };
 const fontes = ['agenciabrasil.ebc.com.br', 'reuters.com'];
 const fonte = { veiculo: 'Agência Brasil', titulo: 'Greve', url: 'https://agenciabrasil.ebc.com.br/x', fixa: true, publicada_em: '2026-11-07' };
 const candidata = (titulo: string, extra = {}) => ({ titulo, porque: 'Pesa no salário.', regiao: 'brasil', tema: 'trabalho', fontes: [fonte], ...extra });

@@ -39,6 +39,7 @@ export function ferramentas(fontesAtivas: string[], buscaLivre: boolean): Anthro
 }
 
 interface Config {
+  dias: number[];
   busca_livre: boolean;
   max_candidatas: number;
   temas_interessa: string[];
@@ -49,19 +50,29 @@ const lista = (t: string[]) => (t.length ? t.map((x) => `- ${x}`).join('\n') : '
 
 const dia = (d: Date, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', ...o }).format(d);
 
-const desdeQuando = (agora: Date) => new Date(agora.getTime() - (dia(agora, { weekday: 'long' }) === 'segunda-feira' ? 3 : 2) * 86_400_000);
+const SEMANA = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const diaDaSemana = (d: Date) => SEMANA.indexOf(new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', weekday: 'short' }).format(d)) + 1;
+
+// A janela começa no dia da rodada agendada anterior (dias do painel, 1 = segunda); sem agendamento, dois dias.
+function desdeQuando(agora: Date, dias: number[]): Date {
+  for (let k = 1; k <= 7; k++) {
+    const d = new Date(agora.getTime() - k * 86_400_000);
+    if (dias.includes(diaDaSemana(d))) return d;
+  }
+  return new Date(agora.getTime() - 2 * 86_400_000);
+}
 
 // Primeiro dia da janela (AAAA-MM-DD, horário de São Paulo), para conferir a data das fontes.
-export const inicioDaJanela = (agora: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(desdeQuando(agora));
+export const inicioDaJanela = (agora: Date, dias: number[]) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(desdeQuando(agora, dias));
 
-// O modelo não sabe que dia é hoje: a data e a janela vão no pedido. Na segunda, a janela pega o fim de semana.
-function quando(agora: Date): string {
-  const desde = desdeQuando(agora);
+// O modelo não sabe que dia é hoje: a data e a janela vão no pedido.
+function quando(agora: Date, dias: number[]): string {
+  const desde = desdeQuando(agora, dias);
   return `Hoje é ${dia(agora, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}. Vale o que saiu de ${dia(desde, { day: 'numeric', month: 'long' })} até hoje.`;
 }
 
 export function pedidoPauta(cfg: Config, fontes: string[], descartes: { titulo: string; motivo: string }[], agora = new Date()): Anthropic.Messages.MessageCreateParamsStreaming {
-  const texto = `Monte a pauta de hoje com até ${cfg.max_candidatas} candidatas. ${quando(agora)}
+  const texto = `Monte a pauta de hoje com até ${cfg.max_candidatas} candidatas. ${quando(agora, cfg.dias)}
 
 Fontes fixas da casa (domínios). Busque nelas primeiro, com o operador site:, por exemplo "site:${fontes[0] ?? 'agenciabrasil.ebc.com.br'} greve":
 ${lista(fontes)}

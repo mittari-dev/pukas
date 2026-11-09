@@ -53,7 +53,7 @@ if (fila) {
         uso = r.uso;
         console.log(diario(r.blocos).join('\n'));
         console.log(`fim: ${r.mensagem.stop_reason}\n${textoFinal(r.mensagem).slice(0, 3000)}`);
-        const conf = { ...urlsVistas(r.blocos), desde: inicioDaJanela(agora), fixas: (fontes ?? []).map((f) => f.dominio) };
+        const conf = { ...urlsVistas(r.blocos), desde: inicioDaJanela(agora, cfg.dias), fixas: (fontes ?? []).map((f) => f.dominio) };
         const { candidatas, descartadas } = validarPauta(formatoPauta.parse(textoFinal(r.mensagem)), cfg.max_candidatas, conf);
         if (candidatas.length) {
           const { error } = await db.from('busca_candidatas').insert(candidatas.map((c) => ({ rodada_id: fila.id, ...c, falta_confirmar: c.falta_confirmar ?? null })));
