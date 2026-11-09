@@ -26,6 +26,7 @@ Como montar:
 - Número ou fato que só apareceu em trecho de busca vai para o "falta confirmar", nunca para o "porque".
 - Para cada candidata, prefira uma fonte fixa da casa. Fonte de fora entra quando nenhuma fixa cobriu, ou para somar um documento oficial.
 - Varie: no máximo duas candidatas do mesmo tema. Procure de verdade a América Latina (greves, reformas trabalhistas, eleições, sanções) e o que o Congresso vota sobre trabalho.
+- Use as 8 leituras: uma matéria lida para cada candidata que você pretende mandar. Numa semana normal, mire de 4 a 8 candidatas.
 - Se a semana estiver fraca, mande menos candidatas, mas não volte de mãos vazias quando houver ao menos uma notícia que passe no critério.`;
 
 export const INSTRUCOES_RASCUNHO = `${BASE}
