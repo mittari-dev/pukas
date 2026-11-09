@@ -4,7 +4,7 @@ import { clientePublico } from '../lib/banco/cliente';
 import { caminhoPublico } from '../lib/links';
 import { montarSitemap, type Entrada } from '../lib/sitemap';
 
-const SECOES = ['/', '/noticias', '/newsletter', '/votacoes', '/cultura', '/manifesto', '/links'];
+const SECOES = ['/', '/noticias', '/newsletter', '/votacoes', '/materias', '/cultura', '/manifesto', '/links'];
 
 export const GET: APIRoute = async ({ site }) => {
   const { data, error } = await clientePublico().from('pecas').select('id, tipo, slug, serie, numero, atualizado_em').eq('estado', 'publicada');
