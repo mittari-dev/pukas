@@ -3,7 +3,7 @@
 import type { APIRoute } from 'astro';
 import { conferirTurnstile } from '../../lib/votacoes/turnstile';
 import { ehOpcao, gerarComprovante, hashSecreto, ipDaRequisicao, limparRelato, motivoDescarte } from '../../lib/votacoes/voto';
-import { apagarConta, estaFechada, gravarVoto, validosDaRedeNaHora, votacaoAberta, votoDaConta, votoDoAparelho } from '../../lib/banco/votos';
+import { apagarConta, ehDaEquipe, estaFechada, gravarVoto, validosDaRede, votacaoAberta, votoDaConta, votoDoAparelho } from '../../lib/banco/votos';
 import { clienteDaRequisicao } from '../../lib/banco/cliente';
 import { comConta, sessaoGoogle } from '../../lib/votacoes/conta';
 
@@ -53,7 +53,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       const { relato, erro } = limparRelato(form.get('relato'));
       if (erro) return 'erro';
       const ipHash = await hashSecreto(segredo, ip);
-      const motivo = motivoDescarte({ honeypot: campo('site'), validosDaRedeNaHora: await validosDaRedeNaHora(v.id, ipHash) });
+      const [naHora, naVotacao] = await Promise.all([validosDaRede(v.id, ipHash, true), validosDaRede(v.id, ipHash, false)]);
+      const motivo = motivoDescarte({ honeypot: campo('site'), validosDaRedeNaHora: naHora, validosDaRedeNaVotacao: naVotacao });
 
       const r = await gravarVoto(
         {
@@ -77,6 +78,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (!v.alto_impacto) return responder(await registrar(null));
     const db = clienteDaRequisicao({ request, cookies });
     const { data } = await db.auth.getUser();
+    // Conta da equipe não vota pelo alto impacto (e não pode ser apagada no fim).
+    if (data.user && (await ehDaEquipe(data.user.id))) return responder('erro');
     const d = await comConta(sessaoGoogle(data.user), segredo, registrar, async (uid) => {
       await db.auth.signOut({ scope: 'local' }).catch(() => {});
       await apagarConta(uid);

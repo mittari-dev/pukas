@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { comConta, sessaoGoogle } from './conta';
+import { comConta, contasDeVotoParaApagar, sessaoGoogle } from './conta';
 
 const segredo = 'segredo-de-teste';
 
@@ -8,6 +8,12 @@ describe('sessaoGoogle', () => {
     expect(sessaoGoogle({ id: 'u1', identities: [{ provider: 'google', id: 'g-123' }] })).toEqual({ uid: 'u1', googleId: 'g-123' });
     expect(sessaoGoogle({ id: 'u2', identities: [{ provider: 'email', id: 'x' }] })).toBeNull();
     expect(sessaoGoogle(null)).toBeNull();
+  });
+
+  // Revisão de segurança 08/11: conta da equipe que também entrou com Google não pode virar "conta temporária de voto"
+  // (seria apagada depois do voto). Só vale a conta que tem o Google como única identidade.
+  test('conta com mais de uma identidade (e-mail + Google) não vale', () => {
+    expect(sessaoGoogle({ id: 'u3', identities: [{ provider: 'email', id: 'x' }, { provider: 'google', id: 'g' }] })).toBeNull();
   });
 });
 
@@ -42,5 +48,20 @@ describe('comConta', () => {
     expect(hashes[0]).toBe(hashes[1]);
     expect(hashes[0]).not.toBe(hashes[2]);
     expect(hashes[0]).not.toContain('g-9');
+  });
+});
+
+describe('contasDeVotoParaApagar', () => {
+  const agora = new Date('2026-11-08T12:00:00Z');
+  const conta = (id: string, providers: string[], criada: string) => ({ id, created_at: criada, identities: providers.map((p) => ({ provider: p, id: `${p}-${id}` })) });
+  test('só conta só-Google, sem perfil e criada há mais de 1 hora', () => {
+    const contas = [
+      conta('velha', ['google'], '2026-11-08T10:00:00Z'),
+      conta('nova', ['google'], '2026-11-08T11:30:00Z'),
+      conta('equipe-google', ['google'], '2026-11-01T10:00:00Z'),
+      conta('email', ['email'], '2026-11-01T10:00:00Z'),
+      conta('mista', ['email', 'google'], '2026-11-01T10:00:00Z'),
+    ];
+    expect(contasDeVotoParaApagar(contas, new Set(['equipe-google']), agora)).toEqual(['velha']);
   });
 });

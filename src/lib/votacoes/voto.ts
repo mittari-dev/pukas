@@ -24,10 +24,12 @@ export function ipDaRequisicao(h: Headers): string {
 }
 
 export const LIMITE_REDE_HORA = 30;
+// Teto da mesma rede na votação inteira: casa, escola ou trabalho dividem IP, mas 100 válidos já é muito.
+export const LIMITE_REDE_VOTACAO = 100;
 
-export function motivoDescarte(x: { honeypot: string; validosDaRedeNaHora: number }): string | null {
+export function motivoDescarte(x: { honeypot: string; validosDaRedeNaHora: number; validosDaRedeNaVotacao: number }): string | null {
   if (x.honeypot) return 'campo escondido preenchido';
-  if (x.validosDaRedeNaHora >= LIMITE_REDE_HORA) return 'muitos votos da mesma rede';
+  if (x.validosDaRedeNaHora >= LIMITE_REDE_HORA || x.validosDaRedeNaVotacao >= LIMITE_REDE_VOTACAO) return 'muitos votos da mesma rede';
   return null;
 }
 
