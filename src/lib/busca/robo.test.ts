@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { conversar, diario, slugDoRobo, urlsVistas } from './robo';
 
 const msg = (stop_reason: string, entrada: number, buscas = 0) =>
-  ({ stop_reason, content: [{ type: 'text', text: stop_reason }], usage: { input_tokens: entrada, output_tokens: 10, server_tool_use: { web_search_requests: buscas } } }) as never;
+  ({ stop_reason, content: [{ type: 'text', text: stop_reason }], usage: { input_tokens: entrada, output_tokens: 10, cache_creation_input_tokens: 7, cache_read_input_tokens: 100, server_tool_use: { web_search_requests: buscas } } }) as never;
 
 const api = (respostas: unknown[]) => {
   const pedidos: unknown[] = [];
@@ -15,7 +15,7 @@ describe('conversar', () => {
     const r = await conversar(a, { messages: [{ role: 'user', content: 'oi' }] } as never);
     expect(a.pedidos).toHaveLength(2);
     expect((a.pedidos[1] as { messages: unknown[] }).messages).toHaveLength(2);
-    expect(r.uso).toEqual({ entrada: 150, saida: 20, buscas: 5 });
+    expect(r.uso).toEqual({ entrada: 150, saida: 20, buscas: 5, cacheEscrita: 14, cacheLeitura: 200 });
     expect(r.mensagem.stop_reason).toBe('end_turn');
     expect(r.blocos).toHaveLength(2);
   });

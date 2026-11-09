@@ -6,6 +6,8 @@ export interface Uso {
   entrada: number;
   saida: number;
   buscas: number;
+  cacheEscrita?: number;
+  cacheLeitura?: number;
 }
 
 interface Api {
@@ -22,13 +24,15 @@ export class ErroDoRobo extends Error {
 const MAX_VOLTAS = 5;
 
 export async function conversar(api: Api, pedido: Anthropic.Messages.MessageCreateParamsStreaming): Promise<{ mensagem: Anthropic.Messages.Message; uso: Uso; blocos: Anthropic.Messages.ContentBlock[] }> {
-  const uso: Uso = { entrada: 0, saida: 0, buscas: 0 };
+  const uso: Required<Uso> = { entrada: 0, saida: 0, buscas: 0, cacheEscrita: 0, cacheLeitura: 0 };
   const messages = [...pedido.messages];
   const blocos: Anthropic.Messages.ContentBlock[] = [];
   for (let volta = 0; volta < MAX_VOLTAS; volta++) {
     const mensagem = await api.stream({ ...pedido, messages }).finalMessage();
     uso.entrada += mensagem.usage.input_tokens;
     uso.saida += mensagem.usage.output_tokens;
+    uso.cacheEscrita += mensagem.usage.cache_creation_input_tokens ?? 0;
+    uso.cacheLeitura += mensagem.usage.cache_read_input_tokens ?? 0;
     uso.buscas += mensagem.usage.server_tool_use?.web_search_requests ?? 0;
     blocos.push(...mensagem.content);
     if (mensagem.stop_reason !== 'pause_turn') return { mensagem, uso, blocos };

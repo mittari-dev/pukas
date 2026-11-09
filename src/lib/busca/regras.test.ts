@@ -8,6 +8,11 @@ describe('custo', () => {
     expect(custoBrl({ entrada: 0, saida: 0, buscas: 0 }, 5.6)).toBe(0);
   });
 
+  test('cache: escrita a US$ 2,50 e leitura a US$ 0,20 por milhão', () => {
+    // 100 mil escritos (US$ 0,25) + 1 milhão lidos (US$ 0,20) = US$ 0,45 × 5,6
+    expect(custoBrl({ entrada: 0, saida: 0, buscas: 0, cacheEscrita: 100_000, cacheLeitura: 1_000_000 }, 5.6)).toBe(2.52);
+  });
+
   test('custo médio: últimas 5 com custo; sem histórico, R$ 1,50', () => {
     expect(custoMedio([])).toBe(1.5);
     expect(custoMedio([{ custo_brl: 2 }, { custo_brl: 0 }, { custo_brl: 4 }])).toBe(3);

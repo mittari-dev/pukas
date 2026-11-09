@@ -31,9 +31,9 @@ export function ferramentas(fontesAtivas: string[], buscaLivre: boolean): Anthro
   return [
     // Versões sem filtro dinâmico: com o filtro (_20260209), o resultado chegava quase vazio e o robô repetia
     // as mesmas buscas até o limite (rodadas de 09/11). Sem ele, o resultado vem inteiro.
-    { type: 'web_search_20250305', name: 'web_search', max_uses: 15, ...dominios },
+    { type: 'web_search_20250305', name: 'web_search', max_uses: 12, ...dominios },
     // Teto de tamanho por leitura: o robô precisa ler cada candidata, e matérias inteiras estourariam o custo.
-    { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 10, max_content_tokens: 5000, ...dominios },
+    { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 8, max_content_tokens: 5000, ...dominios },
   ];
 }
 
@@ -73,6 +73,7 @@ ${descartes.length ? descartes.map((d) => `- ${d.titulo}: ${d.motivo}`).join('\n
     model: MODELO_BUSCA,
     max_tokens: 16000,
     stream: true,
+    cache_control: { type: 'ephemeral' },
     system: INSTRUCOES_PAUTA,
     tools: ferramentas(fontes, cfg.busca_livre),
     output_config: { effort: 'medium', format: { type: formatoPauta.type, schema: formatoPauta.schema } },
@@ -92,6 +93,7 @@ ${c.fontes.map((f) => `- ${f.veiculo}: ${f.titulo} (${f.url})`).join('\n')}`;
     model: MODELO_BUSCA,
     max_tokens: 16000,
     stream: true,
+    cache_control: { type: 'ephemeral' },
     system: INSTRUCOES_RASCUNHO,
     tools: ferramentas([], true),
     output_config: { effort: 'medium', format: { type: formatoRascunho.type, schema: formatoRascunho.schema } },

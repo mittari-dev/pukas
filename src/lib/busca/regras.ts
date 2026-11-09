@@ -1,10 +1,15 @@
 // Regras do robô de notícias (spec busca §5): quanto custa, se cabe no teto e se é hora de rodar.
 // Preço do Claude Sonnet 5.5 e da busca na web, em dólares: por milhão de tokens e por busca.
-export const PRECO = { entrada: 2, saida: 10, busca: 0.01 };
+export const PRECO = { entrada: 2, saida: 10, busca: 0.01, cacheEscrita: 2.5, cacheLeitura: 0.2 };
 const CUSTO_MEDIO_INICIAL = 1.5;
 
-export function custoBrl(uso: { entrada: number; saida: number; buscas: number }, cambio: number): number {
-  const dolar = (uso.entrada / 1e6) * PRECO.entrada + (uso.saida / 1e6) * PRECO.saida + uso.buscas * PRECO.busca;
+export function custoBrl(uso: { entrada: number; saida: number; buscas: number; cacheEscrita?: number; cacheLeitura?: number }, cambio: number): number {
+  const dolar =
+    (uso.entrada / 1e6) * PRECO.entrada +
+    (uso.saida / 1e6) * PRECO.saida +
+    uso.buscas * PRECO.busca +
+    ((uso.cacheEscrita ?? 0) / 1e6) * PRECO.cacheEscrita +
+    ((uso.cacheLeitura ?? 0) / 1e6) * PRECO.cacheLeitura;
   return Math.round(dolar * cambio * 100) / 100;
 }
 

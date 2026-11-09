@@ -31,6 +31,7 @@ const medio = custoMedio(doMes ?? []);
 
 async function registrar(id: string, uso: Uso, campos: Record<string, unknown>) {
   const custo = custoBrl(uso, cambio);
+  console.log(`uso: ${JSON.stringify(uso)} → R$ ${custo}`);
   gasto += custo;
   await db.from('busca_rodadas').update({ ...campos, buscas: uso.buscas, tokens_entrada: uso.entrada, tokens_saida: uso.saida, custo_brl: custo, terminou_em: new Date().toISOString() }).eq('id', id);
 }
