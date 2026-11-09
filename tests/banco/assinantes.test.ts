@@ -46,7 +46,7 @@ describe('assinatura por série', () => {
     const outra = `outra-${u}@x.com`;
     const agora = new Date().toISOString();
     const { error } = await servico.from('assinantes').insert([
-      { email: todas, idioma: 'pt', confirmado_em: agora },
+      { email: todas, idioma: 'pt', confirmado_em: agora, series: [] },
       { email: so, idioma: 'pt', confirmado_em: agora, series: ['memoria-operaria'] },
       { email: outra, idioma: 'pt', confirmado_em: agora, series: ['outra-serie'] },
     ]);
