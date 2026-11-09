@@ -5,7 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 import { formatoPauta, formatoRascunho, pedidoPauta, pedidoRascunho, validarPauta, type CandidataPauta } from '../src/lib/busca/pedido';
 import { custoBrl, custoMedio, horaDeRodar, inicioDoMes, podeRodar } from '../src/lib/busca/regras';
-import { ErroDoRobo, conversar, slugDoRobo, textoFinal, type Uso } from '../src/lib/busca/robo';
+import { ErroDoRobo, conversar, diario, slugDoRobo, textoFinal, type Uso } from '../src/lib/busca/robo';
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !process.env.ANTHROPIC_API_KEY) throw new Error('Faltam segredos: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY.');
@@ -50,6 +50,8 @@ if (fila) {
       try {
         const r = await conversar(api, pedidoPauta(cfg, (fontes ?? []).map((f) => f.dominio), (descartes ?? []).map((d) => ({ titulo: d.titulo, motivo: d.motivo_descarte! }))));
         uso = r.uso;
+        console.log(diario(r.blocos).join('\n'));
+        console.log(`fim: ${r.mensagem.stop_reason}\n${textoFinal(r.mensagem).slice(0, 3000)}`);
         const { candidatas, descartadas } = validarPauta(formatoPauta.parse(textoFinal(r.mensagem)), cfg.max_candidatas);
         if (candidatas.length) {
           const { error } = await db.from('busca_candidatas').insert(candidatas.map((c) => ({ rodada_id: fila.id, ...c, falta_confirmar: c.falta_confirmar ?? null })));

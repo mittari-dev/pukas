@@ -21,18 +21,34 @@ export class ErroDoRobo extends Error {
 
 const MAX_VOLTAS = 5;
 
-export async function conversar(api: Api, pedido: Anthropic.Messages.MessageCreateParamsStreaming): Promise<{ mensagem: Anthropic.Messages.Message; uso: Uso }> {
+export async function conversar(api: Api, pedido: Anthropic.Messages.MessageCreateParamsStreaming): Promise<{ mensagem: Anthropic.Messages.Message; uso: Uso; blocos: Anthropic.Messages.ContentBlock[] }> {
   const uso: Uso = { entrada: 0, saida: 0, buscas: 0 };
   const messages = [...pedido.messages];
+  const blocos: Anthropic.Messages.ContentBlock[] = [];
   for (let volta = 0; volta < MAX_VOLTAS; volta++) {
     const mensagem = await api.stream({ ...pedido, messages }).finalMessage();
     uso.entrada += mensagem.usage.input_tokens;
     uso.saida += mensagem.usage.output_tokens;
     uso.buscas += mensagem.usage.server_tool_use?.web_search_requests ?? 0;
-    if (mensagem.stop_reason !== 'pause_turn') return { mensagem, uso };
+    blocos.push(...mensagem.content);
+    if (mensagem.stop_reason !== 'pause_turn') return { mensagem, uso, blocos };
     messages.push({ role: 'assistant', content: mensagem.content });
   }
   throw new ErroDoRobo('a API pausou demais sem terminar', uso);
+}
+
+// Diário da rodada para o log do Actions: o que buscou, o que leu e o que deu errado.
+export function diario(blocos: Anthropic.Messages.ContentBlock[]): string[] {
+  const linhas: string[] = [];
+  for (const b of blocos as unknown as { type: string; name?: string; input?: { query?: string; url?: string }; content?: unknown }[]) {
+    if (b.type === 'server_tool_use') linhas.push(b.name === 'web_search' ? `busca: ${b.input?.query}` : `leitura: ${b.input?.url}`);
+    else if (b.type === 'web_search_tool_result' || b.type === 'web_fetch_tool_result') {
+      const c = b.content as { error_code?: string } | unknown[];
+      if (Array.isArray(c)) linhas.push(`  → ${c.length} resultado(s)`);
+      else linhas.push(c?.error_code ? `  → erro ${c.error_code}` : '  → ok');
+    }
+  }
+  return linhas;
 }
 
 // O texto final (o JSON do output_config) é o último bloco de texto da resposta.
